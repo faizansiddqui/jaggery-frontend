@@ -107,7 +107,7 @@ export default function Comp3() {
                 <textarea
                   className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30 resize-none"
                   placeholder="INPUT DETAILS HERE..."
-                  rows="4"
+                  rows={4}
                 ></textarea>
               </div>
               <button className="w-full py-6 bg-on-surface text-surface font-brand text-2xl uppercase tracking-widest hover:bg-primary transition-colors duration-300 flex justify-center items-center gap-4">

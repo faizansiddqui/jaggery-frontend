@@ -8,11 +8,11 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     (async () => {
       try {
         const LocomotiveScroll = (await import("locomotive-scroll")).default;
-        // @ts-ignore - beta version options may mismatch current types
-        new LocomotiveScroll({
+        const options = {
           el: scrollRef.current,
           smooth: true,
-        });
+        } as unknown as ConstructorParameters<typeof LocomotiveScroll>[0];
+        new LocomotiveScroll(options);
       } catch (error) {
         console.error("Locomotive scroll error:", error);
       }

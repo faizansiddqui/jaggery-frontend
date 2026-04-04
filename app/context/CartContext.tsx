@@ -34,19 +34,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return Number.isFinite(n) ? n : fallback;
   };
 
-  const normalizeItem = (input: Partial<CartItem> & Record<string, unknown>): CartItem => {
-    const id = toNumber(input.id, 0);
-    const qty = Math.max(1, Math.floor(toNumber(input.qty, 1)));
-    const price = Math.max(0, toNumber(input.price, 0));
+  const normalizeItem = (input: Partial<CartItem> | Record<string, unknown>): CartItem => {
+    const source = input as Partial<CartItem> & Record<string, unknown>;
+    const id = toNumber(source.id, 0);
+    const qty = Math.max(1, Math.floor(toNumber(source.qty, 1)));
+    const price = Math.max(0, toNumber(source.price, 0));
     return {
       id,
-      name: String(input.name || 'Product'),
+      name: String(source.name || 'Product'),
       price,
       qty,
-      color: String(input.color || 'Default'),
-      size: String(input.size || 'M'),
-      image: String(input.image || ''),
-      collection: String(input.collection || 'CART ITEM'),
+      color: String(source.color || 'Default'),
+      size: String(source.size || 'M'),
+      image: String(source.image || ''),
+      collection: String(source.collection || 'CART ITEM'),
     };
   };
 

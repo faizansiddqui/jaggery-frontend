@@ -164,7 +164,7 @@ export default function Comp1() {
                 <tr className="group hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-5">
                     <input
-                      checked=""
+                      defaultChecked
                       className="w-4 h-4 border-on-surface/20 text-primary focus:ring-0"
                       type="checkbox"
                     />
@@ -267,7 +267,7 @@ export default function Comp1() {
                 <tr className="group hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-5">
                     <input
-                      checked=""
+                      defaultChecked
                       className="w-4 h-4 border-on-surface/20 text-primary focus:ring-0"
                       type="checkbox"
                     />
@@ -319,7 +319,7 @@ export default function Comp1() {
                 <tr className="group hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-5">
                     <input
-                      checked=""
+                      defaultChecked
                       className="w-4 h-4 border-on-surface/20 text-primary focus:ring-0"
                       type="checkbox"
                     />
