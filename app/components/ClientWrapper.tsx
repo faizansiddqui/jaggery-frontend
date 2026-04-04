@@ -9,14 +9,18 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
 
+  if (isAdmin) {
+    return <main className="flex-grow">{children}</main>;
+  }
+
   return (
     <>
-      {!isAdmin && <Navbar />}
+      <Navbar />
       <SmoothScroll>
         <main className="flex-grow">
           {children}
         </main>
-        {!isAdmin && <Footer />}
+        <Footer />
       </SmoothScroll>
     </>
   );

@@ -1,3 +1,15 @@
+import Link from 'next/link';
+import { createProductHref } from '@/app/data/products';
+
+const productHref = (product: {
+  id: number;
+  name: string;
+  price: number;
+  collection: string;
+  image: string;
+  category: string;
+}) => createProductHref(product);
+
 export default function Comp2() {
   return (
     <>
@@ -136,6 +148,7 @@ export default function Comp2() {
           <div className="flex-grow">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8">
               <div className="group relative">
+                <Link href={productHref({ id: 2, name: 'VOID SHELL v1.4', price: 385, collection: 'OUTERWEAR / TECHNO', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAgryweli9dBU2KXApNAoIl3-ws1TLdfVic6aUvfkbF1ugEZOIGJicoBk48NphtF8wFN60EO6jUJLV5mc9-lrighBfb0YzPpkGRdspa5yWkSngMRmeuaAG0U3Efi7y2Kc5CcalyMcjlUVtMIMG6Jy-mqkNhxqpvFnvHht0TvdrMAOnCv6AyF0_K98BuZ899J5ytpzUp8yWttAjY7KDPs4tfGOCIJjAzffwilRmQODj8bpMTfGVUbqkdNaZfZxgiBJ_4gse4eZeJMrcd', category: 'Jackets' })} className="absolute inset-0 z-10" aria-label="Open VOID SHELL v1.4" />
                 <div className="relative overflow-hidden bg-surface-container-low aspect-[4/5]">
                   <img
                     alt="Urban tech jacket"
@@ -146,7 +159,7 @@ export default function Comp2() {
                   <div className="absolute top-4 left-0 bg-primary text-white font-display text-sm px-4 py-1 tracking-widest uppercase">
                     New Arrival
                   </div>
-                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+                  <button className="absolute bottom-4 right-4 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
                     <span className="material-symbols-outlined">
                       add_shopping_cart
                     </span>
@@ -168,6 +181,7 @@ export default function Comp2() {
               </div>
 
               <div className="group relative">
+                <Link href={productHref({ id: 4, name: 'KINETIC PUFFER', price: 290, collection: 'VELOCITY GEAR', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDYpfwl45t2QICt9dW_uBqCA-4QxzxSX_2Ar4Y48aWnyxDULL7s9siycpY6Tx-EodQQLJkFq4VeTZKA5raaq4vwJFFiuGcXo6lu13ZOCfMIf-qjOwKcRgRNb8WBdktMgFHegltpSA8CEtmqLhiJIJu78pf3VF7-YeNtlK9xu4Z7mojQvTqfqIGdKXyCxlFtaNnXpGE-0bZ56iMY6qUsZIIz2LbWzVCJ5avfpQxwViocfXDUwDrTA9GJQ_nAMSO67htf6Ui9H1Nek1r3', category: 'Jackets' })} className="absolute inset-0 z-10" aria-label="Open KINETIC PUFFER" />
                 <div className="relative overflow-hidden bg-surface-container-low aspect-[4/5]">
                   <img
                     alt="Red oversized puffer"
@@ -175,7 +189,7 @@ export default function Comp2() {
                     data-alt="Hyper-saturated red oversized puffer jacket with industrial straps, studio lighting against a minimal grey background"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYpfwl45t2QICt9dW_uBqCA-4QxzxSX_2Ar4Y48aWnyxDULL7s9siycpY6Tx-EodQQLJkFq4VeTZKA5raaq4vwJFFiuGcXo6lu13ZOCfMIf-qjOwKcRgRNb8WBdktMgFHegltpSA8CEtmqLhiJIJu78pf3VF7-YeNtlK9xu4Z7mojQvTqfqIGdKXyCxlFtaNnXpGE-0bZ56iMY6qUsZIIz2LbWzVCJ5avfpQxwViocfXDUwDrTA9GJQ_nAMSO67htf6Ui9H1Nek1r3"
                   />
-                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+                  <button className="absolute bottom-4 right-4 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
                     <span className="material-symbols-outlined">
                       add_shopping_cart
                     </span>
@@ -197,6 +211,7 @@ export default function Comp2() {
               </div>
 
               <div className="group relative">
+                <Link href={productHref({ id: 6, name: 'RAW BOMBER X', price: 210, collection: 'EDITORIAL SERIES', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBHn1Dn6oq3CpwegkwP7SqPJlSNXH-cArhQu_vEq6QW_8bPw9OBgWz5ib68DZU3kM9Zg-TRLGxRkDeNgnPKCOs7VDkRyPYn9Fg-2i_GJE3-A5g8zyFUWQaXDLuHozoroOW0kdrqlxLyz8X0fuiJiFiu8x_yqcFypB8dKgyY8sxhpXDBZa_YRggK2f7DXFf0A5flbzuzR_iVWRbPmZ2joP76ta-DdHMOp96qUFk_141_8wVy6r0svZgXd3_R0gyUsPrarkRGVcGnKZBD', category: 'Jackets' })} className="absolute inset-0 z-10" aria-label="Open RAW BOMBER X" />
                 <div className="relative overflow-hidden bg-surface-container-low aspect-[4/5]">
                   <img
                     alt="Cropped bomber jacket"
@@ -204,7 +219,7 @@ export default function Comp2() {
                     data-alt="Cropped distressed denim bomber jacket with heavy silver hardware, styled on a mannequin in a gritty industrial warehouse"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHn1Dn6oq3CpwegkwP7SqPJlSNXH-cArhQu_vEq6QW_8bPw9OBgWz5ib68DZU3kM9Zg-TRLGxRkDeNgnPKCOs7VDkRyPYn9Fg-2i_GJE3-A5g8zyFUWQaXDLuHozoroOW0kdrqlxLyz8X0fuiJiFiu8x_yqcFypB8dKgyY8sxhpXDBZa_YRggK2f7DXFf0A5flbzuzR_iVWRbPmZ2joP76ta-DdHMOp96qUFk_141_8wVy6r0svZgXd3_R0gyUsPrarkRGVcGnKZBD"
                   />
-                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+                  <button className="absolute bottom-4 right-4 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
                     <span className="material-symbols-outlined">
                       add_shopping_cart
                     </span>
@@ -226,6 +241,7 @@ export default function Comp2() {
               </div>
 
               <div className="group relative">
+                <Link href={productHref({ id: 201, name: 'V-12 Apex Shell', price: 345, collection: 'URBAN TECH / SHELL', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA5ihs_H2Q5i9M_QsBvBDkFq8Mkz4-WwzOCXDmNimkPh9AB2_QQX4KzKs6IiOb-VrJVKMc24cFJ297VDOWZCRW9HycKyPwCFtr0VDkJNJUTfrSAEgBt7X_SIo5I2TFemS_vSauGIVuMn1bUBwprWHW8swcx2dSmqupdkoRcfzG-gKWbps6V4JkUl5HCQa1eNYx1jnsda5Stq2UyVD0FhRKqVSFegoCMEJ1BXraOcPO0NihDzS_2SuNgDAvjQqDC57hgvlQPD0cF8FyW', category: 'Outerwear' })} className="absolute inset-0 z-10" aria-label="Open V-12 Apex Shell" />
                 <div className="relative overflow-hidden bg-surface-container-low aspect-[4/5]">
                   <img
                     alt="Reflective jacket"
@@ -233,7 +249,7 @@ export default function Comp2() {
                     data-alt="Ghostly reflective silver windbreaker catching flash light, sharp shadows on a dark brick wall backdrop"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgGvZvDsqg4aYpgi1qra8_MYvUafqla2hDMj_repdajGPJSGIPeHl58OVda1guUJsXVgaDJgMhYDZXYdU4CWGj6qVZdDQEqQGsmzmpAEKckon8b0_aPpSUSW_udliA0E_EG3teuwnKeR5gFOMmlXPKNPWo8OTGpN-ITTaL0ACPQ7WwFLx7yLz1MNyz2DAPhP12PERoMpNpIKvo4ut8sxX4PlzKTXn3vV0lc7zPa_BQkEl7B5YoJo4cdFKqIGftbzts8dXw38Fo7Kdb"
                   />
-                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+                  <button className="absolute bottom-4 right-4 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
                     <span className="material-symbols-outlined">
                       add_shopping_cart
                     </span>
@@ -255,6 +271,7 @@ export default function Comp2() {
               </div>
 
               <div className="group relative">
+                <Link href={productHref({ id: 202, name: 'KINETIC HEAVYWEIGHT', price: 180, collection: 'NOIR FLEECE / CORE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUp0llnS7w0VCmZHxn0GGwyMtP3G8DQAHOjvvGxiPqyEQUXfUhec1pld1W_DM2T3mUVmu7qbkXKuqhDcVh5EiB-EvWcZ-Ee44Tyta3D_1JbVRO6RPuMCqXxeBrmFojNLesGeztq1rYLC6LtU6fCHgbW3co9ACu3CmppeeFBb59z9pQUzVB2Dm6raS9nArLz1pXbAAiuSb201lLAcFxKY1FNqeYLY3UfVrouBQ1zLN4ySXyKLafqWtZNdZCWplwhQ4SvC7pjLt1-zl5', category: 'Hoodies' })} className="absolute inset-0 z-10" aria-label="Open KINETIC HEAVYWEIGHT" />
                 <div className="relative overflow-hidden bg-surface-container-low aspect-[4/5]">
                   <img
                     alt="Tactical vest"
@@ -265,7 +282,7 @@ export default function Comp2() {
                   <div className="absolute top-4 left-0 bg-on-surface text-white font-display text-sm px-4 py-1 tracking-widest uppercase">
                     Sold Out
                   </div>
-                  <button className="absolute bottom-4 right-4 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
+                  <button className="absolute bottom-4 right-4 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-y-4 group-hover:translate-y-0 duration-300">
                     <span className="material-symbols-outlined">
                       add_shopping_cart
                     </span>

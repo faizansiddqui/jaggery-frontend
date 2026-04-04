@@ -14,16 +14,16 @@ export default function HomeRoute() {
   return (
     <div data-scroll-section>
       <Comp1 />
-<Comp2 />
-<Comp3 />
-<Comp4 />
-<Comp5 />
-<Comp6 />
-<Comp7 />
-<Comp8 />
-<Comp9 />
-<Comp10 />
-<Comp11 />
+      <Comp2 />
+      <Comp3 />
+      <Comp4 />
+      <Comp5 />
+      <Comp6 />
+      <Comp7 />
+      <Comp8 />
+      <Comp9 />
+      <Comp10 />
+      <Comp11 />
     </div>
   );
 }

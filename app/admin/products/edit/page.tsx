@@ -1,9 +1,5 @@
-import Comp1 from "./components/Comp1";
+import { redirect } from 'next/navigation';
 
 export default function AdminProductEditorRoute() {
-  return (
-    <div data-scroll-section>
-      <Comp1 />
-    </div>
-  );
+  redirect('/admin/products');
 }

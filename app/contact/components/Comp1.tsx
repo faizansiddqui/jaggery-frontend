@@ -1,7 +1,9 @@
-export default function Comp1() {
+import Comp7 from '@/app/components/Comp7';
+
+export default function ContactRoute() {
   return (
     <>
-      <main className="pt-24 min-h-screen">
+      <main className="pt-24 min-h-screen bg-[#fcf8f8] text-[#1c1b1b]">
         <div className="overflow-hidden bg-on-surface py-4 whitespace-nowrap">
           <div className="inline-block animate-marquee">
             <span className="font-brand text-6xl text-surface px-4 uppercase">
@@ -17,12 +19,10 @@ export default function Comp1() {
         <div className="max-w-[1440px] mx-auto px-8 py-16 grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-5 flex flex-col gap-12">
             <section>
-              <h1 className="font-brand text-8xl leading-none uppercase mb-8">
-                Get in
-                <br />
-                Touch
+              <h1 className="font-brand text-6xl md:text-8xl leading-[0.8] uppercase mb-8 tracking-tighter">
+                Get in <br className="hidden md:block" /> Touch
               </h1>
-              <p className="font-headline text-xl uppercase tracking-widest text-primary font-bold mb-4">
+              <p className="font-headline text-lg md:text-xl uppercase tracking-widest text-[#b90c1b] font-bold mb-4">
                 Precision Brutalism In Action
               </p>
               <div className="velocity-bar mb-12"></div>
@@ -71,14 +71,9 @@ export default function Comp1() {
           </div>
 
           <div className="lg:col-span-7">
-            <div className="bg-surface-container-lowest p-12 border border-outline-variant/20 shadow-xl shadow-on-surface/5">
-              <h2 className="font-brand text-4xl uppercase mb-12 flex items-center gap-4">
-                <span
-                  className="material-symbols-outlined text-primary"
-                  data-weight="fill"
-                >
-                  send
-                </span>
+            <div className="bg-[#fcf8f8] dark:bg-[#1c1b1b] p-8 md:p-12 border border-[#1c1b1b]/10 dark:border-[#fcf8f8]/10 shadow-xl">
+              <h2 className="font-brand text-3xl md:text-4xl uppercase mb-10 flex items-center gap-4">
+                <span className="material-symbols-outlined text-[#b90c1b]">send</span>
                 Transmit Message
               </h2>
               <form className="space-y-8">
@@ -119,11 +114,11 @@ export default function Comp1() {
                   <label className="block font-headline text-[10px] uppercase tracking-widest mb-2">
                     Transmission Data
                   </label>
-                  <textarea
-                    className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30 resize-none"
-                    placeholder="INPUT DETAILS HERE..."
-                    rows="4"
-                  ></textarea>
+                    <textarea
+                      className="w-full bg-transparent border-b border-outline-variant/40 focus:border-[#b90c1b] focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30 resize-none"
+                      placeholder="INPUT DETAILS HERE..."
+                      rows={4}
+                    ></textarea>
                 </div>
                 <button className="w-full py-6 bg-on-surface text-surface font-brand text-2xl uppercase tracking-widest hover:bg-primary transition-colors duration-300 flex justify-center items-center gap-4">
                   Initiate Transfer
@@ -136,20 +131,17 @@ export default function Comp1() {
           </div>
         </div>
 
-        <section className="bg-surface-container-low py-24">
-          <div className="max-w-[1440px] mx-auto px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+        <section className="bg-[#f6f3f2] dark:bg-[#1c1b1b] py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-16 gap-8">
               <div>
-                <h2 className="font-brand text-7xl uppercase leading-none">
-                  Global
-                  <br />
-                  Stockists
+                <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">
+                  Global <br /> Stockists
                 </h2>
-                <div className="velocity-bar w-24 mt-6"></div>
+                <div className="h-1 w-24 bg-[#b90c1b] mt-6"></div>
               </div>
-              <div className="font-headline text-sm uppercase tracking-widest max-w-md text-right">
-                Locate authorized StreetRiot kinetic editorial centers across
-                the metropolitan landscape.
+              <div className="font-headline text-xs md:text-sm uppercase tracking-widest max-w-md text-left md:text-right opacity-60">
+                Locate authorized StreetRiot kinetic editorial centers across the metropolitan landscape.
               </div>
             </div>
 
@@ -267,25 +259,26 @@ export default function Comp1() {
           </div>
         </section>
 
-        <section className="bg-on-surface py-24 px-8 text-center">
-          <h2 className="font-brand text-surface text-5xl md:text-8xl uppercase mb-8">
+        <section className="bg-[#f6f3f2] py-16 md:py-24 px-4 md:px-8 text-center border-t border-[#1c1b1b]/10">
+          <h2 className="font-brand text-[#1c1b1b] text-5xl md:text-8xl uppercase mb-6 md:mb-8 tracking-tighter">
             Join the Riot
           </h2>
-          <p className="text-surface font-headline text-xs tracking-[0.2em] uppercase opacity-60 mb-12">
+          <p className="font-headline text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-40 mb-10 md:mb-12">
             Weekly editorial drops and exclusive stockist access.
           </p>
-          <div className="max-w-2xl mx-auto flex flex-col md:flex-row border border-surface/20">
+          <div className="max-w-2xl mx-auto flex flex-col md:flex-row border border-[#1c1b1b]/20">
             <input
-              className="flex-grow bg-transparent text-surface p-6 font-headline uppercase focus:ring-0 border-none outline-none placeholder:text-surface/30"
+              className="flex-grow bg-white text-[#1c1b1b] p-6 font-headline uppercase focus:ring-0 border-none outline-none placeholder:text-[#1c1b1b]/30"
               placeholder="EMAIL ADDRESS"
               type="email"
             />
-            <button className="bg-primary text-surface font-brand text-2xl px-12 py-6 uppercase hover:bg-surface hover:text-on-surface transition-colors">
+            <button className="bg-[#b90c1b] text-[#fcf8f8] font-brand text-2xl px-12 py-6 uppercase hover:bg-[#1c1b1b] transition-colors">
               Subscribe
             </button>
           </div>
         </section>
       </main>
+      <Comp7 />
     </>
   );
 }

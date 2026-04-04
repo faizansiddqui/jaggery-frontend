@@ -1,9 +1,11 @@
-import Comp1 from "./components/Comp1";
+import ContactRoute from "./components/Comp1";
+import Navbar from "@/app/components/Navbar";
 
-export default function ContactRoute() {
+export default function ContactPage() {
   return (
-    <div data-scroll-section>
-      <Comp1 />
+    <div className="bg-[#fcf8f8] min-h-screen">
+      <Navbar />
+      <ContactRoute />
     </div>
   );
 }

@@ -48,7 +48,7 @@
   --color-primary-fixed: #ffdad6;
   --color-tertiary-fixed: #e2e2e2;
   --color-on-tertiary-fixed-variant: #454747;
-  
+
   --font-headline: "Space Grotesk", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-label: "Inter", sans-serif;
@@ -76,25 +76,61 @@
 
 @layer utilities {
   .marquee-container {
-      overflow: hidden;
-      white-space: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
   }
+
   .marquee-content {
-      display: inline-block;
-      animation: marquee 30s linear infinite;
+    display: inline-block;
+    animation: marquee 30s linear infinite;
   }
+
   @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
   }
+
   ::-webkit-scrollbar {
-      width: 8px;
+    width: 8px;
   }
+
   ::-webkit-scrollbar-track {
-      background: #fcf8f8;
+    background: #fcf8f8;
   }
+
   ::-webkit-scrollbar-thumb {
-      background: #1c1b1b;
+    background: #1c1b1b;
+  }
+
+  .x-rail {
+    scrollbar-width: thin;
+    scrollbar-color: #b90c1b #f2e9e8;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .x-rail::-webkit-scrollbar {
+    height: 7px;
+    width: auto;
+  }
+
+  .x-rail::-webkit-scrollbar-track {
+    background: linear-gradient(90deg, #f6edec 0%, #fff7f6 100%);
+    border-radius: 999px;
+  }
+
+  .x-rail::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #8d0d18 0%, #c8192a 100%);
+    border-radius: 999px;
+    border: 1px solid #f6edec;
+  }
+
+  .x-rail::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, #740a14 0%, #b90c1b 100%);
   }
 }
 

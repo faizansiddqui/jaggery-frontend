@@ -1,3 +1,15 @@
+import Link from 'next/link';
+import { createProductHref } from '@/app/data/products';
+
+const productHref = (product: {
+  id: number;
+  name: string;
+  price: number;
+  collection: string;
+  image: string;
+  category: string;
+}) => createProductHref(product);
+
 export default function Comp2() {
   return (
     <>
@@ -98,8 +110,8 @@ export default function Comp2() {
                   type="range"
                 />
                 <div className="flex justify-between space text-xs font-bold">
-                  <span>$0.00</span>
-                  <span className="text-primary">$500.00</span>
+                  <span>{process.env.NEXT_PUBLIC_CURRENCY || '$'}0.00</span>
+                  <span className="text-primary">{process.env.NEXT_PUBLIC_CURRENCY || '$'}500.00</span>
                 </div>
               </div>
             </section>
@@ -132,8 +144,9 @@ export default function Comp2() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-10 md:gap-y-12">
             <div className="group relative">
+              <Link href={productHref({ id: 1, name: 'KINETIC P-24 SHELL', price: 285, collection: 'OUTERWEAR / RED LINE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBCPPxeva2_roYGpDN5rerNlGmz6zoyzfNrduSt5wuJKChKQlJdaQNuoN650Bnh-v1F17aexaiDdCfX_W0ZRjEaijRW3whfNF0h2Hx3DpaU6yBtTJq6oCZ3XDtmVXvkgM91-RpYY-R_AHUtDM6PvyGgiK7nnMbYjiYo0E734ZjkhnYpM0XuZIwksg46v4EztjbMV8OtIc9SC4TEId6DK3iDB8QIpApL7Q9cgtom_W5A7OIkJXm1-Soke8SI56Cbqj_qhRt56HaFoqDT', category: 'Jackets' })} className="absolute inset-0 z-10" aria-label="Open KINETIC P-24 SHELL" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -144,7 +157,7 @@ export default function Comp2() {
                 <div className="absolute top-4 left-0 bg-primary text-white space text-[10px] font-bold px-3 py-1 tracking-widest">
                   NEW ERA
                 </div>
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -155,11 +168,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   OUTERWEAR / RED LINE
                 </p>
-                <p className="space text-sm font-bold mt-2">$285.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}285.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 101, name: 'A-SYSTEM OVER HOOD', price: 145, collection: 'TOPS / CORE SERIES', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBi2LBbQZCIFwCDB7YxF2C8Jv9wLphvAPwfwJ20xySq3CW8TiyToikeAp0DRoQp84i1ALiCcgkeKnVRYrGlDH_7i74yzXC4gJ5GC8l6qHF9-TkaFMYyTmoczCz1HVnL5KgIjLqEMR1VHeJx5q8FIZF09TvEvkAfgWZXE1YOI-4G-BkHLr0VYxF2UCHZtu8HjsgOR3DMTIGhDGAZleuEUFfrAzPyvkf0XSIlSnMHpv2Al4-KcyF1NY4XgEJsrEHtyn92cUaghFH0cP5n', category: 'Hoodies' })} className="absolute inset-0 z-10" aria-label="Open A-SYSTEM OVER HOOD" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -167,7 +181,7 @@ export default function Comp2() {
                   data-alt="Heavyweight oversized gray hoodie with minimal branding and thick ribbed cuffs on a minimalist grey background"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi2LBbQZCIFwCDB7YxF2C8Jv9wLphvAPwfwJ20xySq3CW8TiyToikeAp0DRoQp84i1ALiCcgkeKnVRYrGlDH_7i74yzXC4gJ5GC8l6qHF9-TkaFMYyTmoczCz1HVnL5KgIjLqEMR1VHeJx5q8FIZF09TvEvkAfgWZXE1YOI-4G-BkHLr0VYxF2UCHZtu8HjsgOR3DMTIGhDGAZleuEUFfrAzPyvkf0XSIlSnMHpv2Al4-KcyF1NY4XgEJsrEHtyn92cUaghFH0cP5n"
                 />
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -178,11 +192,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   TOPS / CORE SERIES
                 </p>
-                <p className="space text-sm font-bold mt-2">$145.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}145.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 102, name: 'VERTEX BOX TEE', price: 65, collection: 'TOPS / ESSENTIALS', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCQEANNhf_7ehP2gPDxVKUWJdT57pdxzV7CFexZ-E3nDpxsB9eIubUlqyo_B5n51iwjIWNjYHFh6RMRKw6fyYpxKtArD7gvQC22S9o_c-MpLW_f6fBrq3tO92NjACvcADJsEFaxBI2U6NZkrizLmDeqn516pv4RZnI3lrm5-xQwcSix-DjXkV61G9mMjjEOHCIm8FZpaEj3K7W4Gt8zdKTiuxD7Gbv5olobvxbJUe0pQJ3bl4G2Mxgh2DY5C1NBC0bRDdsBWQ-R7Hkr', category: 'Tops' })} className="absolute inset-0 z-10" aria-label="Open VERTEX BOX TEE" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -198,7 +213,7 @@ export default function Comp2() {
                     favorite
                   </span>
                 </div>
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -209,11 +224,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   TOPS / ESSENTIALS
                 </p>
-                <p className="space text-sm font-bold mt-2">$65.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}65.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 103, name: 'CARGO TRACK V.2', price: 210, collection: 'BOTTOMS / PERFORMANCE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCbdwvPYZTei2NzCVimmyO_-kXjhVFiW753eNMhmjhSDaaftnZQ5304iHLHtkVouJXTUWj6IhAPH8XLMYjwKtjiCEDhWdS_QCgjLSIvsZ-NYPIik4J9CF19Aeq0ULS4GYqw0aQpjY_dJowLii7n2q-5dMNirS7DhUiyyRRxHQszpfAngZRDFB0DQUmzPE2n8-iEXTIGI8BaYexbzS3EhRFcpXs_V_fb1t1oE5jhBS-ImcdlpsopBCjXFmiTUbpczBiFQ6TJ61u_Nzm', category: 'Bottoms' })} className="absolute inset-0 z-10" aria-label="Open CARGO TRACK V.2" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -221,7 +237,7 @@ export default function Comp2() {
                   data-alt="Dark washed premium denim jeans with tapered fit and industrial stitching details"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbdwvPYZTei2NzCVimmyO_-kXjhVFiW753eNMhmjhSDaaftnZQ5304iHLHtkVouJXTUWj6IhAPH8XLMYjwKtjiCEDhWdS_QCgjLSIvsZ-NYPIik4J9CF19Aeq0ULS4GYqw0aQpjY_dJowLii7n2q-5dMNirS7DhUiyyRRxHQszpfAngZRDFB0DQUmzPE2n8-iEXTIGI8BaYexbzS3EhRFcpXs_V_fb1t1oE5jhBS-ImcdlpsopBCjXFmiTUbpczBiFQ6TJ61uM_Nzm"
                 />
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -232,11 +248,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   BOTTOMS / PERFORMANCE
                 </p>
-                <p className="space text-sm font-bold mt-2">$210.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}210.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 104, name: 'THERMAL DRI-FIT TOP', price: 115, collection: 'TOPS / PERFORMANCE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD2jUy7052xxMaiY0MszxARHT1tREYQ9YIsWevueDRYN2VYpYZynvJrimDujsZDVDxn2oowaguJVKtOx1_dfdifJyOLwqOG0GzABETqJPncZIfyYFx93WdQjyooGok6OBj2gozc0u-Ym3OyjTuMEy1FXGpCoxH5DRhJQjWqxjbJZctphw7Uq5yopgSUbi5cY229FcQzy-MyJQpUN1rwasnBxl-xM01Ffoljoa9cKS9ItSriBOiBIz7aI6DbwxQde4Gzv7JyAKFxTdS', category: 'Tops' })} className="absolute inset-0 z-10" aria-label="Open THERMAL DRI-FIT TOP" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -244,7 +261,7 @@ export default function Comp2() {
                   data-alt="High-performance thermal base layer top in deep black with red accent stitching"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2jUy7052xxMaiY0MszxARHT1tREYQ9YIsWevueDRYN2VYpYZynvJrimDujsZDVDxn2oowaguJVKtOx1_dfdifJyOLwqOG0GzABETqJPncZIfyYFx93WdQjyooGok6OBj2gozc0u-Ym3O0yjTuMEy1FXGpCoxH5DRhJQjWqxjbJZctphw7Uq5yopgSUbi5cY229FcQzy-MyJQpUN1rwasnBxl-xM01Ffoljoa9cKS9ItSriBOiBIz7aI6DbwxQde4Gzv7JyAKFxTdS"
                 />
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -255,11 +272,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   TOPS / PERFORMANCE
                 </p>
-                <p className="space text-sm font-bold mt-2">$115.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}115.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 105, name: 'RACE SPLIT SHORTS', price: 85, collection: 'BOTTOMS / PERFORMANCE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAIfqqcocj94Goh1F8tGhRcQk0oBKFLXm9kpVQwtK8kJ8bz7cY3KUNF8jA_xmFIbwCQkJv-ir9cdq7U0JR21mP-QimqbvHg7ZRrSmwlAUPUNV4HUNIpvTPvfsLQd2GUp_AP3KM1lDjkCMMxd5ynWamkZy1IvoyPUUHTmfTgX0QqKiTVh8wEhPmYuy-115f8f3mHujEGKLJ6d9zMlcNu5JGNnT0TVHO1Tase3G2HLA8sTYBk-TX2-bLjBk7ADSM-V3UJj277QMXzTGh', category: 'Bottoms' })} className="absolute inset-0 z-10" aria-label="Open RACE SPLIT SHORTS" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -270,7 +288,7 @@ export default function Comp2() {
                 <div className="absolute top-4 left-0 bg-on-surface text-white space text-[10px] font-bold px-3 py-1 tracking-widest">
                   LIMITED
                 </div>
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -281,11 +299,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   BOTTOMS / PERFORMANCE
                 </p>
-                <p className="space text-sm font-bold mt-2">$85.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}85.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 106, name: 'STRUCTURE KNIT SWEATER', price: 195, collection: 'TOPS / EDITORIAL', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDROJPJilNE6YZEKQz2_PKpDSusbE7zCo7B1PY9p1Emg080Prl0G0AzQASzQF2mkHRI-5B50Q8Dxw6jWAeTDy4zcJeJVU5u6T7d7MTm1S1ABtK3qRXR2eHZuMP3qVr2VcjPFoN-4pZ2-syIaMj7iQ1rBhKV8Fac2hGELUZpBctbE2j02Lz3aiJsyY1m36malW0b0NuxxGYKCWPhwDN6gC7cLoF-NHUaKlbEGFm-XWLdQJmt32RjyIuuTBkfwJdNTN8p2KJ9vkOGaqyC', category: 'Tops' })} className="absolute inset-0 z-10" aria-label="Open STRUCTURE KNIT SWEATER" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -293,7 +312,7 @@ export default function Comp2() {
                   data-alt="High-neck black knit sweater with architectural ribbed texture and elongated sleeves"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDROJPJilNE6YZEKQz2_PKpDSusbE7zCo7B1PY9p1Emg080Prl0G0AzQASzQF2mkHRI-5B50Q8Dxw6jWAeTDy4zcJeJVU5u6T7d7MTm1S1ABtK3qRXR2eHZuMP3qVr2VcjPFoN-4pZ2-syIaMj7iQ1rBhKV8Fac2hGELUZpBctbE2j02Lz3aiJsyY1m36malW0b0NuxxGYKCWPhwDN6gC7cLoF-NHUaKlbEGFm-XWLdQJmt32RjyIuuTBkfwJdNTN8p2KJ9vkOGaqyC"
                 />
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -304,11 +323,12 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   TOPS / EDITORIAL
                 </p>
-                <p className="space text-sm font-bold mt-2">$195.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}195.00</p>
               </div>
             </div>
 
             <div className="group relative">
+              <Link href={productHref({ id: 107, name: 'MODULAR WIND-SHELL', price: 220, collection: 'OUTERWEAR / TECH-LINE', image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB8URmbxIsYLpDtvSolLdnZk1eWzjAzapmgu93tLCT-jXIqBiY9Ux4iFOLkk6yWklIY0mucVelSWyTVCPTm2ARlnZMPDiAGRkmrfuoXdsLF3DgCCS-59i_56Ibly9ZAE03ncJ9UfRhL1clJ8JxvRw3AlXaDIevjlwFOLVL6ypUX1SGIloGYdVe4yN3QgJtd-CnVC3ikFb99_h6_W-6m1pDOmCshN5pfQDpQwP6rELTX4__E_1HkR2VVxPQXsiukNv_Z8naubNN5Qc8i', category: 'Outerwear' })} className="absolute inset-0 z-10" aria-label="Open MODULAR WIND-SHELL" />
               <div className="aspect-[4/5] bg-surface-container-low overflow-hidden relative">
                 <img
                   alt="Product"
@@ -316,7 +336,7 @@ export default function Comp2() {
                   data-alt="Modern technical windbreaker in off-white with black contrast panels and modular pockets"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8URmbxIsYLpDtvSolLdnZk1eWzjAzapmgu93tLCT-jXIqBiY9Ux4iFOLkk6yWklIY0mucVelSWyTVCPTm2ARlnZMPDiAGRkmrfuoXdsLF3DgCCS-59i_56Ibly9ZAE03ncJ9UfRhL1clJ8JxvRw3AlXaDIevjlwFOLVL6ypUX1SGIloGYdVe4yN3QgJtd-CnVC3ikFb99_h6_W-6m1pDOmCshN5pfQDpQwP6rELTX4__E_1HkR2VVxPQXsiukNv_Z8naubNN5Qc8i"
                 />
-                <button className="absolute bottom-0 right-0 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="absolute bottom-0 right-0 z-20 w-12 h-12 bg-on-surface text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>
@@ -327,7 +347,7 @@ export default function Comp2() {
                 <p className="space text-xs font-bold text-on-surface/40">
                   OUTERWEAR / TECH-LINE
                 </p>
-                <p className="space text-sm font-bold mt-2">$220.00</p>
+                <p className="space text-sm font-bold mt-2">{process.env.NEXT_PUBLIC_CURRENCY || '$'}220.00</p>
               </div>
             </div>
           </div>
@@ -335,7 +355,6 @@ export default function Comp2() {
           <div className="mt-20 flex justify-center items-center gap-8 border-t-2 border-on-surface/5 pt-12">
             <button
               className="flex items-center gap-2 space text-xs font-bold hover:text-primary transition-colors disabled:opacity-30"
-              disabled=""
             >
               <span className="material-symbols-outlined text-sm">west</span>{" "}
               PREV

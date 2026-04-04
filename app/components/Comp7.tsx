@@ -19,7 +19,7 @@ export default function Comp7() {
                 A numbered collection of 100 units. Precision engineered for the
                 urban athlete. No restocks.
               </p>
-              <button className="w-fit bg-primary text-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-surface hover:text-on-surface transition-all active:scale-95">
+              <button className="w-fit bg-primary cursor-pointer text-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-surface hover:text-on-surface transition-all active:scale-95">
                 Secure Access
               </button>
             </div>
@@ -38,7 +38,7 @@ export default function Comp7() {
                 <span className="font-headline text-8xl font-black text-on-surface opacity-10">
                   01/05
                 </span>
-                <span className="material-symbols-outlined text-4xl text-primary">
+                <span className="material-symbols-outlined cursor-pointer text-4xl text-primary">
                   arrow_forward
                 </span>
               </div>

@@ -1,9 +1,6 @@
 
+import { redirect } from 'next/navigation';
 
 export default function AdminProductUploadRoute() {
-  return (
-    <div data-scroll-section>
-      
-    </div>
-  );
+  redirect('/admin/products?mode=new');
 }
