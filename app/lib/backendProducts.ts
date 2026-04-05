@@ -3,10 +3,33 @@ import { formatProductNameForPath } from '@/app/data/products';
 
 const FALLBACK_IMAGE =
     'https://lh3.googleusercontent.com/aida-public/AB6AXuBCPPxeva2_roYGpDN5rerNlGmz6zoyzfNrduSt5wuJKChKQlJdaQNuoN650Bnh-v1F17aexaiDdCfX_W0ZRjEaijRW3whfNF0h2Hx3DpaU6yBtTJq6oCZ3XDtmVXvkgM91-RpYY-R_AHUtDM6PvyGgiK7nnMbYjiYo0E734ZjkhnYpM0XuZIwksg46v4EztjbMV8OtIc9SC4TEId6DK3iDB8QIpApL7Q9cgtom_W5A7OIkJXm1-Soke8SI56Cbqj_qhRt56HaFoqDT';
+const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
+
+function normalizeBackendUrl(input: string) {
+    let value = String(input || '').trim();
+    if (!value) return '';
+
+    value = value.replace(/\.railiway\.app/gi, '.railway.app');
+
+    if (!/^https?:\/\//i.test(value)) {
+        value = `https://${value}`;
+    }
+
+    return value.replace(/\/$/, '');
+}
 
 function getBaseUrl() {
-    const configured = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
-    if (configured) return configured.replace(/\/$/, '');
+    const configured = normalizeBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL || '');
+    if (configured) return configured;
+
+    if (process.env.NODE_ENV === 'production') return PROD_BACKEND_FALLBACK;
+
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+        if (!isLocalHost) return PROD_BACKEND_FALLBACK;
+    }
+
     return 'http://localhost:8080';
 }
 

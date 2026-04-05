@@ -6,14 +6,38 @@ export interface UserSession {
 const TOKEN_KEY = 'streetriot_user_token';
 const EMAIL_KEY = 'streetriot_user_email';
 const CART_ID_KEY = 'streetriot_cart_id';
+const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
+
+function normalizeBackendUrl(input: string) {
+    let value = String(input || '').trim();
+    if (!value) return '';
+
+    // Common typo guard for Railway domain.
+    value = value.replace(/\.railiway\.app/gi, '.railway.app');
+
+    if (!/^https?:\/\//i.test(value)) {
+        value = `https://${value}`;
+    }
+
+    return value.replace(/\/$/, '');
+}
 
 function isBrowser() {
     return typeof window !== 'undefined';
 }
 
 export function getBackendBaseUrl() {
-    const configured = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
-    if (configured) return configured.replace(/\/$/, '');
+    const configured = normalizeBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL || '');
+    if (configured) return configured;
+
+    if (process.env.NODE_ENV === 'production') return PROD_BACKEND_FALLBACK;
+
+    if (isBrowser()) {
+        const host = window.location.hostname;
+        const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+        if (!isLocalHost) return PROD_BACKEND_FALLBACK;
+    }
+
     return 'http://localhost:8080';
 }
 
