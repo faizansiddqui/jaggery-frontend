@@ -58,8 +58,8 @@ export default function AuthRoute() {
   };
 
   return (
-    <main className="min-h-screen bg-[#fcf8f8] text-[#1c1b1b] flex items-center justify-center px-4 py-10">
-      <section className="w-full max-w-xl bg-[#f6f3f2] border-l-8 border-[#b90c1b] p-8 md:p-12">
+    <main className="min-h-[70vh] bg-[#fcf8f8] text-[#1c1b1b] flex items-center justify-center px-4 py-6 md:py-10">
+      <section className="w-full max-w-xl bg-[#f6f3f2] border-l-8 border-[#b90c1b] p-4 md:p-12">
         <Link href="/" className="font-headline text-[10px] uppercase tracking-widest opacity-60 hover:opacity-100">
           Back to Shop
         </Link>
