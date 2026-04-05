@@ -6,11 +6,17 @@ export interface UserSession {
 const TOKEN_KEY = 'streetriot_user_token';
 const EMAIL_KEY = 'streetriot_user_email';
 const CART_ID_KEY = 'streetriot_cart_id';
+const BROWSER_PROXY_BASE = '/api/backend';
 const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
 
 function normalizeBackendUrl(input: string) {
     let value = String(input || '').trim();
     if (!value) return '';
+
+    // Allow same-origin proxy paths.
+    if (value.startsWith('/')) {
+        return value.replace(/\/$/, '');
+    }
 
     // Common typo guard for Railway domain.
     value = value.replace(/\.railiway\.app/gi, '.railway.app');
@@ -35,6 +41,11 @@ export function getBackendBaseUrlCandidates() {
     const configured = normalizeBackendUrl(configuredRaw);
     const typoFixedFromRaw = normalizeBackendUrl(configuredRaw.replace(/\.railiway\.app/gi, '.railway.app'));
     const list: string[] = [];
+
+    // In browsers, prefer same-origin proxy to avoid cross-origin failures.
+    if (isBrowser()) {
+        list.push(BROWSER_PROXY_BASE);
+    }
 
     if (configured) list.push(configured);
     if (typoFixedFromRaw && !list.includes(typoFixedFromRaw)) list.push(typoFixedFromRaw);
