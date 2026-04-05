@@ -23,6 +23,8 @@ export default function Navbar() {
     { href: "/shop/sale", label: "Sale" },
   ];
 
+  const desktopNavLinkClass = "py-1 hover:text-[#b90c1b] transition-colors";
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -54,11 +56,11 @@ export default function Navbar() {
 
       {/* NAV LINKS */}
       <div className="hidden lg:flex items-center gap-10 font-headline uppercase tracking-[0.2em] text-[12px] font-bold">
-        <Link href="/shop/new-arrivals" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">New Arrivals</Link>
-        <Link href="/shop/jackets" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Jackets</Link>
-        <Link href="/shop/hoodies" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Hoodies</Link>
-        <Link href="/shop/track-pants" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Track Pants</Link>
-        <Link href="/shop/sale" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Sale</Link>
+        <Link href="/shop/new-arrivals" className={desktopNavLinkClass}>New Arrivals</Link>
+        <Link href="/shop/jackets" className={desktopNavLinkClass}>Jackets</Link>
+        <Link href="/shop/hoodies" className={desktopNavLinkClass}>Hoodies</Link>
+        <Link href="/shop/track-pants" className={desktopNavLinkClass}>Track Pants</Link>
+        <Link href="/shop/sale" className={desktopNavLinkClass}>Sale</Link>
       </div>
 
       {/* NAV ICONS */}
