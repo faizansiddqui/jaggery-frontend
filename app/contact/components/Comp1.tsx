@@ -1,9 +1,89 @@
+"use client";
+
+import { useState, type FormEvent } from 'react';
 import Comp7 from '@/app/components/Comp7';
+import { subscribeNewsletter, submitContactForm } from '@/app/lib/apiClient';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 export default function ContactRoute() {
+  const { settings } = useSiteSettings();
+  const contactEmail = settings.companyEmail || 'support@streetriot.com';
+  const contactAddress = settings.companyAddress || 'Address not configured yet.';
+
+  const [contactName, setContactName] = useState('');
+  const [contactFormEmail, setContactFormEmail] = useState('');
+  const [department, setDepartment] = useState('GENERAL INQUIRY');
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactStatus, setContactStatus] = useState('');
+  const [contactError, setContactError] = useState('');
+
+  const [subscriberEmail, setSubscriberEmail] = useState('');
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [subscribeStatus, setSubscribeStatus] = useState('');
+  const [subscribeError, setSubscribeError] = useState('');
+
+  const onSubmitContact = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      setContactStatus('');
+      setContactError('');
+
+      const payload = {
+        name: contactName.trim(),
+        email: contactFormEmail.trim().toLowerCase(),
+        department,
+        message: contactMessage.trim(),
+      };
+
+      if (!payload.name || !payload.email || !payload.message) {
+        setContactError('Please fill all required fields.');
+        return;
+      }
+
+      setContactLoading(true);
+      const result = await submitContactForm(payload);
+      const resultRecord = result as Record<string, unknown>;
+      const submission = resultRecord.submission && typeof resultRecord.submission === 'object'
+        ? (resultRecord.submission as Record<string, unknown>)
+        : {};
+      const ticketCode = String(submission.ticketCode || '').trim();
+      setContactStatus(ticketCode ? `Request submitted. Ticket: ${ticketCode}` : 'Request submitted successfully.');
+      setContactName('');
+      setContactFormEmail('');
+      setDepartment('GENERAL INQUIRY');
+      setContactMessage('');
+    } catch (error) {
+      setContactError(error instanceof Error ? error.message : 'Failed to submit contact request.');
+    } finally {
+      setContactLoading(false);
+    }
+  };
+
+  const onSubscribe = async () => {
+    try {
+      setSubscribeStatus('');
+      setSubscribeError('');
+      const normalized = subscriberEmail.trim().toLowerCase();
+      if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        setSubscribeError('Please enter a valid email.');
+        return;
+      }
+
+      setSubscribeLoading(true);
+      await subscribeNewsletter(normalized, 'contact-page');
+      setSubscribeStatus('Subscribed successfully.');
+      setSubscriberEmail('');
+    } catch (error) {
+      setSubscribeError(error instanceof Error ? error.message : 'Subscription failed.');
+    } finally {
+      setSubscribeLoading(false);
+    }
+  };
+
   return (
     <>
-      <main className="pt-24 min-h-screen bg-[#fcf8f8] text-[#1c1b1b]">
+      <main className="pt-8 min-h-screen bg-[#fcf8f8] text-[#1c1b1b]">
         <div className="overflow-hidden bg-on-surface py-4 whitespace-nowrap">
           <div className="inline-block animate-marquee">
             <span className="font-brand text-6xl text-surface px-4 uppercase">
@@ -30,53 +110,36 @@ export default function ContactRoute() {
 
             <div className="grid grid-cols-1 gap-8">
               <div className="p-8 bg-surface-container-low border-l-8 border-on-surface">
-                <h3 className="font-brand text-3xl uppercase mb-2">Support</h3>
+                <h3 className="font-brand text-3xl uppercase mb-2">Support Email</h3>
                 <p className="text-sm uppercase tracking-tighter opacity-70 mb-4">
-                  Technical issues &amp; Order tracking
+                  Direct response channel
                 </p>
                 <a
                   className="font-headline font-bold text-lg hover:text-primary transition-colors"
-                  href="mailto:support@streetriot.com"
+                  href={`mailto:${contactEmail}`}
                 >
-                  SUPPORT@STREETRIOT.COM
+                  {contactEmail.toUpperCase()}
                 </a>
               </div>
               <div className="p-8 bg-surface-container-low border-l-8 border-primary">
-                <h3 className="font-brand text-3xl uppercase mb-2">Press</h3>
+                <h3 className="font-brand text-3xl uppercase mb-2">Support Address</h3>
                 <p className="text-sm uppercase tracking-tighter opacity-70 mb-4">
-                  Media kits &amp; Editorial inquiries
+                  Registered office
                 </p>
-                <a
-                  className="font-headline font-bold text-lg hover:text-primary transition-colors"
-                  href="mailto:press@streetriot.com"
-                >
-                  PRESS@STREETRIOT.COM
-                </a>
-              </div>
-              <div className="p-8 bg-surface-container-low border-l-8 border-on-surface">
-                <h3 className="font-brand text-3xl uppercase mb-2">
-                  Wholesale
-                </h3>
-                <p className="text-sm uppercase tracking-tighter opacity-70 mb-4">
-                  Global distribution &amp; Stockists
+                <p className="font-headline font-bold text-lg tracking-wider leading-relaxed whitespace-pre-line">
+                  {contactAddress}
                 </p>
-                <a
-                  className="font-headline font-bold text-lg hover:text-primary transition-colors"
-                  href="mailto:sales@streetriot.com"
-                >
-                  SALES@STREETRIOT.COM
-                </a>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-7">
-            <div className="bg-[#fcf8f8] dark:bg-[#1c1b1b] p-8 md:p-12 border border-[#1c1b1b]/10 dark:border-[#fcf8f8]/10 shadow-xl">
+            <div className="bg-white p-8 md:p-12 border border-[#1c1b1b]/10 dark:border-[#fcf8f8]/10 shadow-xl">
               <h2 className="font-brand text-3xl md:text-4xl uppercase mb-10 flex items-center gap-4">
                 <span className="material-symbols-outlined text-[#b90c1b]">send</span>
                 Transmit Message
               </h2>
-              <form className="space-y-8">
+              <form className="space-y-8" onSubmit={onSubmitContact}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="relative">
                     <label className="block font-headline text-[10px] uppercase tracking-widest mb-2">
@@ -86,6 +149,8 @@ export default function ContactRoute() {
                       className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30"
                       placeholder="REQUIRED"
                       type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
                     />
                   </div>
                   <div className="relative">
@@ -96,6 +161,8 @@ export default function ContactRoute() {
                       className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30"
                       placeholder="REQUIRED"
                       type="email"
+                      value={contactFormEmail}
+                      onChange={(e) => setContactFormEmail(e.target.value)}
                     />
                   </div>
                 </div>
@@ -103,7 +170,7 @@ export default function ContactRoute() {
                   <label className="block font-headline text-[10px] uppercase tracking-widest mb-2">
                     Department Segment
                   </label>
-                  <select className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase appearance-none cursor-pointer">
+                  <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase appearance-none cursor-pointer">
                     <option>GENERAL INQUIRY</option>
                     <option>ORDER STATUS</option>
                     <option>EDITORIAL PITCH</option>
@@ -114,14 +181,18 @@ export default function ContactRoute() {
                   <label className="block font-headline text-[10px] uppercase tracking-widest mb-2">
                     Transmission Data
                   </label>
-                    <textarea
-                      className="w-full bg-transparent border-b border-outline-variant/40 focus:border-[#b90c1b] focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30 resize-none"
-                      placeholder="INPUT DETAILS HERE..."
-                      rows={4}
-                    ></textarea>
+                  <textarea
+                    className="w-full bg-transparent border-b border-outline-variant/40 focus:border-[#b90c1b] focus:ring-0 px-0 py-2 outline-none text-on-surface font-headline uppercase placeholder:opacity-30 resize-none"
+                    placeholder="INPUT DETAILS HERE..."
+                    rows={4}
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                  ></textarea>
                 </div>
-                <button className="w-full py-6 bg-on-surface text-surface font-brand text-2xl uppercase tracking-widest hover:bg-primary transition-colors duration-300 flex justify-center items-center gap-4">
-                  Initiate Transfer
+                {contactError ? <p className="font-headline text-[11px] tracking-widest text-[#b90c1b] uppercase">{contactError}</p> : null}
+                {contactStatus ? <p className="font-headline text-[11px] tracking-widest text-green-700 uppercase">{contactStatus}</p> : null}
+                <button type="submit" disabled={contactLoading} className="w-full py-6 bg-on-surface text-surface font-brand text-2xl uppercase tracking-widest hover:bg-primary transition-colors duration-300 flex justify-center items-center gap-4 disabled:opacity-50">
+                  {contactLoading ? 'Submitting...' : 'Initiate Transfer'}
                   <span className="material-symbols-outlined">
                     trending_flat
                   </span>
@@ -130,7 +201,7 @@ export default function ContactRoute() {
             </div>
           </div>
         </div>
-
+        {/* 
         <section className="bg-[#f6f3f2] dark:bg-[#1c1b1b] py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 md:mb-16 gap-8">
@@ -257,7 +328,7 @@ export default function ContactRoute() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         <section className="bg-[#f6f3f2] py-16 md:py-24 px-4 md:px-8 text-center border-t border-[#1c1b1b]/10">
           <h2 className="font-brand text-[#1c1b1b] text-5xl md:text-8xl uppercase mb-6 md:mb-8 tracking-tighter">
@@ -271,11 +342,15 @@ export default function ContactRoute() {
               className="flex-grow bg-white text-[#1c1b1b] p-6 font-headline uppercase focus:ring-0 border-none outline-none placeholder:text-[#1c1b1b]/30"
               placeholder="EMAIL ADDRESS"
               type="email"
+              value={subscriberEmail}
+              onChange={(e) => setSubscriberEmail(e.target.value)}
             />
-            <button className="bg-[#b90c1b] text-[#fcf8f8] font-brand text-2xl px-12 py-6 uppercase hover:bg-[#1c1b1b] transition-colors">
-              Subscribe
+            <button type="button" onClick={onSubscribe} disabled={subscribeLoading} className="bg-[#b90c1b] text-[#fcf8f8] font-brand text-2xl px-12 py-6 uppercase hover:bg-[#1c1b1b] transition-colors disabled:opacity-50">
+              {subscribeLoading ? 'Submitting...' : 'Subscribe'}
             </button>
           </div>
+          {subscribeError ? <p className="font-headline text-[11px] tracking-widest text-[#b90c1b] uppercase mt-4">{subscribeError}</p> : null}
+          {subscribeStatus ? <p className="font-headline text-[11px] tracking-widest text-green-700 uppercase mt-4">{subscribeStatus}</p> : null}
         </section>
       </main>
       <Comp7 />

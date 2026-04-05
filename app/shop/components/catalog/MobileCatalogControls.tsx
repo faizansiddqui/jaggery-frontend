@@ -18,7 +18,7 @@ export default function MobileCatalogControls({
     sortOptions,
 }: MobileCatalogControlsProps) {
     return (
-        <div className="md:hidden mb-5 relative">
+        <div className="md:hidden mb-5 relative z-[70]">
             <div className="flex items-center gap-3">
                 <button
                     onClick={openMobileFilterPanel}
@@ -38,9 +38,9 @@ export default function MobileCatalogControls({
             </div>
 
             <div
-                className={`absolute right-0 top-14 w-full bg-white border border-on-surface/10 shadow-2xl origin-top transition-all duration-300 ${isMobileSortOpen
-                        ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
-                        : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
+                className={`absolute right-0 top-14 z-[75] w-full max-h-[70vh] overflow-y-auto bg-white border border-on-surface/10 shadow-2xl origin-top transition-all duration-300 ${isMobileSortOpen
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                    : 'opacity-0 -translate-y-2 scale-95 pointer-events-none'
                     }`}
             >
                 <div className="flex items-center justify-between px-4 py-3 border-b border-on-surface/10">

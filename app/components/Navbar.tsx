@@ -3,11 +3,25 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
+import { useCart } from "@/app/context/CartContext";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { itemCount, isHydrating } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const { settings } = useSiteSettings();
+  const stableCartCount = isHydrating ? 0 : itemCount;
+  const cartCountLabel = stableCartCount > 99 ? "99+" : String(stableCartCount);
+
+  const mobileMenuLinks = [
+    { href: "/shop/new-arrivals", label: "New Arrivals" },
+    { href: "/shop/jackets", label: "Jackets" },
+    { href: "/shop/hoodies", label: "Hoodies" },
+    { href: "/shop/track-pants", label: "Track Pants" },
+    { href: "/user/profile", label: "My Profile" },
+    { href: "/user/orders", label: "My Orders" },
+    { href: "/shop/sale", label: "Sale" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +30,17 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <nav
@@ -38,7 +63,7 @@ export default function Navbar() {
 
       {/* NAV ICONS */}
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-5">
+        <div className="hidden lg:flex items-center gap-5">
           <Link href="/search" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center group">
             <Search className="w-5 h-5 group-hover:rotate-12 transition-transform" />
           </Link>
@@ -50,31 +75,50 @@ export default function Navbar() {
           </Link>
           <Link href="/cart" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center relative group">
             <ShoppingCart className="w-5 h-5 group-hover:rotate-[-5deg] transition-transform" />
-            <span className="absolute -top-2 -right-2 bg-[#b90c1b] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-pulse">2</span>
+            <span className="absolute -top-2 -right-2 bg-[#b90c1b] text-white text-[9px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold animate-pulse leading-none">
+              {cartCountLabel}
+            </span>
           </Link>
         </div>
 
         {/* MOBILE HAMBURGER */}
         <button
-          className="lg:hidden flex flex-col gap-1.5 focus:outline-none"
+          className={`lg:hidden relative flex flex-col gap-1.5 bg-white focus:outline-none transition-transform duration-300 ${isMobileMenuOpen ? "z-[130]" : "z-[110]"}`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMobileMenuOpen ? <X className="w-6 h-6 text-[#1c1b1b]" /> : <Menu className="w-6 h-6 text-[#1c1b1b]" />}
         </button>
       </div>
 
       {/* MOBILE MENU */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-[64px] bg-[#fcf8f8]/95 backdrop-blur-xl z-[99] p-10 flex flex-col gap-8 font-headline uppercase tracking-[0.2em] text-xl font-black animate-in fade-in slide-in-from-top-4">
-          <Link href="/shop/new-arrivals" onClick={() => setIsMobileMenuOpen(false)}>New Arrivals</Link>
-          <Link href="/shop/jackets" onClick={() => setIsMobileMenuOpen(false)}>Jackets</Link>
-          <Link href="/shop/hoodies" onClick={() => setIsMobileMenuOpen(false)}>Hoodies</Link>
-          <Link href="/shop/track-pants" onClick={() => setIsMobileMenuOpen(false)}>Track Pants</Link>
-          <Link href="/user/profile" onClick={() => setIsMobileMenuOpen(false)}>My Profile</Link>
-          <Link href="/user/orders" onClick={() => setIsMobileMenuOpen(false)}>My Orders</Link>
-          <Link href="/shop/sale" className="text-[#b90c1b]" onClick={() => setIsMobileMenuOpen(false)}>Sale</Link>
+      <div
+        className={`lg:hidden fixed inset-0 z-[120] transition-opacity duration-400 ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+      >
+        <button
+          aria-label="Close mobile menu"
+          className="absolute inset-0 bg-white"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+
+        <div
+          className={`absolute left-0 right-0 ${scrolled ? "top-16" : "top-20"} bg-white/95 backdrop-blur-xl border-b border-[#1c1b1b]/10 p-8 flex flex-col gap-7 font-headline uppercase tracking-[0.2em] text-xl font-black transform-gpu transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+            }`}
+        >
+          {mobileMenuLinks.map((entry, index) => (
+            <Link
+              key={entry.href}
+              href={entry.href}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`transition-all duration-500 hover:text-[#b90c1b] ${isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
+                }`}
+              style={{ transitionDelay: `${index * 35}ms` }}
+            >
+              {entry.label}
+            </Link>
+          ))}
         </div>
-      )}
+      </div>
     </nav>
   );
 }

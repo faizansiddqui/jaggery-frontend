@@ -55,6 +55,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = (id: number) => {
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm('Remove this item from your wishlist?');
+      if (!confirmed) return;
+    }
+
     setItems(prev => prev.filter(i => i.id !== id));
     removeWishlistProduct(id).catch(() => { });
   };

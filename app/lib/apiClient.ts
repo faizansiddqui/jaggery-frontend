@@ -41,6 +41,44 @@ export interface AdminOrderItem {
     price: number;
     color?: string;
     size?: string;
+    product_name?: string;
+    product_image?: string;
+}
+
+export interface AdminOrderStatusHistoryEntry {
+    status: string;
+    statusCode?: string;
+    timestamp?: string;
+    rawTimestamp?: string;
+    location?: string;
+    activity?: string;
+}
+
+export interface AdminOrderShiprocket {
+    source?: string;
+    currentStatus?: string;
+    statusCode?: string;
+    statuses: string[];
+    statusHistory: AdminOrderStatusHistoryEntry[];
+    trackingUrl?: string;
+    awb?: string;
+    shipmentId?: number | null;
+    orderId?: number | null;
+}
+
+export interface AdminOrderAddress {
+    FullName?: string;
+    phone1?: string;
+    phone2?: string;
+    email?: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    district?: string;
+    pinCode?: string;
+    address?: string;
+    address_line2?: string;
+    addressType?: string;
 }
 
 export interface AdminOrder {
@@ -54,6 +92,26 @@ export interface AdminOrder {
     createdAt?: string;
     FullName?: string;
     user_email?: string;
+    currency?: string;
+    razorpay_order_id?: string;
+    razorpay_payment_id?: string;
+    shiprocket_order_id?: number;
+    shiprocket_shipment_id?: number;
+    shiprocket_awb?: string;
+    delivery_provider?: string;
+    courier_name?: string;
+    courier_etd?: number;
+    shiprocket_error?: string;
+    address_line1?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    pinCode?: string;
+    phone1?: string;
+    phone2?: string;
+    addressType?: string;
+    shiprocket?: AdminOrderShiprocket;
+    address?: AdminOrderAddress | null;
     items: AdminOrderItem[];
 }
 
@@ -77,17 +135,96 @@ export interface AdminCustomerOverview {
     customers: AdminCustomer[];
 }
 
+export interface NewsletterSubscriber {
+    id: string;
+    email: string;
+    source: string;
+    isActive: boolean;
+    subscribedAt: string | null;
+    lastNotifiedAt: string | null;
+    lastNotifiedType: string;
+}
+
+export interface ContactSubmission {
+    id: string;
+    ticketCode: string;
+    name: string;
+    email: string;
+    department: string;
+    message: string;
+    status: 'open' | 'solved';
+    solvedAt: string | null;
+    solvedBy: string;
+    resolutionMessage: string;
+    createdAt: string | null;
+    updatedAt: string | null;
+}
+
+export interface ProductNotifyRequest {
+    id: string;
+    email: string;
+    product_id: number;
+    product_name: string;
+    color?: string;
+    size?: string;
+    source: string;
+    status: 'pending' | 'notified';
+    isActive: boolean;
+    requestedAt: string | null;
+    notifiedAt: string | null;
+    updatedAt: string | null;
+}
+
+export interface AdminReviewProductMeta {
+    product_id: number;
+    product_code: string;
+    product_name: string;
+    product_image: string;
+}
+
+export interface AdminReview {
+    id: string;
+    product_id: number;
+    product: AdminReviewProductMeta;
+    review_rate: number;
+    review_text: string;
+    review_title: string;
+    review_image: string;
+    review_images: string[];
+    user_name: string;
+    createdAt: string | null;
+    user_stats: {
+        totalReviews: number;
+        reviewedProducts: AdminReviewProductMeta[];
+    };
+}
+
 export interface SiteSettings {
     siteName: string;
     navbarTitle: string;
     footerTitle: string;
+    footerDescription: string;
+    companyAddress: string;
+    companyEmail: string;
+    emailFooterDescription: string;
     currencySymbol: string;
     instagramUrl: string;
+    instagramHandle: string;
+    instagramGallery: Array<{
+        id: string;
+        imageUrl: string;
+        imagePublicId?: string;
+        username: string;
+        sortOrder: number;
+        isActive: boolean;
+    }>;
     twitterUrl: string;
     facebookUrl: string;
     updatedBy?: string;
     updatedAt?: string | null;
 }
+
+type SiteSettingsInstagramItem = SiteSettings['instagramGallery'][number];
 
 export interface AdminCustomerActivity {
     customer: {
@@ -164,7 +301,10 @@ function mapAddress(row: AnyRecord): UserAddress {
 async function request(path: string, options: RequestInit = {}, auth = false) {
     const base = getBackendBaseUrl();
     const headers = new Headers(options.headers || {});
-    headers.set('Content-Type', 'application/json');
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    if (!isFormData && !headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+    }
     if (auth) {
         const token = getUserToken();
         if (token) {
@@ -199,6 +339,71 @@ export async function sendOtp(email: string) {
         method: 'POST',
         body: JSON.stringify({ email }),
     });
+}
+
+export async function subscribeNewsletter(email: string, source = 'website') {
+    return request('/user/newsletter/subscribe', {
+        method: 'POST',
+        body: JSON.stringify({ email, source }),
+    });
+}
+
+export async function submitContactForm(payload: {
+    name: string;
+    email: string;
+    department: string;
+    message: string;
+}) {
+    return request('/user/contact/submit', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function registerProductStockNotify(payload: {
+    product_id: number;
+    product_name?: string;
+    color?: string;
+    size?: string;
+    source?: string;
+    email?: string;
+}) {
+    const email = payload.email || getUserEmail();
+    return request('/user/product-notify/register', {
+        method: 'POST',
+        body: JSON.stringify({
+            product_id: payload.product_id,
+            product_name: payload.product_name,
+            color: payload.color || '',
+            size: payload.size || '',
+            source: payload.source || 'product_detail',
+            email,
+        }),
+    });
+}
+
+export async function fetchProductStockNotifyStatus(productId: number, email?: string, color?: string, size?: string) {
+    const resolvedEmail = email || getUserEmail();
+    if (!resolvedEmail || !productId) {
+        return { isNotified: false };
+    }
+
+    const query = new URLSearchParams({
+        product_id: String(productId),
+        email: resolvedEmail,
+        color: color || '',
+        size: size || '',
+    });
+
+    const data = await request(
+        `/user/product-notify/status?${query.toString()}`,
+        { method: 'GET' },
+    );
+
+    return {
+        isNotified: Boolean(data.isNotified),
+        request: data.request,
+    };
 }
 
 export async function verifyOtp(email: string, otp: string) {
@@ -319,6 +524,17 @@ export async function createBackendOrder(items: Array<{ product_id: number; quan
     });
 }
 
+export async function verifyBackendPayment(payload: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+}) {
+    return request('/user/payment-success', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+}
+
 export async function cancelUserOrder(orderRef: string) {
     const email = getUserEmail();
     return request('/user/cancel-order', {
@@ -375,14 +591,89 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
             createdAt: typeof row.createdAt === 'string' ? row.createdAt : undefined,
             FullName: typeof row.FullName === 'string' ? row.FullName : undefined,
             user_email: typeof row.user_email === 'string' ? row.user_email : undefined,
+            currency: typeof row.currency === 'string' ? row.currency : undefined,
+            razorpay_order_id: typeof row.razorpay_order_id === 'string' ? row.razorpay_order_id : undefined,
+            razorpay_payment_id: typeof row.razorpay_payment_id === 'string' ? row.razorpay_payment_id : undefined,
+            shiprocket_order_id: Number(row.shiprocket_order_id || 0) || undefined,
+            shiprocket_shipment_id: Number(row.shiprocket_shipment_id || 0) || undefined,
+            shiprocket_awb: typeof row.shiprocket_awb === 'string' ? row.shiprocket_awb : undefined,
+            delivery_provider: typeof row.delivery_provider === 'string' ? row.delivery_provider : undefined,
+            courier_name: typeof row.courier_name === 'string' ? row.courier_name : undefined,
+            courier_etd: Number(row.courier_etd || 0) || undefined,
+            shiprocket_error: typeof row.shiprocket_error === 'string' ? row.shiprocket_error : undefined,
+            address_line1: typeof row.address_line1 === 'string' ? row.address_line1 : undefined,
+            city: typeof row.city === 'string' ? row.city : undefined,
+            state: typeof row.state === 'string' ? row.state : undefined,
+            country: typeof row.country === 'string' ? row.country : undefined,
+            pinCode: typeof row.pinCode === 'string' ? row.pinCode : undefined,
+            phone1: typeof row.phone1 === 'string' ? row.phone1 : undefined,
+            phone2: typeof row.phone2 === 'string' ? row.phone2 : undefined,
+            addressType: typeof row.addressType === 'string' ? row.addressType : undefined,
+            shiprocket: (() => {
+                const shipping = asRecord(row.shiprocket);
+                const statusesRaw = Array.isArray(shipping.statuses) ? shipping.statuses : [];
+                const historyRaw = Array.isArray(shipping.statusHistory) ? shipping.statusHistory : [];
+                return {
+                    source: typeof shipping.source === 'string' ? shipping.source : undefined,
+                    currentStatus: typeof shipping.currentStatus === 'string' ? shipping.currentStatus : undefined,
+                    statusCode: typeof shipping.statusCode === 'string' ? shipping.statusCode : undefined,
+                    statuses: statusesRaw.map((entry) => String(entry || '').trim()).filter(Boolean),
+                    statusHistory: historyRaw
+                        .map((entry) => {
+                            const item = asRecord(entry);
+                            const status = String(item.status || '').trim();
+                            if (!status) return null;
+
+                            const parsed: AdminOrderStatusHistoryEntry = { status };
+                            if (typeof item.statusCode === 'string') parsed.statusCode = item.statusCode;
+                            if (typeof item.timestamp === 'string') parsed.timestamp = item.timestamp;
+                            if (typeof item.rawTimestamp === 'string') parsed.rawTimestamp = item.rawTimestamp;
+                            if (typeof item.location === 'string') parsed.location = item.location;
+                            if (typeof item.activity === 'string') parsed.activity = item.activity;
+
+                            return parsed;
+                        })
+                        .filter((entry): entry is AdminOrderStatusHistoryEntry => entry !== null),
+                    trackingUrl: typeof shipping.trackingUrl === 'string' ? shipping.trackingUrl : undefined,
+                    awb: typeof shipping.awb === 'string' ? shipping.awb : undefined,
+                    shipmentId: Number(shipping.shipmentId || 0) || undefined,
+                    orderId: Number(shipping.orderId || 0) || undefined,
+                } as AdminOrderShiprocket;
+            })(),
+            address: (() => {
+                const address = asRecord(row.address);
+                if (!Object.keys(address).length) return null;
+                return {
+                    FullName: typeof address.FullName === 'string' ? address.FullName : undefined,
+                    phone1: typeof address.phone1 === 'string' ? address.phone1 : undefined,
+                    phone2: typeof address.phone2 === 'string' ? address.phone2 : undefined,
+                    email: typeof address.email === 'string' ? address.email : undefined,
+                    country: typeof address.country === 'string' ? address.country : undefined,
+                    state: typeof address.state === 'string' ? address.state : undefined,
+                    city: typeof address.city === 'string' ? address.city : undefined,
+                    district: typeof address.district === 'string' ? address.district : undefined,
+                    pinCode: typeof address.pinCode === 'string' ? address.pinCode : undefined,
+                    address: typeof address.address === 'string' ? address.address : undefined,
+                    address_line2: typeof address.address_line2 === 'string' ? address.address_line2 : undefined,
+                    addressType: typeof address.addressType === 'string' ? address.addressType : undefined,
+                } as AdminOrderAddress;
+            })(),
             items: itemRows.map((item) => {
                 const mapped = asRecord(item);
+                const product = asRecord(mapped.product);
+                const productImages = Array.isArray(product.product_image) ? product.product_image : [];
                 return {
                     product_id: Number(mapped.product_id || 0),
                     quantity: Number(mapped.quantity || 0),
                     price: Number(mapped.price || 0),
                     color: typeof mapped.color === 'string' ? mapped.color : undefined,
                     size: typeof mapped.size === 'string' ? mapped.size : undefined,
+                    product_name: typeof product.title === 'string'
+                        ? product.title
+                        : typeof product.name === 'string'
+                            ? product.name
+                            : undefined,
+                    product_image: typeof productImages[0] === 'string' ? productImages[0] : undefined,
                 };
             }),
         } as AdminOrder;
@@ -402,6 +693,15 @@ export async function updateAdminOrderStatus(orderId: string, status: string, pr
         method: 'PATCH',
         body: JSON.stringify(payload),
     });
+}
+
+export async function fetchAdminOrderLabel(orderRef: string): Promise<{ label_url: string }> {
+    const data = await request(`/admin/orders/${encodeURIComponent(orderRef)}/label`);
+    const labelUrl = String(data.label_url || '').trim();
+    if (!labelUrl) {
+        throw new Error('Shiprocket label URL not available for this order.');
+    }
+    return { label_url: labelUrl };
 }
 
 export async function fetchAdminCustomersOverview(): Promise<AdminCustomerOverview> {
@@ -431,14 +731,71 @@ export async function fetchAdminCustomersOverview(): Promise<AdminCustomerOvervi
     };
 }
 
+const DEFAULT_INSTAGRAM_GALLERY_URLS = [
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuBB6krFZt3NforzP_CzR4ptQE8-y0eealOxaiOFyw-M_PiEaPfHJmpJx0KQ69PoCCe-8I9bO5ABXLOBzrYtxX6fodcfeGMSdhpRfwL4ik_U7Ohea9FqYCZZSy7necDaaZIVUyzB_JQcC1LoUfL-N7sffd-8fBPsMnS85KvnWDDmmtG2s3J-VvSA4OrZAuNxF2A_7khyXBN_RpmcxVAJR8BB5pYxp6lAeHd0vJVeHjz7LL1feXps7U4mxDgFMTAl-Zan8yykFBkZfy-U',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuD7-2TpSC81XkW68SsR5qO7YCUI-agr1FkXJz6iAL2GqdUeil7o-SGTIwoV6Udw2sePVRGEriL-oq9SUQgYH-3hEcuZkF1k-3CDFq-cr9pZnDiVmYHzQPUSiyV0udgVA1j_DWyF6JsNYQjHAkNW1TvbfkMsSnfIjpYIytsbmvb-ArCRej6S77U1GKT9jkDQrHJPzf3oEUrheRg5hgvx1fyraxmtsXLolgFIgYq-RwSv0Evi8FhdOpgt5AtDXT6cBWXgqs8RTmyqT0yf',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuBbPAmDMHekqLqrXZLergrySXBUGDZAJIKoEwWT1bZDzRqtg810OU5KsX8xa0w_bgyQIU4a-FSWdOAE4biaiMTeurKmzMJDdLPSSxFc_jAKcsvG44n2gEBH_EwG6oQtmdvBU_BYpG-qhla42bC3ppOILHBgUvSKvt9HCeTLNOVDMlliJFbzs15y6y0NDpMyky2-PtgjrfPcnMlT_A0EKisv2thjdd3ra_3fxCKp6EJ31D4eD_twaLrvhbkw5QN1hT3gD9nV9w4xqUiy',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuDKAQ6BN0zpefAWyL1BvwOEYUEHMo8megKTLEmt-S9eb_xLkICO0VQBcPdxjmxdGWX67pZWCsubEihh4MyCwW_aCBjGPXwvOrVMtN_hdtoO3OtP8TuKjEMC4NmQcJLekA7TqDEzk0zKdmI0cWcln_TOiEWQfsOD6helF5CSyKnGrEkpzLixSICrqKjMM-IM9wmXsOXvsQ2nG37VyYlvjtWZq5Vbs3kpZlcNs_wybr-LmbxRQU9ojYeli7yk0P0adT7B7KreSF6SAEOy',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuBgvVDiPytr5AGZgDZEwwSmR3CutLMkDaeDqvODNfZKhHAjqN30RAbqvGyYv2Ddf1K7hOFW8ck7KQZb0SMZpzGK9JdP9O4bSZky_-Hm8If1mGAd_t3ke4dh6QyAGJvSbuIE3E6KvrcS_GflfJjf_cDSoUg_Xs35w1LaO2RMVncewWVLNo6mKsEiv1bLbczujHaErcgcinzCspq74o89foNU-zduQpPAyFJmIiFQllEhnz0xVRV2vdQbyZmZF4HEfTM2TNB1CUQ8qqcT',
+    'https://lh3.googleusercontent.com/aida-public/AB6AXuC39Rz00OUHQlENEoJpluueV1-p681BILVYn3ImGm_Pys2GQnFrWvE6k7JoE48_-SJVR-IQWsuBzseVTa3wmytgVSCAzj8Rk82xFapDFYCsJpw8_r803fBj80Dx84pd_ioNPiR1LqgQQ_wW_Hb5yewgMeb_xlKK_ASJrhCHZWwlHzvDQH0Oi8n3EL2-UYHxi6deJgoWXu2gSMXjYjG0Cc2NQCs9qug9oae_JceeOUjBarf5jOL8Ocrq8KVSXcPZ64dXclnUXT4YFdhS',
+];
+
+const normalizeInstagramHandle = (value: unknown) => {
+    const cleaned = String(value || '').trim().replace(/^@+/, '').replace(/\s+/g, '');
+    return cleaned || 'kinetic_riot';
+};
+
+const buildDefaultInstagramGallery = () => DEFAULT_INSTAGRAM_GALLERY_URLS.map((imageUrl, index) => ({
+    id: `default-${index}`,
+    imageUrl,
+    username: 'kinetic_riot',
+    sortOrder: index,
+    isActive: true,
+} satisfies SiteSettingsInstagramItem));
+
 const mapSiteSettings = (value: unknown): SiteSettings => {
     const row = asRecord(value);
+    const instagramHandle = normalizeInstagramHandle(row.instagramHandle);
+    const hasGalleryField = Array.isArray(row.instagramGallery);
+    const instagramRows: unknown[] = hasGalleryField
+        ? (row.instagramGallery as unknown[])
+        : buildDefaultInstagramGallery();
+    const instagramGallery: SiteSettingsInstagramItem[] = instagramRows
+        .map((entry: unknown, index: number): SiteSettingsInstagramItem | null => {
+            const item = asRecord(entry);
+            const imageUrl = String(item.imageUrl || '');
+            if (!imageUrl) return null;
+
+            return {
+                id: String(item.id || item._id || `insta-${index}`),
+                imageUrl,
+                imagePublicId: item.imagePublicId ? String(item.imagePublicId) : undefined,
+                username: normalizeInstagramHandle(item.username || instagramHandle),
+                sortOrder: Number(item.sortOrder ?? index),
+                isActive: item.isActive !== false,
+            };
+        })
+        .filter((item): item is SiteSettingsInstagramItem => item !== null)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+
     return {
         siteName: String(row.siteName || 'STREETRIOT'),
         navbarTitle: String(row.navbarTitle || row.siteName || 'STREETRIOT'),
         footerTitle: String(row.footerTitle || row.siteName || 'STREETRIOT'),
+        footerDescription: String(
+            row.footerDescription ||
+            'Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.'
+        ),
+        companyAddress: String(row.companyAddress || ''),
+        companyEmail: String(row.companyEmail || ''),
+        emailFooterDescription: String(
+            row.emailFooterDescription ||
+            'This is an automated message from StreetRiot commerce engine.'
+        ),
         currencySymbol: String(row.currencySymbol || '$'),
         instagramUrl: String(row.instagramUrl || ''),
+        instagramHandle,
+        instagramGallery,
         twitterUrl: String(row.twitterUrl || ''),
         facebookUrl: String(row.facebookUrl || ''),
         updatedBy: row.updatedBy ? String(row.updatedBy) : undefined,
@@ -461,6 +818,67 @@ export async function updateAdminSiteSettings(payload: Partial<SiteSettings>) {
         method: 'PATCH',
         body: JSON.stringify(payload),
     });
+    return mapSiteSettings(data.settings);
+}
+
+export async function createAdminInstagramGalleryItem(payload: {
+    username: string;
+    image?: File;
+    imageUrl?: string;
+    isActive?: boolean;
+    sortOrder?: number;
+    updatedBy?: string;
+}) {
+    const form = new FormData();
+    form.append('username', payload.username || 'kinetic_riot');
+    if (typeof payload.imageUrl === 'string' && payload.imageUrl.trim()) form.append('imageUrl', payload.imageUrl.trim());
+    if (payload.image) form.append('image', payload.image);
+    if (typeof payload.isActive === 'boolean') form.append('isActive', String(payload.isActive));
+    if (typeof payload.sortOrder === 'number' && Number.isFinite(payload.sortOrder)) form.append('sortOrder', String(payload.sortOrder));
+    if (payload.updatedBy) form.append('updatedBy', payload.updatedBy);
+
+    const data = await request('/admin/settings/instagram', {
+        method: 'POST',
+        body: form,
+    });
+
+    return mapSiteSettings(data.settings);
+}
+
+export async function updateAdminInstagramGalleryItem(itemId: string, payload: {
+    username?: string;
+    image?: File;
+    imageUrl?: string;
+    isActive?: boolean;
+    sortOrder?: number;
+    updatedBy?: string;
+}) {
+    const form = new FormData();
+    if (typeof payload.username === 'string') form.append('username', payload.username);
+    if (typeof payload.imageUrl === 'string' && payload.imageUrl.trim()) form.append('imageUrl', payload.imageUrl.trim());
+    if (payload.image) form.append('image', payload.image);
+    if (typeof payload.isActive === 'boolean') form.append('isActive', String(payload.isActive));
+    if (typeof payload.sortOrder === 'number' && Number.isFinite(payload.sortOrder)) form.append('sortOrder', String(payload.sortOrder));
+    if (payload.updatedBy) form.append('updatedBy', payload.updatedBy);
+
+    const data = await request(`/admin/settings/instagram/${encodeURIComponent(itemId)}`, {
+        method: 'PATCH',
+        body: form,
+    });
+
+    return mapSiteSettings(data.settings);
+}
+
+export async function deleteAdminInstagramGalleryItem(itemId: string, updatedBy?: string) {
+    const options: RequestInit = {
+        method: 'DELETE',
+    };
+
+    if (updatedBy) {
+        options.body = JSON.stringify({ updatedBy });
+    }
+
+    const data = await request(`/admin/settings/instagram/${encodeURIComponent(itemId)}`, options);
     return mapSiteSettings(data.settings);
 }
 
@@ -497,6 +915,167 @@ export async function fetchAdminCustomerActivity(email: string): Promise<AdminCu
     };
 }
 
+export async function fetchAdminNewsletterSubscribers(): Promise<{
+    stats: { total: number; active: number };
+    subscribers: NewsletterSubscriber[];
+}> {
+    const data = await request('/admin/communications/subscribers');
+    const stats = asRecord(data.stats);
+    const rows = Array.isArray(data.subscribers) ? data.subscribers : [];
+    return {
+        stats: {
+            total: Number(stats.total || 0),
+            active: Number(stats.active || 0),
+        },
+        subscribers: rows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                id: String(row.id || row._id || ''),
+                email: String(row.email || ''),
+                source: String(row.source || 'website'),
+                isActive: row.isActive !== false,
+                subscribedAt: row.subscribedAt ? String(row.subscribedAt) : null,
+                lastNotifiedAt: row.lastNotifiedAt ? String(row.lastNotifiedAt) : null,
+                lastNotifiedType: String(row.lastNotifiedType || ''),
+            } as NewsletterSubscriber;
+        }),
+    };
+}
+
+export async function fetchAdminContactSubmissions(status?: 'open' | 'solved'): Promise<{
+    stats: { total: number; open: number; solved: number };
+    contacts: ContactSubmission[];
+}> {
+    const path = status ? `/admin/communications/contacts?status=${encodeURIComponent(status)}` : '/admin/communications/contacts';
+    const data = await request(path);
+    const stats = asRecord(data.stats);
+    const rows = Array.isArray(data.contacts) ? data.contacts : [];
+    return {
+        stats: {
+            total: Number(stats.total || 0),
+            open: Number(stats.open || 0),
+            solved: Number(stats.solved || 0),
+        },
+        contacts: rows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                id: String(row.id || row._id || ''),
+                ticketCode: String(row.ticketCode || ''),
+                name: String(row.name || ''),
+                email: String(row.email || ''),
+                department: String(row.department || 'GENERAL INQUIRY'),
+                message: String(row.message || ''),
+                status: String(row.status || 'open') === 'solved' ? 'solved' : 'open',
+                solvedAt: row.solvedAt ? String(row.solvedAt) : null,
+                solvedBy: String(row.solvedBy || ''),
+                resolutionMessage: String(row.resolutionMessage || ''),
+                createdAt: row.createdAt ? String(row.createdAt) : null,
+                updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+            } as ContactSubmission;
+        }),
+    };
+}
+
+export async function fetchAdminProductNotifyRequests(status?: 'pending' | 'notified'): Promise<{
+    stats: { total: number; pending: number; notified: number };
+    requests: ProductNotifyRequest[];
+}> {
+    const path = status
+        ? `/admin/communications/product-notify?status=${encodeURIComponent(status)}`
+        : '/admin/communications/product-notify';
+    const data = await request(path);
+    const stats = asRecord(data.stats);
+    const rows = Array.isArray(data.requests) ? data.requests : [];
+    return {
+        stats: {
+            total: Number(stats.total || 0),
+            pending: Number(stats.pending || 0),
+            notified: Number(stats.notified || 0),
+        },
+        requests: rows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                id: String(row.id || row._id || ''),
+                email: String(row.email || ''),
+                product_id: Number(row.product_id || 0),
+                product_name: String(row.product_name || ''),
+                color: typeof row.color === 'string' ? row.color : undefined,
+                size: typeof row.size === 'string' ? row.size : undefined,
+                source: String(row.source || 'product_detail'),
+                status: String(row.status || 'pending') === 'notified' ? 'notified' : 'pending',
+                isActive: row.isActive !== false,
+                requestedAt: row.requestedAt ? String(row.requestedAt) : null,
+                notifiedAt: row.notifiedAt ? String(row.notifiedAt) : null,
+                updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+            } as ProductNotifyRequest;
+        }),
+    };
+}
+
+export async function fetchAdminReviews(): Promise<{
+    stats: { totalReviews: number; totalUsers: number; totalProducts: number };
+    reviews: AdminReview[];
+}> {
+    const data = await request('/admin/reviews');
+    const stats = asRecord(data.stats);
+    const rows = Array.isArray(data.reviews) ? data.reviews : [];
+
+    const mapProduct = (value: unknown): AdminReviewProductMeta => {
+        const row = asRecord(value);
+        return {
+            product_id: Number(row.product_id || 0),
+            product_code: String(row.product_code || ''),
+            product_name: String(row.product_name || ''),
+            product_image: String(row.product_image || ''),
+        };
+    };
+
+    return {
+        stats: {
+            totalReviews: Number(stats.totalReviews || 0),
+            totalUsers: Number(stats.totalUsers || 0),
+            totalProducts: Number(stats.totalProducts || 0),
+        },
+        reviews: rows.map((entry) => {
+            const row = asRecord(entry);
+            const userStats = asRecord(row.user_stats);
+            return {
+                id: String(row.id || row._id || ''),
+                product_id: Number(row.product_id || 0),
+                product: mapProduct(row.product),
+                review_rate: Number(row.review_rate || 0),
+                review_text: String(row.review_text || ''),
+                review_title: String(row.review_title || ''),
+                review_image: String(row.review_image || ''),
+                review_images: Array.isArray(row.review_images)
+                    ? row.review_images.map((item) => String(item || '')).filter(Boolean)
+                    : [],
+                user_name: String(row.user_name || 'Anonymous'),
+                createdAt: row.createdAt ? String(row.createdAt) : null,
+                user_stats: {
+                    totalReviews: Number(userStats.totalReviews || 0),
+                    reviewedProducts: Array.isArray(userStats.reviewedProducts)
+                        ? userStats.reviewedProducts.map((item) => mapProduct(item))
+                        : [],
+                },
+            } as AdminReview;
+        }),
+    };
+}
+
+export async function deleteAdminReview(reviewId: string) {
+    return request(`/admin/reviews/${encodeURIComponent(reviewId)}`, {
+        method: 'DELETE',
+    });
+}
+
+export async function markAdminContactSolved(contactId: string, payload: { solvedBy?: string; resolutionMessage?: string }) {
+    return request(`/admin/communications/contacts/${encodeURIComponent(contactId)}/solve`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload || {}),
+    });
+}
+
 export async function submitProductReview(payload: {
     productId: number;
     rating: number;
@@ -504,6 +1083,7 @@ export async function submitProductReview(payload: {
     title?: string;
     userName: string;
     email?: string;
+    images?: File[];
     image?: File;
 }) {
     const base = getBackendBaseUrl();
@@ -514,7 +1094,14 @@ export async function submitProductReview(payload: {
     form.append('review_title', payload.title || '');
     form.append('user_name', payload.userName || 'Anonymous');
     form.append('email', payload.email || getUserEmail() || 'guest@streetriot.com');
-    if (payload.image) form.append('reviewImage', payload.image);
+    const files = Array.isArray(payload.images)
+        ? payload.images.slice(0, 2)
+        : payload.image
+            ? [payload.image]
+            : [];
+    files.forEach((file) => {
+        form.append('reviewImages', file);
+    });
 
     const response = await fetch(`${base}/user/product-reviews`, {
         method: 'POST',

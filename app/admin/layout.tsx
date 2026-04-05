@@ -37,6 +37,8 @@ export default function AdminLayout({
     { name: 'Products', icon: 'inventory_2', href: '/admin/products' },
     { name: 'Orders', icon: 'shopping_cart', href: '/admin/orders' },
     { name: 'Customers', icon: 'group', href: '/admin/customers' },
+    { name: 'Reviews', icon: 'rate_review', href: '/admin/reviews' },
+    { name: 'Communications', icon: 'mark_email_read', href: '/admin/communications' },
     { name: 'Analytics', icon: 'analytics', href: '/admin/analytics' },
     { name: 'Settings', icon: 'settings', href: '/admin/settings' },
   ];
@@ -50,7 +52,7 @@ export default function AdminLayout({
           <p className="font-headline text-[9px] uppercase tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>
 
-        <nav className="flex-1 py-8 px-4 flex flex-col gap-1">
+        <nav className="flex-1 py-1 px-4 flex flex-col gap-1 overflow-y-auto">
           {menuItems.map((item) => (
             <Link
               key={item.href}
@@ -75,17 +77,12 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main id="admin-scroll-root" className="flex-1 ml-64 p-8 md:p-12 overflow-y-auto">
+      <main id="admin-scroll-root" className="flex-1 ml-64 h-screen p-8 md:p-12 overflow-y-auto">
         {children}
 
         {/* Footer info for admin */}
         <div className="mt-20 pt-8 border-t border-[#ffffff]/10 flex justify-between items-center opacity-30 font-headline text-[9px] uppercase tracking-widest">
-          <span>StreetRiot CMS Engine v4.82 // 2024</span>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-[#b90c1b]">Documentation</a>
-            <a href="#" className="hover:text-[#b90c1b]">System Log</a>
-            <a href="#" className="hover:text-[#b90c1b]">Status</a>
-          </div>
+          <span>StreetRiot // 2026</span>
         </div>
       </main>
     </div>

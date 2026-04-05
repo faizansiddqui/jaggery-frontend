@@ -5,6 +5,9 @@ import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 
 export default function Footer() {
   const { settings } = useSiteSettings();
+  const footerDescription =
+    settings.footerDescription ||
+    "Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.";
 
   return (
     <footer className="bg-[#fcf8f8] text-[#1c1b1b] border-t border-[#1c1b1b]/10 py-24 px-8 lg:px-24">
@@ -16,7 +19,7 @@ export default function Footer() {
             {settings.footerTitle || settings.siteName || 'STREETRIOT'}
           </Link>
           <p className="text-[#1c1b1b]/60 font-headline text-sm leading-relaxed max-w-xs uppercase tracking-widest">
-            Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.
+            {footerDescription}
           </p>
           <div className="flex gap-4 mt-4">
             <Link href={settings.instagramUrl || "#"} target="_blank" className="w-11 h-11 border border-[#1c1b1b]/10 flex items-center justify-center hover:bg-[#b90c1b] transition-all hover:border-[#b90c1b] group">
@@ -105,8 +108,8 @@ export default function Footer() {
       <div className="max-w-[1920px] mx-auto pt-12 flex flex-col md:flex-row justify-between items-center gap-8 font-headline text-[10px] tracking-[0.3em] text-[#1c1b1b]/40 uppercase">
         <div className="flex gap-8">
           <span>© {new Date().getFullYear()} {(settings.siteName || 'STREETRIOT').toUpperCase()} INDUSTRIES</span>
-          <Link href="#" className="hover:text-[#b90c1b] transition-colors">PRIVACY CODE</Link>
-          <Link href="#" className="hover:text-[#b90c1b] transition-colors">TERMS OF SERVICE</Link>
+          <Link href="/privacy-policy" className="hover:text-[#b90c1b] transition-colors">PRIVACY POLICY</Link>
+          <Link href="/terms-of-service" className="hover:text-[#b90c1b] transition-colors">TERMS OF SERVICE</Link>
         </div>
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4 text-[#b90c1b] animate-pulse" />

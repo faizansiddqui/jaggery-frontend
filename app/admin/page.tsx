@@ -161,19 +161,6 @@ export default function AdminDashboard() {
 
             {/* Quick Actions / System Activity */}
             <div className="lg:col-span-4 flex flex-col gap-8">
-               <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-10 flex flex-col gap-8">
-                  <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-[#ffffff]/10 pb-6 text-[#b90c1b]">System Actions</h3>
-                  <div className="flex flex-col gap-3">
-                     <button className="w-full bg-[#ffffff] text-[#1c1b1b] py-6 font-brand text-xl uppercase hover:bg-[#b90c1b] hover:text-[#ffffff] transition-all flex items-center justify-center gap-3">
-                        <span className="material-symbols-outlined text-sm">add</span>
-                        Upload Drop
-                     </button>
-                     <button className="w-full border-2 border-[#ffffff]/10 bg-transparent text-white py-6 font-brand text-xl uppercase hover:border-[#ffffff] transition-all flex items-center justify-center gap-3">
-                        <span className="material-symbols-outlined text-sm">broadcast_on_personal</span>
-                        Broadcast Drop
-                     </button>
-                  </div>
-               </div>
 
                <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-10 flex flex-col gap-6 flex-1">
                   <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-[#ffffff]/10 pb-6">Recent Activity</h3>
@@ -184,7 +171,7 @@ export default function AdminDashboard() {
                            <span className="border-l-2 border-[#b90c1b] pl-4">{act.message}</span>
                         </div>
                      ))}
-                     <a href="#" className="font-headline font-black text-[9px] text-[#b90c1b] tracking-[0.2em] block text-center mt-6 hover:opacity-80 transition-opacity">View All Records</a>
+                     {/* <a href="#" className="font-headline font-black text-[9px] text-[#b90c1b] tracking-[0.2em] block text-center mt-6 hover:opacity-80 transition-opacity">View All Records</a> */}
                   </div>
                </div>
             </div>

@@ -2,9 +2,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createProductHref } from '@/app/data/products';
 import { fetchBackendProducts } from '@/app/lib/backendProducts';
+import { fetchPublicSiteSettings } from '@/app/lib/apiClient';
 
 export default async function Comp6() {
-  const products = await fetchBackendProducts();
+  const [products, siteSettings] = await Promise.all([
+    fetchBackendProducts(),
+    fetchPublicSiteSettings().catch(() => null),
+  ]);
+  const currency = siteSettings?.currencySymbol || '$';
   const arrivals = products.slice(0, 4);
 
   return (
@@ -51,7 +56,7 @@ export default async function Comp6() {
                       {product.collection}
                     </p>
                   </div>
-                  <span className="font-headline font-black text-lg">${product.price.toFixed(2)}</span>
+                  <span className="font-headline font-black text-lg">{currency}{product.price.toFixed(2)}</span>
                 </div>
               </Link>
             ))}

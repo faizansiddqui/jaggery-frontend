@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Comp7 from '@/app/components/Comp7';
 import GridSkeleton from '@/app/components/GridSkeleton';
 import { cancelUserOrder, fetchOrders, requestUserOrderReturn } from '@/app/lib/apiClient';
@@ -14,15 +15,47 @@ interface UiOrder {
   status: string;
   total: number;
   date: string;
+  previewImage: string;
 }
+
+const FALLBACK_ORDER_IMAGE =
+  'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80';
+
+const resolveOrderPreviewImage = (entry: Record<string, unknown>) => {
+  const items = Array.isArray(entry.items) ? entry.items : [];
+  for (const rawItem of items) {
+    const item = (rawItem || {}) as Record<string, unknown>;
+    const product = (item.product || {}) as Record<string, unknown>;
+    const productImages = Array.isArray(product.product_image) ? product.product_image : [];
+
+    const candidate =
+      (typeof productImages[0] === 'string' && productImages[0]) ||
+      (typeof item.image === 'string' && item.image) ||
+      (typeof product.image === 'string' && product.image) ||
+      '';
+
+    if (candidate) return candidate;
+  }
+
+  return FALLBACK_ORDER_IMAGE;
+};
+
+const resolveOrderTotal = (entry: Record<string, unknown>) => {
+  const explicitTotal = Number(entry.grand_total || entry.total || 0);
+  if (explicitTotal > 0) return explicitTotal;
+
+  const amount = Number(entry.amount || 0);
+  if (amount <= 0) return 0;
+
+  const hasRazorpayOrder = typeof entry.razorpay_order_id === 'string' && entry.razorpay_order_id.length > 0;
+  return hasRazorpayOrder ? amount / 100 : amount;
+};
 
 export default function OrderHistoryRoute() {
   const { settings } = useSiteSettings();
-  const currency = settings.currencySymbol || '$';
+  const currency = settings.currencySymbol;
   const [orders, setOrders] = useState<UiOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Record<string, string>>({});
   const { ready, authenticated } = useRequireUserSession('/user/auth');
 
   useEffect(() => {
@@ -33,8 +66,9 @@ export default function OrderHistoryRoute() {
           id: String(entry._id || entry.order_code || Date.now()),
           ref: String(entry.order_code || entry._id || ''),
           status: String(entry.status || 'PROCESSING').toUpperCase(),
-          total: Number(entry.grand_total || entry.total || 0),
+          total: resolveOrderTotal(entry as Record<string, unknown>),
           date: new Date(String(entry.createdAt || Date.now())).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase(),
+          previewImage: resolveOrderPreviewImage(entry as Record<string, unknown>),
         }));
         setOrders(mapped);
       })
@@ -45,14 +79,6 @@ export default function OrderHistoryRoute() {
   if (!ready || !authenticated) {
     return <main className="min-h-screen bg-[#fcf8f8]" />;
   }
-
-  const updateOrderStatus = (targetId: string, nextStatus: string) => {
-    setOrders((prev) => prev.map((entry) => (entry.id === targetId ? { ...entry, status: nextStatus } : entry)));
-  };
-
-  const setOrderMessage = (targetId: string, message: string) => {
-    setMessages((prev) => ({ ...prev, [targetId]: message }));
-  };
 
   return (
     <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
@@ -74,71 +100,47 @@ export default function OrderHistoryRoute() {
         ) : (
           <div className="flex flex-col gap-4">
             {orders.map((order) => (
-              <article
-                key={order.id}
-                className="group bg-[#fcf8f8] border border-[#1c1b1b]/10 border-l-4 border-l-transparent hover:border-l-[#b90c1b] p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all hover:bg-[#f6f3f2]"
-              >
-                <Link href={`/user/orders/${order.id}`} className="flex-1 flex flex-col gap-1">
-                  <span className="font-headline text-[9px] font-bold tracking-wider opacity-40 uppercase">{order.ref}</span>
-                  <h3 className="font-brand text-2xl md:text-3xl uppercase group-hover:text-[#b90c1b] transition-colors">{order.status}</h3>
-                  <p className="font-headline text-xs uppercase tracking-wide opacity-40 mt-1">Placed: {order.date}</p>
-                </Link>
+              (() => {
+                const normalizedStatus = order.status.toLowerCase();
+                const canCancel = ![
+                  'cancelled',
+                  'rejected',
+                  'shipped',
+                  'in transit',
+                  'in_transit',
+                  'out for delivery',
+                  'out_for_delivery',
+                  'delivered',
+                  'returned',
+                  'return_requested',
+                  'rto',
+                ].includes(normalizedStatus);
 
-                <div className="w-full md:w-auto flex flex-col md:items-end gap-3">
-                  <div className="font-brand text-2xl">{currency}{order.total.toFixed(2)}</div>
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/user/orders/${order.id}`}
-                      className="border border-[#1c1b1b]/20 px-3 py-2 font-headline text-[10px] uppercase tracking-widest hover:border-[#1c1b1b]"
-                    >
-                      View
+                return (
+                  <article
+                    key={order.id}
+                    className="group bg-[#fcf8f8] border border-[#1c1b1b]/10 border-l-4 border-l-transparent hover:border-l-[#b90c1b] p-6 md:p-8 flex flex-row md:flex-row items-start md:items-center justify-between gap-6 transition-all hover:bg-[#f6f3f2]"
+                  >
+                    <Link href={`/user/orders/${order.id}`} className="w-24 h-28 bg-[#f6f3f2] overflow-hidden flex-shrink-0 border border-[#1c1b1b]/10">
+                      <Image
+                        src={order.previewImage}
+                        alt={`Order ${order.ref} item preview`}
+                        width={192}
+                        height={224}
+                        unoptimized
+                        className="w-full h-full object-cover"
+                      />
+                    </Link>
+                    <Link href={`/user/orders/${order.id}`} className="flex-1 flex flex-col gap-1">
+                    
+                      <span className="font-headline text-[9px] font-bold tracking-wider opacity-40 uppercase">{order.ref}</span>
+                      <h3 className="font-brand text-2xl md:text-3xl uppercase group-hover:text-[#b90c1b] transition-colors">{order.status}</h3>
+                      <p className="font-headline text-xs uppercase tracking-wide opacity-40 mt-1">Placed: {order.date}</p>
                     </Link>
 
-                    {!['cancelled', 'delivered', 'returned', 'return_requested'].includes(order.status.toLowerCase()) && (
-                      <button
-                        disabled={busyOrderId === order.id}
-                        onClick={async () => {
-                          try {
-                            setBusyOrderId(order.id);
-                            await cancelUserOrder(order.ref || order.id);
-                            updateOrderStatus(order.id, 'CANCELLED');
-                            setOrderMessage(order.id, 'Order cancelled successfully');
-                          } catch (error) {
-                            setOrderMessage(order.id, error instanceof Error ? error.message : 'Could not cancel order');
-                          } finally {
-                            setBusyOrderId(null);
-                          }
-                        }}
-                        className="bg-[#1c1b1b] text-white px-3 py-2 font-headline text-[10px] uppercase tracking-widest hover:bg-[#b90c1b] disabled:opacity-70"
-                      >
-                        {busyOrderId === order.id ? 'Updating...' : 'Cancel'}
-                      </button>
-                    )}
-
-                    {order.status.toLowerCase() === 'delivered' && (
-                      <button
-                        disabled={busyOrderId === order.id}
-                        onClick={async () => {
-                          try {
-                            setBusyOrderId(order.id);
-                            await requestUserOrderReturn(order.ref || order.id);
-                            updateOrderStatus(order.id, 'RETURN_REQUESTED');
-                            setOrderMessage(order.id, 'Return requested successfully');
-                          } catch (error) {
-                            setOrderMessage(order.id, error instanceof Error ? error.message : 'Could not request return');
-                          } finally {
-                            setBusyOrderId(null);
-                          }
-                        }}
-                        className="border border-[#1c1b1b]/20 px-3 py-2 font-headline text-[10px] uppercase tracking-widest hover:border-[#1c1b1b] disabled:opacity-70"
-                      >
-                        {busyOrderId === order.id ? 'Updating...' : 'Return'}
-                      </button>
-                    )}
-                  </div>
-                  {messages[order.id] && <p className="font-headline text-[9px] uppercase tracking-widest text-[#b90c1b]">{messages[order.id]}</p>}
-                </div>
-              </article>
+                  </article>
+                );
+              })()
             ))}
           </div>
         )}

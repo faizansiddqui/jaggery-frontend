@@ -67,6 +67,33 @@ function stripHtml(value: unknown) {
         .trim();
 }
 
+function normalizeToken(value: unknown) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function buildStockMaps(raw: GenericRecord) {
+    const variants = Array.isArray(raw.colorVariants) ? raw.colorVariants : [];
+    const stockBySize: Record<string, number> = {};
+    const stockByVariant: Record<string, number> = {};
+
+    variants.forEach((variant) => {
+        const row = asRecord(variant);
+        const colorKey = normalizeToken(row.color);
+        const sizes = Array.isArray(row.sizes) ? row.sizes : [];
+        sizes.forEach((sizeEntry) => {
+            const sizeRow = asRecord(sizeEntry);
+            const sizeKey = normalizeToken(sizeRow.label);
+            const stock = Math.max(0, Number(sizeRow.stock || 0));
+            if (!sizeKey) return;
+            const variantKey = `${colorKey}|${sizeKey}`;
+            stockByVariant[variantKey] = stock;
+            stockBySize[sizeKey] = Math.max(0, Number(stockBySize[sizeKey] || 0) + stock);
+        });
+    });
+
+    return { stockBySize, stockByVariant };
+}
+
 export function normalizeBackendProduct(input: unknown): Product {
     const raw = asRecord(input);
     const id = Number(raw.product_id ?? raw.id ?? 0);
@@ -77,7 +104,10 @@ export function normalizeBackendProduct(input: unknown): Product {
     const image = typeof imageList[0] === 'string' ? imageList[0] : typeof raw.image === 'string' ? raw.image : FALLBACK_IMAGE;
     const originalPriceNumber = Number(raw.price ?? 0);
     const priceNumber = Number(raw.selling_price ?? raw.price ?? 0);
+    const quantity = Math.max(0, Number(raw.quantity ?? 0));
+    const rawDescription = String(raw.description || '').trim();
     const normalizedDescription = stripHtml(raw.description) || 'No description available.';
+    const { stockBySize, stockByVariant } = buildStockMaps(raw);
 
     return {
         id,
@@ -86,14 +116,18 @@ export function normalizeBackendProduct(input: unknown): Product {
         slug: formatProductNameForPath(name),
         price: Number.isFinite(priceNumber) ? priceNumber : 0,
         originalPrice: Number.isFinite(originalPriceNumber) ? originalPriceNumber : undefined,
+        quantity,
+        stockBySize,
+        stockByVariant,
         collection: String(category || 'SHOP').toUpperCase(),
         category,
-        tag: raw.quantity === 0 ? 'Sold Out' : undefined,
+        tag: quantity <= 0 ? 'Out of Stock' : undefined,
         colors: Array.isArray(raw.colors) ? raw.colors.map(String) : undefined,
         sizes: Array.isArray(raw.sizes) && raw.sizes.length > 0 ? raw.sizes.map(String) : ['S', 'M', 'L'],
         image,
         images: imageList.length > 0 ? imageList : [image],
         description: normalizedDescription,
+        descriptionHtml: rawDescription || undefined,
         details: mapDetails(raw),
     };
 }

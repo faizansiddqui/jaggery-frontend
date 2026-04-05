@@ -46,7 +46,10 @@ export default function AuthRoute() {
       if (!result.token) throw new Error('Invalid token from server');
       setUserSession({ token: result.token, email: result.email });
       setMessage(result.isNew ? 'Account created successfully.' : 'Login successful.');
-      window.location.href = '/user/profile';
+      const params = new URLSearchParams(window.location.search);
+      const requestedPath = String(params.get('next') || '').trim();
+      const safeNextPath = requestedPath.startsWith('/') ? requestedPath : '/user/profile';
+      window.location.href = safeNextPath;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'OTP verification failed');
     } finally {

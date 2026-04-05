@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 type CategoryNode = {
     _id: string;
@@ -203,6 +204,8 @@ function findNamesByPath(nodes: CategoryNode[], path: string[]): string[] {
 export default function AdminProductsPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { settings } = useSiteSettings();
+    const currency = settings.currencySymbol || '$';
 
     const [products, setProducts] = useState<ProductItem[]>([]);
     const [categories, setCategories] = useState<CategoryNode[]>([]);
@@ -484,7 +487,7 @@ export default function AdminProductsPage() {
     }, [searchParams, products, categories]);
 
     useEffect(() => {
-        if (!isEditorOpen) return;
+        if (!isEditorOpen || step !== 2) return;
         const editor = descriptionEditorRef.current;
         if (!editor) return;
 
@@ -494,7 +497,7 @@ export default function AdminProductsPage() {
         const textLength = stripHtmlToPlainText(description).length;
         setDescriptionTextLength(textLength);
         lastValidDescriptionHtmlRef.current = description;
-    }, [description, isEditorOpen]);
+    }, [description, isEditorOpen, step]);
 
     const openNew = () => {
         resetEditor();
@@ -690,12 +693,18 @@ export default function AdminProductsPage() {
     };
 
     const removeExistingVariantImage = (variantIndex: number, imageIndex: number) => {
+        const confirmed = window.confirm('Remove this existing variant image?');
+        if (!confirmed) return;
+
         const next = [...variants];
         next[variantIndex].existingImages = next[variantIndex].existingImages.filter((_, idx) => idx !== imageIndex);
         setVariants(next);
     };
 
     const removeNewVariantImage = (variantIndex: number, imageIndex: number) => {
+        const confirmed = window.confirm('Remove this new variant image?');
+        if (!confirmed) return;
+
         const next = [...variants];
         next[variantIndex].newImages = next[variantIndex].newImages.filter((_, idx) => idx !== imageIndex);
         setVariants(next);
@@ -782,7 +791,7 @@ export default function AdminProductsPage() {
                                 <div className="col-span-3 font-brand text-xl uppercase leading-none">{product.name}</div>
                                 <div className="col-span-2 font-headline text-[11px] uppercase opacity-70">{categoryName}</div>
                                 <div className="col-span-1 font-headline text-xs">{product.quantity || 0}</div>
-                                <div className="col-span-1 font-headline text-xs">${formatCurrency(product.selling_price ?? product.price)}</div>
+                                <div className="col-span-1 font-headline text-xs">{currency}{formatCurrency(product.selling_price ?? product.price)}</div>
                                 <div className="col-span-1 font-headline text-[10px] uppercase">{product.status || 'draft'}</div>
                                 <div className="col-span-2 flex justify-end gap-2">
                                     <button onClick={() => openEdit(product)} className="px-3 py-2 border border-[#ffffff]/15 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">Edit</button>
@@ -934,7 +943,11 @@ export default function AdminProductsPage() {
                                                     className="col-span-6 bg-[#ffffff]/5 border border-[#ffffff]/10 px-3 py-2 font-headline text-[10px] uppercase tracking-widest outline-none focus:border-[#b90c1b]"
                                                 />
                                                 <button
-                                                    onClick={() => setSpecifications((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)))}
+                                                    onClick={() => {
+                                                        const confirmed = window.confirm('Remove this specification row?');
+                                                        if (!confirmed) return;
+                                                        setSpecifications((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== index)));
+                                                    }}
                                                     className="col-span-1 border border-[#ffffff]/15 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]"
                                                 >
                                                     X
@@ -955,7 +968,11 @@ export default function AdminProductsPage() {
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-brand text-2xl uppercase">Color #{variantIndex + 1}</h4>
                                                 <button
-                                                    onClick={() => setVariants((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== variantIndex)))}
+                                                    onClick={() => {
+                                                        const confirmed = window.confirm('Remove this color variant?');
+                                                        if (!confirmed) return;
+                                                        setVariants((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== variantIndex)));
+                                                    }}
                                                     className="px-3 py-2 border border-[#ffffff]/15 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]"
                                                 >
                                                     Remove
@@ -1018,6 +1035,9 @@ export default function AdminProductsPage() {
                                                         />
                                                         <button
                                                             onClick={() => {
+                                                                const confirmed = window.confirm('Remove this size row?');
+                                                                if (!confirmed) return;
+
                                                                 const next = [...variants];
                                                                 next[variantIndex].sizes = next[variantIndex].sizes.filter((_, i) => i !== sizeIndex);
                                                                 if (!next[variantIndex].sizes.length) next[variantIndex].sizes = [{ label: 'M', stock: 0 }];

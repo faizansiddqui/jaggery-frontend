@@ -132,6 +132,32 @@
   .x-rail::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(90deg, #740a14 0%, #b90c1b 100%);
   }
+
+  .x-rail-lux {
+    scrollbar-width: auto;
+    scrollbar-color: #9f1020 #e9d9d7;
+  }
+
+  .x-rail-lux::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .x-rail-lux::-webkit-scrollbar-track {
+    background: linear-gradient(90deg, #f3e5e3 0%, #faeeec 100%);
+    border-radius: 999px;
+    border: 1px solid #edd9d7;
+  }
+
+  .x-rail-lux::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #7d0d18 0%, #c41429 55%, #dd3a3e 100%);
+    border-radius: 999px;
+    border: 1px solid #f7eceb;
+    box-shadow: 0 1px 6px rgba(158, 18, 37, 0.35);
+  }
+
+  .x-rail-lux::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, #690a14 0%, #b90c1b 55%, #d92f35 100%);
+  }
 }
 
 html.has-scroll-smooth {

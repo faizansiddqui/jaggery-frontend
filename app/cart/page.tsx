@@ -109,8 +109,8 @@ export default function CartPage() {
 
           {/* Summary */}
           {items.length > 0 && (
-            <div className="lg:col-span-4">
-              <div className="bg-[#f6f3f2] p-8 flex flex-col gap-6 sticky top-32 border-l-8 border-[#b90c1b]">
+            <div className="lg:col-span-4 lg:sticky lg:top-32 lg:self-start">
+              <div className="bg-[#f6f3f2] p-8 flex flex-col gap-6 border-l-8 border-[#b90c1b]">
                 <h2 className="font-brand text-3xl uppercase tracking-widest border-b border-[#1c1b1b]/10 pb-4">Order Summary</h2>
                 <div className="flex flex-col gap-4 font-headline text-xs uppercase tracking-[0.15em]">
                   <div className="flex justify-between"><span className="opacity-40">Subtotal</span><span className="font-black">{currency}{total.toFixed(2)}</span></div>

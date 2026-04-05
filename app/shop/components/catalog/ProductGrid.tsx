@@ -7,9 +7,12 @@ type ProductGridProps = {
     isLoading: boolean;
     currency: string;
     clearFilters: () => void;
+    isVariantInCart: (id: number, size: string, color?: string) => boolean;
     isInWishlist: (id: number) => boolean;
+    isNotifyPending: (id: number) => boolean;
     onToggleWishlist: (product: Product, inWishlist: boolean) => void;
     onAddToCart: (product: Product) => void;
+    onNotify: (product: Product) => void;
 };
 
 export default function ProductGrid({
@@ -17,9 +20,12 @@ export default function ProductGrid({
     isLoading,
     currency,
     clearFilters,
+    isVariantInCart,
     isInWishlist,
+    isNotifyPending,
     onToggleWishlist,
     onAddToCart,
+    onNotify,
 }: ProductGridProps) {
     if (isLoading) {
         return <GridSkeleton count={8} cardClassName="p-0 border-0" />;
@@ -47,9 +53,12 @@ export default function ProductGrid({
                     key={product.publicId || product.id}
                     product={product}
                     currency={currency}
+                    variantInCart={isVariantInCart(product.id, product.sizes[0] || 'M', product.colors?.[0] || 'Default')}
                     inWishlist={isInWishlist(product.id)}
+                    isNotifyPending={isNotifyPending(product.id)}
                     onToggleWishlist={onToggleWishlist}
                     onAddToCart={onAddToCart}
+                    onNotify={onNotify}
                 />
             ))}
         </div>

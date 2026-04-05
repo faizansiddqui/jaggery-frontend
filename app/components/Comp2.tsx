@@ -1,3 +1,5 @@
+import Link from "next/dist/client/link";
+
 export default function Comp2() {
   return (
     <>
@@ -20,12 +22,12 @@ export default function Comp2() {
             STREETS
           </h1>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <button className="bg-on-surface text-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-primary transition-all active:scale-95 w-full sm:w-auto">
+            <Link href="/shop/sale" className="bg-on-surface text-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-primary transition-all active:scale-95 w-full sm:w-auto">
               Shop Now
-            </button>
-            <button className="border-2 border-on-surface text-on-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-on-surface hover:text-surface transition-all active:scale-95 w-full sm:w-auto">
+            </Link>
+            <Link href="/shop/jackets" className="border-2 border-on-surface text-on-surface px-8 md:px-12 py-4 md:py-5 font-headline font-bold uppercase tracking-widest hover:bg-on-surface hover:text-surface transition-all active:scale-95 w-full sm:w-auto">
               Lookbook
-            </button>
+            </Link>
           </div>
         </div>
         <div className="absolute bottom-8 right-4 md:bottom-12 md:right-12 hidden sm:block lg:block">

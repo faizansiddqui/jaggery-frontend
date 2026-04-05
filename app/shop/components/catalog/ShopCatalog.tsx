@@ -5,7 +5,9 @@ import { useCart } from '@/app/context/CartContext';
 import { useWishlist } from '@/app/context/WishlistContext';
 import type { Product } from '@/app/data/products';
 import { fetchBackendProducts } from '@/app/lib/backendProducts';
+import { fetchProductStockNotifyStatus, registerProductStockNotify } from '@/app/lib/apiClient';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
+import { getUserEmail } from '@/app/lib/session';
 import CatalogFilters from './CatalogFilters';
 import MobileCatalogControls from './MobileCatalogControls';
 import MobileFilterPanel from './MobileFilterPanel';
@@ -41,8 +43,9 @@ export default function ShopCatalog({ collectionSlug }: ShopCatalogProps) {
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
     const [toast, setToast] = useState('');
+    const [notifiedProductIds, setNotifiedProductIds] = useState<number[]>([]);
 
-    const { addItem } = useCart();
+    const { addItem, isVariantInCart } = useCart();
     const { toggle, isInWishlist } = useWishlist();
 
     useEffect(() => {
@@ -55,6 +58,38 @@ export default function ShopCatalog({ collectionSlug }: ShopCatalogProps) {
 
         loadProducts();
     }, []);
+
+    useEffect(() => {
+        const email = getUserEmail();
+        if (!email || productList.length === 0) return;
+
+        const outOfStockIds = productList
+            .filter((product) => Number(product.quantity || 0) <= 0)
+            .map((product) => product.id);
+
+        if (!outOfStockIds.length) return;
+
+        let active = true;
+        Promise.all(
+            outOfStockIds.map(async (productId) => {
+                try {
+                    const status = await fetchProductStockNotifyStatus(productId, email);
+                    return status.isNotified ? productId : null;
+                } catch {
+                    return null;
+                }
+            }),
+        ).then((resolved) => {
+            if (!active) return;
+            const ids = resolved.filter((value): value is number => typeof value === 'number');
+            if (!ids.length) return;
+            setNotifiedProductIds((prev) => Array.from(new Set([...prev, ...ids])));
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [productList]);
 
     useEffect(() => {
         if (!isMobileFilterOpen) return;
@@ -191,16 +226,58 @@ export default function ShopCatalog({ collectionSlug }: ShopCatalogProps) {
     };
 
     const handleAddToCart = (product: Product) => {
+        if (Number(product.quantity || 0) <= 0) {
+            showToast('Out of stock. Use Notify.');
+            return;
+        }
+
+        const color = product.colors?.[0] || 'Default';
+        const size = product.sizes[0] || 'M';
+        if (isVariantInCart(product.id, size, color)) {
+            showToast('Already in cart');
+            return;
+        }
+
         addItem({
             id: product.id,
             name: product.name,
             price: product.price,
-            color: product.colors?.[0] || 'Default',
-            size: product.sizes[0] || 'M',
+            color,
+            size,
             image: product.image,
             collection: product.collection,
         });
         showToast('Added to bag');
+    };
+
+    const isNotifyPending = (productId: number) => notifiedProductIds.includes(productId);
+
+    const handleNotify = async (product: Product) => {
+        if (isNotifyPending(product.id)) return;
+        const email = getUserEmail();
+        if (!email) {
+            showToast('Login required for stock alerts');
+            return;
+        }
+
+        try {
+            const response = await registerProductStockNotify({
+                product_id: product.id,
+                product_name: product.name,
+                source: 'shop_catalog',
+                email,
+            });
+
+            if (response.inStock) {
+                showToast('Product is already in stock');
+                return;
+            }
+
+            setNotifiedProductIds((prev) => (prev.includes(product.id) ? prev : [...prev, product.id]));
+            showToast('You will be notified on restock');
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : 'Could not set stock alert');
+        }
     };
 
     const sharedFilterProps = {
@@ -293,9 +370,12 @@ export default function ShopCatalog({ collectionSlug }: ShopCatalogProps) {
                         isLoading={isLoading}
                         currency={currency}
                         clearFilters={() => clearFilters(false)}
+                        isVariantInCart={isVariantInCart}
                         isInWishlist={isInWishlist}
+                        isNotifyPending={isNotifyPending}
                         onToggleWishlist={handleToggleWishlist}
                         onAddToCart={handleAddToCart}
+                        onNotify={handleNotify}
                     />
                 </div>
             </main>

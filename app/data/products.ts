@@ -4,6 +4,9 @@ export interface Product {
   name: string;
   price: number;
   originalPrice?: number;
+  quantity?: number;
+  stockBySize?: Record<string, number>;
+  stockByVariant?: Record<string, number>;
   collection: string;
   category: string;
   tag?: string;
@@ -13,6 +16,7 @@ export interface Product {
   images?: string[];
   slug: string;
   description: string;
+  descriptionHtml?: string;
   details: string[];
 }
 

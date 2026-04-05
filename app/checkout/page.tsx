@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Comp1 from '@/app/journal/components/Comp1';
 import Comp7 from '@/app/components/Comp7';
 import AddressCard from '@/app/components/address/AddressCard';
@@ -10,7 +11,6 @@ import PaymentStep from '@/app/checkout/components/PaymentStep';
 import CheckoutSummary from '@/app/checkout/components/CheckoutSummary';
 import {
     emptyAddress,
-    type PayData,
     type ShipData,
     type Step,
     toAddressInput,
@@ -18,25 +18,44 @@ import {
 import {
     createBackendOrder,
     createUserAddress,
+    fetchPublicSiteSettings,
     fetchUserAddresses,
     type UserAddress,
     type UserAddressInput,
     updateUserAddress,
+    verifyBackendPayment,
 } from '@/app/lib/apiClient';
 import { useCart } from '@/app/context/CartContext';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { getUserSession } from '@/app/lib/session';
+import { launchRazorpayCheckout } from '@/app/checkout/lib/razorpayCheckout';
+
+function AddressCardSkeleton() {
+    return (
+        <div className="border border-[#1c1b1b]/10 bg-white p-4 animate-pulse">
+            <div className="h-5 w-32 bg-[#1c1b1b]/10" />
+            <div className="mt-2 h-3 w-20 bg-[#1c1b1b]/10" />
+            <div className="mt-4 h-3 w-full bg-[#1c1b1b]/10" />
+            <div className="mt-2 h-3 w-5/6 bg-[#1c1b1b]/10" />
+            <div className="mt-4 h-3 w-24 bg-[#1c1b1b]/10" />
+            <div className="mt-5 flex gap-2">
+                <div className="h-8 w-20 bg-[#1c1b1b]/10" />
+                <div className="h-8 w-16 bg-[#1c1b1b]/10" />
+            </div>
+        </div>
+    );
+}
 
 export default function CheckoutPage() {
-    const { items, total, clearCart, itemCount } = useCart();
+    const router = useRouter();
+    const { items, total, clearCart, itemCount, isHydrating } = useCart();
     const { settings } = useSiteSettings();
     const currency = settings.currencySymbol || '$';
     const [step, setStep] = useState<Step>('shipping');
-    const [orderRef] = useState(() => `K-${Math.floor(Math.random() * 90000) + 10000}`);
     const [ship, setShip] = useState<ShipData>({ name: '', email: '', address: '', city: '', country: '', zip: '' });
-    const [pay, setPay] = useState<PayData>({ cardName: '', cardNumber: '', expiry: '', cvv: '' });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [addresses, setAddresses] = useState<UserAddress[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
@@ -44,6 +63,8 @@ export default function CheckoutPage() {
     const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [addressBusy, setAddressBusy] = useState(false);
+    const [addressLoading, setAddressLoading] = useState(false);
+    const [addressLoadError, setAddressLoadError] = useState('');
 
     const shipping = total > 200 ? 0 : 15;
     const finalTotal = total + shipping;
@@ -61,24 +82,24 @@ export default function CheckoutPage() {
         return Object.keys(e).length === 0;
     };
 
-    const validatePay = () => {
-        const e: Record<string, string> = {};
-        if (!pay.cardName) e.cardName = 'Required';
-        if (!pay.cardNumber || pay.cardNumber.replace(/ /g, '').length !== 16) e.cardNumber = 'Valid 16-digit number required';
-        if (!pay.expiry || !/^\d{2}\/\d{2}$/.test(pay.expiry)) e.expiry = 'MM/YY required';
-        if (!pay.cvv || pay.cvv.length < 3) e.cvv = 'Required';
-        setErrors((prev) => ({ ...prev, ...e }));
-        return Object.keys(e).length === 0;
-    };
-
     useEffect(() => {
         const session = getUserSession();
         setIsAuthenticated(Boolean(session?.token));
         if (session?.email) setShip((prev) => ({ ...prev, email: session.email }));
+        setAuthChecked(true);
     }, []);
 
     useEffect(() => {
+        if (!authChecked || isAuthenticated) return;
+        const nextPath = encodeURIComponent('/checkout');
+        router.replace(`/user/auth?next=${nextPath}`);
+    }, [authChecked, isAuthenticated, router]);
+
+    useEffect(() => {
         if (!isAuthenticated) return;
+        setAddressLoading(true);
+        setAddressLoadError('');
+
         fetchUserAddresses()
             .then((list) => {
                 setAddresses(list);
@@ -94,7 +115,13 @@ export default function CheckoutPage() {
                     }));
                 }
             })
-            .catch(() => setAddresses([]));
+            .catch((error) => {
+                setAddresses([]);
+                setAddressLoadError(error instanceof Error ? error.message : 'Could not load saved addresses.');
+            })
+            .finally(() => {
+                setAddressLoading(false);
+            });
     }, [isAuthenticated]);
 
     const saveAddress = async () => {
@@ -124,7 +151,39 @@ export default function CheckoutPage() {
         }
     };
 
-    if (items.length === 0 && step !== 'confirmed') {
+    if (!authChecked) {
+        return (
+            <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
+                <Comp1 />
+                <div className="pt-40 pb-20 px-8 text-center">
+                    <h1 className="font-brand text-5xl md:text-6xl uppercase mb-6">Checking Session</h1>
+                    <p className="font-headline text-xs uppercase tracking-widest opacity-60">Please wait...</p>
+                </div>
+                <Comp7 />
+            </main>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
+                <Comp1 />
+                <div className="pt-40 pb-20 px-8 text-center">
+                    <h1 className="font-brand text-5xl md:text-6xl uppercase mb-6">Login Required</h1>
+                    <p className="font-headline text-xs uppercase tracking-widest opacity-60">Redirecting to secure login...</p>
+                    <Link
+                        href="/user/auth?next=%2Fcheckout"
+                        className="inline-block mt-6 font-brand text-2xl uppercase underline hover:text-[#b90c1b] transition-colors"
+                    >
+                        Continue to Login
+                    </Link>
+                </div>
+                <Comp7 />
+            </main>
+        );
+    }
+
+    if (!isHydrating && items.length === 0) {
         return (
             <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
                 <Comp1 />
@@ -144,150 +203,190 @@ export default function CheckoutPage() {
                 <header className="mb-12 border-b-4 border-[#1c1b1b] pb-8">
                     <span className="font-headline text-[10px] uppercase tracking-[0.4em] text-[#b90c1b] font-black">Secure Checkout</span>
                     <h1 className="font-brand text-5xl md:text-8xl uppercase tracking-tighter mt-2">Checkout</h1>
-                    {step !== 'confirmed' && <p className="mt-3 font-headline text-[10px] uppercase tracking-widest opacity-60">Step: {step}</p>}
+                    <p className="mt-3 font-headline text-[10px] uppercase tracking-widest opacity-60">Step: {step}</p>
                 </header>
 
-                {step === 'confirmed' ? (
-                    <section className="text-center py-16 flex flex-col items-center gap-6">
-                        <h2 className="font-brand text-5xl md:text-7xl uppercase">Order Placed</h2>
-                        <p className="font-headline text-xs uppercase tracking-widest opacity-60">Order {orderRef} confirmed for {ship.email}</p>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            <Link href="/user/orders" className="bg-[#1c1b1b] text-white px-8 py-3 font-headline text-xs uppercase tracking-widest hover:bg-[#b90c1b]">Track Order</Link>
-                            <Link href="/shop" className="border border-[#1c1b1b]/20 px-8 py-3 font-headline text-xs uppercase tracking-widest hover:border-[#1c1b1b]">Continue Shopping</Link>
-                        </div>
-                    </section>
-                ) : (
-                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 xl:gap-14 items-start">
-                        <section className="xl:col-span-7 flex flex-col gap-7">
-                            {step === 'shipping' && (
-                                <>
-                                    <h2 className="font-brand text-3xl uppercase tracking-widest">Shipping Information</h2>
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 xl:gap-14 items-start">
+                    <section className="xl:col-span-7 flex flex-col gap-7">
+                        {step === 'shipping' && (
+                            <>
+                                <h2 className="font-brand text-3xl uppercase tracking-widest">Shipping Information</h2>
 
-                                    {isAuthenticated && (
-                                        <div className="flex flex-col gap-4">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="font-headline text-[10px] uppercase tracking-[0.25em] opacity-60">Saved Addresses</h3>
-                                                <button
-                                                    onClick={() => {
-                                                        setShowAddressForm(true);
-                                                        setEditingAddressId(null);
-                                                        setAddressForm(emptyAddress);
-                                                    }}
-                                                    className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] hover:underline"
-                                                >
-                                                    Add New
-                                                </button>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                {addresses.map((entry) => (
-                                                    <AddressCard
-                                                        key={entry.address_id}
-                                                        address={entry}
-                                                        selected={selectedAddressId === entry.address_id}
-                                                        onSelect={() => {
-                                                            setSelectedAddressId(entry.address_id);
-                                                            setShip((prev) => ({ ...prev, name: entry.FullName, address: entry.address, city: entry.city, country: entry.country, zip: entry.pinCode }));
-                                                        }}
-                                                        onEdit={() => {
-                                                            setShowAddressForm(true);
-                                                            setEditingAddressId(entry.address_id);
-                                                            setAddressForm(toAddressInput(entry));
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            {showAddressForm && (
-                                                <AddressForm
-                                                    value={addressForm}
-                                                    busy={addressBusy}
-                                                    error={errors.address}
-                                                    submitLabel={editingAddressId ? 'Update Address' : 'Save Address'}
-                                                    onChange={setAddressForm}
-                                                    onSubmit={saveAddress}
-                                                    onCancel={() => {
-                                                        setShowAddressForm(false);
-                                                        setEditingAddressId(null);
-                                                        setAddressForm(emptyAddress);
-                                                    }}
-                                                />
-                                            )}
+                                {isAuthenticated && (
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="font-headline text-[10px] uppercase tracking-[0.25em] opacity-60">Saved Addresses</h3>
+                                            <button
+                                                onClick={() => {
+                                                    setShowAddressForm(true);
+                                                    setEditingAddressId(null);
+                                                    setAddressForm(emptyAddress);
+                                                }}
+                                                className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] hover:underline"
+                                            >
+                                                Add New
+                                            </button>
                                         </div>
-                                    )}
 
-                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {[
-                                            ['Full Name', ship.name, (v: string) => setShip((p) => ({ ...p, name: v })), 'name'],
-                                            ['Email', ship.email, (v: string) => setShip((p) => ({ ...p, email: v })), 'email'],
-                                            ['City', ship.city, (v: string) => setShip((p) => ({ ...p, city: v })), 'city'],
-                                            ['Country', ship.country, (v: string) => setShip((p) => ({ ...p, country: v })), 'country'],
-                                            ['ZIP', ship.zip, (v: string) => setShip((p) => ({ ...p, zip: v })), 'zip'],
-                                        ].map(([label, value, onChange, key]) => (
-                                            <label key={key as string} className="flex flex-col gap-2">
-                                                <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">{label as string}</span>
-                                                <input value={value as string} onChange={(event) => (onChange as (v: string) => void)(event.target.value)} className="bg-white border border-[#1c1b1b]/15 px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]" />
-                                                {errors[key as string] && <span className="font-headline text-[9px] uppercase tracking-widest text-[#b90c1b]">{errors[key as string]}</span>}
-                                            </label>
-                                        ))}
-                                        <label className="md:col-span-2 flex flex-col gap-2">
-                                            <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">Address</span>
-                                            <input value={ship.address} onChange={(event) => setShip((p) => ({ ...p, address: event.target.value }))} className="bg-white border border-[#1c1b1b]/15 px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]" />
-                                            {errors.address && <span className="font-headline text-[9px] uppercase tracking-widest text-[#b90c1b]">{errors.address}</span>}
-                                        </label>
-                                    </div> */}
+                                        {showAddressForm && (
+                                            <AddressForm
+                                                value={addressForm}
+                                                busy={addressBusy}
+                                                error={errors.address}
+                                                submitLabel={editingAddressId ? 'Update Address' : 'Save Address'}
+                                                onChange={setAddressForm}
+                                                onSubmit={saveAddress}
+                                                onCancel={() => {
+                                                    setShowAddressForm(false);
+                                                    setEditingAddressId(null);
+                                                    setAddressForm(emptyAddress);
+                                                }}
+                                            />
+                                        )}
 
-                                    <button
-                                        onClick={() => {
-                                            if (!validateShip()) return;
-                                            if (isAuthenticated && !selectedAddress && !showAddressForm) {
-                                                setErrors((prev) => ({ ...prev, address: 'Please select or save an address first' }));
-                                                return;
-                                            }
-                                            setErrors({});
-                                            setStep('payment');
-                                        }}
-                                        className="self-start bg-[#1c1b1b] text-white px-8 py-4 font-headline text-xs uppercase tracking-widest hover:bg-[#b90c1b]"
-                                    >
-                                        Continue to Payment
-                                    </button>
-                                </>
-                            )}
+                                        <div
+                                            className="max-h-[360px] md:max-h-none overflow-y-auto md:overflow-visible overscroll-contain touch-pan-y pr-1"
+                                            onWheel={(event) => event.stopPropagation()}
+                                            onTouchMove={(event) => event.stopPropagation()}
+                                            style={{ WebkitOverflowScrolling: 'touch' }}
+                                        >
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {addressLoading
+                                                    ? Array.from({ length: 4 }).map((_, index) => (
+                                                        <AddressCardSkeleton key={`addr-skeleton-${index}`} />
+                                                    ))
+                                                    : addresses.map((entry) => (
+                                                        <AddressCard
+                                                            key={entry.address_id}
+                                                            address={entry}
+                                                            selected={selectedAddressId === entry.address_id}
+                                                            onSelect={() => {
+                                                                setSelectedAddressId(entry.address_id);
+                                                                setShip((prev) => ({ ...prev, name: entry.FullName, address: entry.address, city: entry.city, country: entry.country, zip: entry.pinCode }));
+                                                            }}
+                                                            onEdit={() => {
+                                                                setShowAddressForm(true);
+                                                                setEditingAddressId(entry.address_id);
+                                                                setAddressForm(toAddressInput(entry));
+                                                            }}
+                                                        />
+                                                    ))}
+                                            </div>
+                                        </div>
 
-                            {step === 'payment' && (
-                                <PaymentStep
-                                    pay={pay}
-                                    errors={errors}
-                                    busy={isPlacingOrder}
-                                    totalText={`${currency}${finalTotal.toFixed(2)}`}
-                                    onBack={() => setStep('shipping')}
-                                    onPayChange={setPay}
-                                    onSubmit={async () => {
-                                        if (!validatePay()) return;
-                                        try {
-                                            setIsPlacingOrder(true);
-                                            await createBackendOrder(items.map((item) => ({ product_id: item.id, quantity: item.qty, size: item.size, color: item.color })), selectedAddressId || undefined);
-                                            clearCart();
-                                            setErrors({});
-                                            setStep('confirmed');
-                                        } catch (error) {
-                                            setErrors({ payment: error instanceof Error ? error.message : 'Could not place order' });
-                                        } finally {
-                                            setIsPlacingOrder(false);
+                                        {!addressLoading && !addresses.length && !addressLoadError ? (
+                                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-50">
+                                                No saved addresses yet. Add your first address.
+                                            </p>
+                                        ) : null}
+
+                                        {addressLoadError ? (
+                                            <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">
+                                                {addressLoadError}
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => {
+                                        if (!validateShip()) return;
+                                        if (isAuthenticated && !selectedAddress && !showAddressForm) {
+                                            setErrors((prev) => ({ ...prev, address: 'Please select or save an address first' }));
+                                            return;
                                         }
+                                        setErrors({});
+                                        setStep('payment');
                                     }}
-                                />
-                            )}
-                        </section>
-                        <CheckoutSummary
-                            items={items}
-                            itemCount={itemCount}
-                            currency={currency}
-                            subtotal={total}
-                            shipping={shipping}
-                            total={finalTotal}
-                        />
-                    </div>
-                )}
+                                    className="self-start bg-[#1c1b1b] text-white px-8 py-4 font-headline text-xs uppercase tracking-widest hover:bg-[#b90c1b]"
+                                >
+                                    Continue to Payment
+                                </button>
+                            </>
+                        )}
+
+                        {step === 'payment' && (
+                            <PaymentStep
+                                errors={errors}
+                                busy={isPlacingOrder}
+                                totalText={`${currency}${finalTotal.toFixed(2)}`}
+                                onBack={() => setStep('shipping')}
+                                onSubmit={async () => {
+                                    if (isAuthenticated && !selectedAddressId) {
+                                        setErrors({ payment: 'Please select a shipping address before payment.' });
+                                        return;
+                                    }
+
+                                    try {
+                                        setIsPlacingOrder(true);
+                                        setErrors({});
+
+                                        const orderPayload = await createBackendOrder(
+                                            items.map((item) => ({
+                                                product_id: item.id,
+                                                quantity: item.qty,
+                                                size: item.size,
+                                                color: item.color,
+                                            })),
+                                            selectedAddressId || undefined,
+                                        );
+
+                                        const orderData = (orderPayload.order || {}) as Record<string, unknown>;
+                                        const razorpayOrderId = String(orderData.id || '');
+                                        const razorpayKey = String(orderPayload.key || '');
+                                        const amount = Number(orderPayload.amount || 0);
+                                        const payCurrency = String(orderPayload.currency || 'INR');
+
+                                        if (!razorpayOrderId || !razorpayKey || !amount) {
+                                            throw new Error('Invalid payment order response from server.');
+                                        }
+
+                                        const liveSettings = await fetchPublicSiteSettings().catch(() => null);
+                                        const razorpayStoreName =
+                                            String(liveSettings?.siteName || settings.siteName || settings.navbarTitle || 'STREETRIOT').trim();
+
+                                        const payment = await launchRazorpayCheckout({
+                                            key: razorpayKey,
+                                            amount,
+                                            currency: payCurrency,
+                                            orderId: razorpayOrderId,
+                                            name: razorpayStoreName,
+                                            description: `${razorpayStoreName} Checkout`,
+                                            prefill: {
+                                                name: ship.name,
+                                                email: ship.email,
+                                            },
+                                        });
+
+                                        const verifyRes = await verifyBackendPayment(payment);
+                                        const orderCode = String(verifyRes.order_code || verifyRes.order_id || '');
+                                        const paymentId = String(payment.razorpay_payment_id || '');
+
+                                        clearCart();
+
+                                        const query = new URLSearchParams({
+                                            orderCode,
+                                            paymentId,
+                                        });
+                                        router.push(`/checkout/success?${query.toString()}`);
+                                    } catch (error) {
+                                        setErrors({ payment: error instanceof Error ? error.message : 'Could not place order' });
+                                    } finally {
+                                        setIsPlacingOrder(false);
+                                    }
+                                }}
+                            />
+                        )}
+                    </section>
+                    <CheckoutSummary
+                        items={items}
+                        itemCount={itemCount}
+                        currency={currency}
+                        subtotal={total}
+                        shipping={shipping}
+                        total={finalTotal}
+                    />
+                </div>
             </div>
             <Comp7 />
         </main>

@@ -9,16 +9,27 @@ import { useWishlist } from '@/app/context/WishlistContext';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { formatProductNameForPath, products as localProducts } from '@/app/data/products';
 import { fetchBackendProducts } from '@/app/lib/backendProducts';
+import CatalogFilters from '@/app/shop/components/catalog/CatalogFilters';
+import MobileCatalogControls from '@/app/shop/components/catalog/MobileCatalogControls';
+import MobileFilterPanel from '@/app/shop/components/catalog/MobileFilterPanel';
+import { sortOptions, sortProducts } from '@/app/shop/components/catalog/collectionPresets';
+import type { SortKey } from '@/app/shop/components/catalog/types';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState('default');
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | null>(null);
+  const [appliedCategory, setAppliedCategory] = useState('ALL');
+  const [appliedSizes, setAppliedSizes] = useState<string[]>([]);
+  const [appliedMaxPrice, setAppliedMaxPrice] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<SortKey>('latest');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [productList, setProductList] = useState(localProducts);
   const [isLoading, setIsLoading] = useState(true);
-  const { addItem } = useCart();
+  const { addItem, isVariantInCart } = useCart();
   const { toggle, isInWishlist } = useWishlist();
   const { settings } = useSiteSettings();
   const currency = settings.currencySymbol || '$';
@@ -40,29 +51,128 @@ export default function SearchPage() {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    if (!isMobileFilterOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMobileFilterOpen]);
+
   const categories = useMemo(() => {
     const unique = new Set(productList.map((item) => item.category).filter(Boolean));
     return ['ALL', ...Array.from(unique)];
   }, [productList]);
 
+  const productCountByCategory = useMemo(() => {
+    const output: Record<string, number> = {
+      ALL: productList.length,
+    };
+
+    categories.forEach((category) => {
+      if (category === 'ALL') return;
+      output[category] = productList.filter((item) => item.category === category).length;
+    });
+
+    return output;
+  }, [categories, productList]);
+
+  const availableSizes = useMemo(() => {
+    const unique = new Set(
+      productList
+        .flatMap((item) => item.sizes)
+        .filter((size) => typeof size === 'string' && size.trim().length > 0),
+    );
+    return Array.from(unique);
+  }, [productList]);
+
+  const maxPrice = useMemo(() => {
+    if (productList.length === 0) return 0;
+    return Math.ceil(Math.max(...productList.map((item) => item.price)));
+  }, [productList]);
+
+  const selectedPriceValue = selectedMaxPrice ?? maxPrice;
+  const appliedPriceValue = appliedMaxPrice ?? maxPrice;
+
+  const hasPendingFilterChanges = useMemo(() => {
+    const sizeChanged =
+      selectedSizes.length !== appliedSizes.length ||
+      selectedSizes.some((size) => !appliedSizes.includes(size));
+
+    return (
+      activeCategory !== appliedCategory ||
+      selectedPriceValue !== appliedPriceValue ||
+      sizeChanged
+    );
+  }, [activeCategory, appliedCategory, selectedSizes, appliedSizes, selectedPriceValue, appliedPriceValue]);
+
+  const applyFilters = (closePanel = false) => {
+    setAppliedCategory(activeCategory);
+    setAppliedSizes(selectedSizes);
+    setAppliedMaxPrice(selectedMaxPrice);
+
+    if (closePanel) {
+      setIsMobileFilterOpen(false);
+    }
+  };
+
+  const clearFilters = (closePanel = false) => {
+    setActiveCategory('ALL');
+    setSelectedSizes([]);
+    setSelectedMaxPrice(null);
+
+    setAppliedCategory('ALL');
+    setAppliedSizes([]);
+    setAppliedMaxPrice(null);
+
+    if (closePanel) {
+      setIsMobileFilterOpen(false);
+    }
+  };
+
+  const openMobileFilterPanel = () => {
+    setIsMobileSortOpen(false);
+    setActiveCategory(appliedCategory);
+    setSelectedSizes(appliedSizes);
+    setSelectedMaxPrice(appliedMaxPrice);
+    setIsMobileFilterOpen(true);
+  };
+
   const results = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    let filtered = productList.filter((item) => {
+    const filtered = productList.filter((item) => {
       const matchesQuery =
         !normalizedQuery ||
         item.name.toLowerCase().includes(normalizedQuery) ||
         item.collection.toLowerCase().includes(normalizedQuery);
-      const matchesCategory = activeCategory === 'ALL' || item.category === activeCategory;
-      const matchesSizes = selectedSizes.length === 0 || item.sizes.some((size) => selectedSizes.includes(size));
+      const matchesCategory = appliedCategory === 'ALL' || item.category === appliedCategory;
+      const matchesSizes = appliedSizes.length === 0 || item.sizes.some((size) => appliedSizes.includes(size));
+      const matchesPrice = appliedPriceValue === 0 || item.price <= appliedPriceValue;
 
-      return matchesQuery && matchesCategory && matchesSizes;
+      return matchesQuery && matchesCategory && matchesSizes && matchesPrice;
     });
 
-    if (sortBy === 'price-asc') filtered = [...filtered].sort((a, b) => a.price - b.price);
-    if (sortBy === 'price-desc') filtered = [...filtered].sort((a, b) => b.price - a.price);
-    return filtered;
-  }, [query, activeCategory, selectedSizes, sortBy, productList]);
+    return sortProducts(filtered, sortBy);
+  }, [query, appliedCategory, appliedSizes, appliedPriceValue, sortBy, productList]);
+
+  const sharedFilterProps = {
+    categories,
+    categoryLocked: false,
+    productCountByCategory,
+    activeCategory,
+    setActiveCategory,
+    availableSizes,
+    selectedSizes,
+    toggleSize,
+    maxPrice,
+    selectedMaxPrice: selectedPriceValue,
+    setSelectedMaxPrice: (value: number) => setSelectedMaxPrice(value),
+    currency,
+    hasPendingFilterChanges,
+  };
 
   return (
     <div className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
@@ -71,6 +181,16 @@ export default function SearchPage() {
           {toast}
         </div>
       )}
+
+      <MobileFilterPanel
+        isOpen={isMobileFilterOpen}
+        closePanel={() => setIsMobileFilterOpen(false)}
+        filters={{
+          ...sharedFilterProps,
+          clearFilters: () => clearFilters(true),
+          applyFilters: () => applyFilters(true),
+        }}
+      />
 
       <main className="pt-8 pb-5 px-6 md:px-12">
         {/* Search Header */}
@@ -92,51 +212,46 @@ export default function SearchPage() {
           <div className="flex items-center gap-4 mt-4">
             <span className="font-headline text-sm font-bold uppercase tracking-widest opacity-50">{results.length} items found</span>
             <div className="h-px flex-grow bg-[#1c1b1b]/10"></div>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-              className="font-headline text-xs uppercase tracking-widest bg-transparent border border-[#1c1b1b]/20 px-3 py-2 focus:outline-none focus:border-[#b90c1b] cursor-pointer">
-              <option value="default">Sort: Default</option>
-              <option value="price-asc">Price: Low → High</option>
-              <option value="price-desc">Price: High → Low</option>
-            </select>
+            <div className="hidden md:flex items-center gap-4">
+              <span className="font-headline text-[10px] font-bold uppercase tracking-[0.16em] opacity-45">Sort by</span>
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value as SortKey)}
+                className="font-headline text-xs uppercase tracking-widest bg-transparent border border-[#1c1b1b]/20 px-3 py-2 focus:outline-none focus:border-[#b90c1b] cursor-pointer appearance-none"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </section>
 
         <div className="flex flex-col md:flex-row gap-12">
           {/* Filters */}
-          <aside className="w-full md:w-56 flex-shrink-0">
+          <aside className="hidden md:block w-full md:w-64 flex-shrink-0">
             <div className="sticky top-28 flex flex-col gap-10">
-              <div>
-                <h3 className="font-brand text-xl tracking-wider mb-4 border-b border-[#1c1b1b]/10 pb-2">CATEGORY</h3>
-                <div className="flex flex-col gap-2">
-                  {categories.map(cat => (
-                    <button key={cat} onClick={() => setActiveCategory(cat)}
-                      className={`font-headline text-sm text-left py-2 transition-colors ${activeCategory === cat ? 'text-[#b90c1b] font-bold' : 'opacity-50 hover:opacity-100'}`}>
-                      {cat} ({cat === 'ALL' ? productList.length : productList.filter(p => p.category === cat).length})
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-brand text-xl tracking-wider mb-4 border-b border-[#1c1b1b]/10 pb-2">SIZE</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', '2XL'].map(size => (
-                    <button key={size} onClick={() => toggleSize(size)}
-                      className={`border aspect-square flex items-center justify-center font-headline text-xs transition-all ${selectedSizes.includes(size) ? 'bg-[#1c1b1b] text-white border-[#1c1b1b]' : 'border-[#1c1b1b]/20 hover:border-[#b90c1b] hover:text-[#b90c1b]'}`}>
-                      {size}
-                    </button>
-                  ))}
-                </div>
-                {selectedSizes.length > 0 && (
-                  <button onClick={() => setSelectedSizes([])} className="mt-3 font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] underline underline-offset-4">
-                    Clear Sizes
-                  </button>
-                )}
-              </div>
+              <CatalogFilters
+                {...sharedFilterProps}
+                clearFilters={() => clearFilters(false)}
+                applyFilters={() => applyFilters(false)}
+              />
             </div>
           </aside>
 
           {/* Results Grid */}
           <div className="flex-grow">
+            <MobileCatalogControls
+              isMobileSortOpen={isMobileSortOpen}
+              setIsMobileSortOpen={setIsMobileSortOpen}
+              openMobileFilterPanel={openMobileFilterPanel}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              sortOptions={sortOptions}
+            />
+
             {isLoading ? (
               <div className="py-20 text-center">
                 <p className="font-brand text-4xl uppercase mt-6 opacity-40">Loading products...</p>
@@ -145,12 +260,17 @@ export default function SearchPage() {
               <div className="py-20 text-center">
                 <span className="material-symbols-outlined text-6xl opacity-20">search_off</span>
                 <p className="font-brand text-4xl uppercase mt-6 opacity-40">No results found</p>
-                <button onClick={() => { setQuery(''); setActiveCategory('ALL'); setSelectedSizes([]); }}
+                <button onClick={() => { setQuery(''); clearFilters(false); }}
                   className="mt-6 font-headline text-sm uppercase tracking-widest underline underline-offset-4 text-[#b90c1b]">Clear all filters</button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-12 gap-x-8">
-                {results.map(item => (
+                {results.map(item => {
+                  const color = item.colors?.[0] || 'Default';
+                  const size = item.sizes?.[0] || 'M';
+                  const variantInCart = isVariantInCart(item.id, size, color);
+
+                  return (
                   <div key={item.id} className="group relative">
                     <div className="relative overflow-hidden bg-[#f6f3f2] aspect-[4/5]">
                       <Link href={`/product/${item.id}/${formatProductNameForPath(item.name)}`}>
@@ -164,9 +284,19 @@ export default function SearchPage() {
                           className={`w-10 h-10 flex items-center justify-center transition-colors ${isInWishlist(item.id) ? 'bg-[#b90c1b] text-white' : 'bg-white text-[#1c1b1b] hover:bg-[#b90c1b] hover:text-white'}`}>
                           <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: isInWishlist(item.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
                         </button>
-                        <button onClick={() => { addItem({ id: item.id, name: item.name, price: item.price, color: item.colors?.[0] || 'Default', size: 'M', image: item.image, collection: item.collection }); showToast('Added to bag'); }}
-                          className="w-10 h-10 bg-[#1c1b1b] text-white flex items-center justify-center hover:bg-[#b90c1b] transition-colors">
-                          <span className="material-symbols-outlined text-sm">add_shopping_cart</span>
+                        <button
+                          onClick={() => {
+                            if (variantInCart) {
+                              showToast('Already in cart');
+                              return;
+                            }
+                            addItem({ id: item.id, name: item.name, price: item.price, color, size, image: item.image, collection: item.collection });
+                            showToast('Added to bag');
+                          }}
+                          className={`w-10 h-10 flex items-center justify-center transition-colors ${variantInCart ? 'bg-[#b90c1b] text-white' : 'bg-[#1c1b1b] text-white hover:bg-[#b90c1b]'}`}
+                          aria-label={variantInCart ? 'Already in cart' : 'Add to cart'}
+                        >
+                          <span className="material-symbols-outlined text-sm">{variantInCart ? 'check_circle' : 'add_shopping_cart'}</span>
                         </button>
                       </div>
                     </div>
@@ -178,7 +308,7 @@ export default function SearchPage() {
                       <p className="font-headline text-xs opacity-40 uppercase tracking-widest mt-1">{item.collection}</p>
                     </Link>
                   </div>
-                ))}
+                );})}
               </div>
             )}
           </div>

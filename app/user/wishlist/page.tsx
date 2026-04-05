@@ -17,7 +17,7 @@ export default function WishlistRoute() {
   const currency = settings.currencySymbol || '$';
   const [isLoading, setIsLoading] = useState(true);
   const { items, removeItem } = useWishlist();
-  const { addItem } = useCart();
+  const { addItem, isVariantInCart } = useCart();
   const { ready, authenticated } = useRequireUserSession('/user/auth');
 
   useEffect(() => {
@@ -57,7 +57,10 @@ export default function WishlistRoute() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => (
+            {items.map((item) => {
+              const variantInCart = isVariantInCart(item.id, 'M', 'Default');
+
+              return (
               <div key={item.id} className="group bg-[#fcf8f8] relative overflow-hidden flex flex-col border border-[#1c1b1b]/5 hover:border-[#b90c1b]/30 transition-colors p-2">
                 <Link
                   href={createProductHref({
@@ -101,12 +104,20 @@ export default function WishlistRoute() {
                 </div>
 
                 <div className="px-2 pb-4">
-                  <button onClick={(e) => { e.preventDefault(); addItem({ id: item.id, name: item.name, price: item.price, color: 'Default', size: 'M', image: item.image, collection: item.collection }); }} className="relative z-20 w-full bg-[#1c1b1b] text-white py-4 font-brand text-xl uppercase hover:bg-[#b90c1b] transition-colors active:scale-95">
-                    Add To Cart
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (variantInCart) return;
+                      addItem({ id: item.id, name: item.name, price: item.price, color: 'Default', size: 'M', image: item.image, collection: item.collection });
+                    }}
+                    disabled={variantInCart}
+                    className={`relative z-20 w-full py-4 font-brand text-xl uppercase transition-colors active:scale-95 ${variantInCart ? 'bg-[#b90c1b] text-white cursor-not-allowed' : 'bg-[#1c1b1b] text-white hover:bg-[#b90c1b]'}`}
+                  >
+                    {variantInCart ? 'Already In Cart' : 'Add To Cart'}
                   </button>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         )}
 

@@ -17,6 +17,7 @@ export interface CartItem {
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'qty'>) => void;
+  isVariantInCart: (id: number, size: string, color?: string) => boolean;
   removeItem: (id: number, size: string, color?: string) => void;
   updateQty: (id: number, size: string, delta: number, color?: string) => void;
   clearCart: () => void;
@@ -107,7 +108,7 @@ const getInitialCartItems = (): CartItem[] => {
 };
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(getInitialCartItems);
+  const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrating, setIsHydrating] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState('');
@@ -125,6 +126,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    const localItems = getInitialCartItems();
+
     fetchCartItems()
       .then((serverItems) => {
         if (Array.isArray(serverItems)) {
@@ -132,6 +135,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {
+        if (localItems.length) {
+          setItems(localItems);
+        }
         setSyncError('Could not sync cart from server.');
       })
       .finally(() => {
@@ -147,6 +153,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = (item: Omit<CartItem, 'qty'>) => {
     const safeItem = normalizeItem(item as Record<string, unknown>);
     if (safeItem.id <= 0) return;
+
+    const exists = items.some((entry) => isSameVariant(entry, safeItem.id, safeItem.size, safeItem.color));
+    if (exists) return;
 
     setIsSyncing(true);
     setSyncError('');
@@ -174,8 +183,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       });
   };
 
+  const isVariantInCart = (id: number, size: string, color = '') => {
+    if (id <= 0) return false;
+    return items.some((item) => isSameVariant(item, id, size, color));
+  };
+
   const removeItem = (id: number, size: string, color = '') => {
     if (id <= 0) return;
+
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm('Remove this item from your cart?');
+      if (!confirmed) return;
+    }
 
     setIsSyncing(true);
     setSyncError('');
@@ -250,6 +269,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider value={{
       items,
       addItem,
+      isVariantInCart,
       removeItem,
       updateQty,
       clearCart,
