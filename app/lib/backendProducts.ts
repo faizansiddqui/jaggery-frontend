@@ -1,38 +1,9 @@
 import type { Product } from '@/app/data/products';
 import { formatProductNameForPath } from '@/app/data/products';
+import { getBackendBaseUrlCandidates } from '@/app/lib/session';
 
 const FALLBACK_IMAGE =
     'https://lh3.googleusercontent.com/aida-public/AB6AXuBCPPxeva2_roYGpDN5rerNlGmz6zoyzfNrduSt5wuJKChKQlJdaQNuoN650Bnh-v1F17aexaiDdCfX_W0ZRjEaijRW3whfNF0h2Hx3DpaU6yBtTJq6oCZ3XDtmVXvkgM91-RpYY-R_AHUtDM6PvyGgiK7nnMbYjiYo0E734ZjkhnYpM0XuZIwksg46v4EztjbMV8OtIc9SC4TEId6DK3iDB8QIpApL7Q9cgtom_W5A7OIkJXm1-Soke8SI56Cbqj_qhRt56HaFoqDT';
-const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
-
-function normalizeBackendUrl(input: string) {
-    let value = String(input || '').trim();
-    if (!value) return '';
-
-    value = value.replace(/\.railiway\.app/gi, '.railway.app');
-
-    if (!/^https?:\/\//i.test(value)) {
-        value = `https://${value}`;
-    }
-
-    return value.replace(/\/$/, '');
-}
-
-function getBaseUrl() {
-    const configured = normalizeBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL || '');
-    if (configured) return configured;
-
-    if (process.env.NODE_ENV === 'production') return PROD_BACKEND_FALLBACK;
-
-    if (typeof window !== 'undefined') {
-        const host = window.location.hostname;
-        const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-        if (!isLocalHost) return PROD_BACKEND_FALLBACK;
-    }
-
-    return 'http://localhost:8080';
-}
-
 type GenericRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): GenericRecord {
@@ -156,8 +127,9 @@ export function normalizeBackendProduct(input: unknown): Product {
 }
 
 export async function fetchBackendProducts(query?: string): Promise<Product[]> {
-    try {
-        const baseUrl = getBaseUrl();
+    const baseCandidates = getBackendBaseUrlCandidates();
+    for (const baseUrl of baseCandidates) {
+        try {
         const endpoint = query && query.trim().length > 0
             ? `${baseUrl}/user/search?search=${encodeURIComponent(query.trim())}&limit=100`
             : `${baseUrl}/user/show-product?limit=100`;
@@ -167,7 +139,7 @@ export async function fetchBackendProducts(query?: string): Promise<Product[]> {
             cache: 'no-store',
         });
 
-        if (!response.ok) return [];
+        if (!response.ok) continue;
 
         const data = (await response.json()) as GenericRecord;
         const list = Array.isArray(data.products)
@@ -177,30 +149,37 @@ export async function fetchBackendProducts(query?: string): Promise<Product[]> {
                 : [];
 
         return list.map(normalizeBackendProduct).filter((item: Product) => Number.isFinite(item.id) && item.id > 0);
-    } catch {
-        return [];
+        } catch {
+            continue;
+        }
     }
+
+    return [];
 }
 
 export async function fetchBackendProductById(id: string | number): Promise<Product | null> {
     const idValue = String(id || '').trim();
     if (!idValue) return null;
 
-    try {
-        const baseUrl = getBaseUrl();
+    const baseCandidates = getBackendBaseUrlCandidates();
+    for (const baseUrl of baseCandidates) {
+        try {
         const response = await fetch(`${baseUrl}/user/get-product-byid/${encodeURIComponent(idValue)}`, {
             method: 'GET',
             cache: 'no-store',
         });
 
-        if (!response.ok) return null;
+        if (!response.ok) continue;
 
         const data = (await response.json()) as GenericRecord;
         const rawProduct = Array.isArray(data.data) ? data.data[0] : null;
-        if (!rawProduct) return null;
+        if (!rawProduct) continue;
 
         return normalizeBackendProduct(rawProduct);
-    } catch {
-        return null;
+        } catch {
+            continue;
+        }
     }
+
+    return null;
 }

@@ -1,6 +1,6 @@
 import type { Product } from '@/app/data/products';
 import { normalizeBackendProduct } from '@/app/lib/backendProducts';
-import { getBackendBaseUrl, getCartId, getUserEmail, getUserToken, setCartId } from '@/app/lib/session';
+import { getBackendBaseUrlCandidates, getCartId, getUserEmail, getUserToken, setCartId } from '@/app/lib/session';
 import { getAdminToken } from '@/app/lib/adminSession';
 
 type AnyRecord = Record<string, unknown>;
@@ -299,7 +299,7 @@ function mapAddress(row: AnyRecord): UserAddress {
 }
 
 async function request(path: string, options: RequestInit = {}, auth = false) {
-    const base = getBackendBaseUrl();
+    const baseCandidates = getBackendBaseUrlCandidates();
     const headers = new Headers(options.headers || {});
     const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     if (!isFormData && !headers.has('Content-Type')) {
@@ -316,15 +316,25 @@ async function request(path: string, options: RequestInit = {}, auth = false) {
         headers.set('x-admin-token', adminToken);
     }
 
-    let response: Response;
-    try {
-        response = await fetch(`${base}${path}`, {
-            ...options,
-            headers,
-            cache: 'no-store',
-        });
-    } catch {
-        throw new Error(`Failed to fetch. Check backend server and CORS at ${base}`);
+    let response: Response | null = null;
+    let lastBase = baseCandidates[0] || '';
+
+    for (const base of baseCandidates) {
+        lastBase = base;
+        try {
+            response = await fetch(`${base}${path}`, {
+                ...options,
+                headers,
+                cache: 'no-store',
+            });
+            break;
+        } catch {
+            response = null;
+        }
+    }
+
+    if (!response) {
+        throw new Error(`Failed to fetch. Check backend server and CORS at ${lastBase}`);
     }
 
     const data = await response.json().catch(() => ({}));
@@ -1086,7 +1096,7 @@ export async function submitProductReview(payload: {
     images?: File[];
     image?: File;
 }) {
-    const base = getBackendBaseUrl();
+    const bases = getBackendBaseUrlCandidates();
     const form = new FormData();
     form.append('product_id', String(payload.productId));
     form.append('review_rate', String(payload.rating));
@@ -1103,11 +1113,23 @@ export async function submitProductReview(payload: {
         form.append('reviewImages', file);
     });
 
-    const response = await fetch(`${base}/user/product-reviews`, {
-        method: 'POST',
-        body: form,
-        cache: 'no-store',
-    });
+    let response: Response | null = null;
+    for (const base of bases) {
+        try {
+            response = await fetch(`${base}/user/product-reviews`, {
+                method: 'POST',
+                body: form,
+                cache: 'no-store',
+            });
+            break;
+        } catch {
+            response = null;
+        }
+    }
+
+    if (!response) {
+        throw new Error('Failed to submit review. Backend unreachable.');
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error((asRecord(data).message as string) || 'Failed to submit review');

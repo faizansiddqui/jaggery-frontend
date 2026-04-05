@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
+import { getBackendBaseUrl } from '@/app/lib/session';
 
 type CategoryNode = {
     _id: string;
@@ -60,7 +61,7 @@ const DESCRIPTION_MAX_LENGTH = 1200;
 const SPECIFICATIONS_MIN = 6;
 const SPECIFICATIONS_MAX = 10;
 const SKU_PATTERN = /^[A-Z]{2}-\d{3}$/;
-const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080').replace(/\/$/, '');
+const BACKEND_URL = getBackendBaseUrl();
 
 const createEmptyVariant = (): VariantRow => ({
     color: '',

@@ -27,18 +27,33 @@ function isBrowser() {
 }
 
 export function getBackendBaseUrl() {
-    const configured = normalizeBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL || '');
-    if (configured) return configured;
+    return getBackendBaseUrlCandidates()[0] || 'http://localhost:8080';
+}
 
-    if (process.env.NODE_ENV === 'production') return PROD_BACKEND_FALLBACK;
+export function getBackendBaseUrlCandidates() {
+    const configuredRaw = String(process.env.NEXT_PUBLIC_BACKEND_URL || '').trim();
+    const configured = normalizeBackendUrl(configuredRaw);
+    const typoFixedFromRaw = normalizeBackendUrl(configuredRaw.replace(/\.railiway\.app/gi, '.railway.app'));
+    const list: string[] = [];
 
-    if (isBrowser()) {
-        const host = window.location.hostname;
-        const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-        if (!isLocalHost) return PROD_BACKEND_FALLBACK;
+    if (configured) list.push(configured);
+    if (typoFixedFromRaw && !list.includes(typoFixedFromRaw)) list.push(typoFixedFromRaw);
+
+    if (process.env.NODE_ENV === 'production') {
+        if (!list.includes(PROD_BACKEND_FALLBACK)) list.push(PROD_BACKEND_FALLBACK);
+    } else {
+        if (isBrowser()) {
+            const host = window.location.hostname;
+            const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+            if (!isLocalHost && !list.includes(PROD_BACKEND_FALLBACK)) {
+                list.push(PROD_BACKEND_FALLBACK);
+            }
+        }
+        if (!list.includes('http://localhost:8080')) list.push('http://localhost:8080');
     }
 
-    return 'http://localhost:8080';
+    if (!list.length) list.push('http://localhost:8080');
+    return list;
 }
 
 export function getUserSession(): UserSession | null {
