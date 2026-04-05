@@ -8,11 +8,13 @@ import Comp7 from '@/app/components/Comp7';
 import { createProductHref } from '@/app/data/products';
 import { useWishlist } from '@/app/context/WishlistContext';
 import { useCart } from '@/app/context/CartContext';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import GridSkeleton from '@/app/components/GridSkeleton';
 import { useRequireUserSession } from '@/app/lib/guards';
 
 export default function WishlistRoute() {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+  const { settings } = useSiteSettings();
+  const currency = settings.currencySymbol || '$';
   const [isLoading, setIsLoading] = useState(true);
   const { items, removeItem } = useWishlist();
   const { addItem } = useCart();

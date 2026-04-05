@@ -6,8 +6,8 @@ export default function ShopAllRoute() {
   return (
     <div data-scroll-section>
       <Comp1 />
-<Comp2 />
-<Comp3 />
+      <Comp2 />
+      <Comp3 />
     </div>
   );
 }

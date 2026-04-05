@@ -20,7 +20,7 @@ export default async function Comp6() {
                 THE LATEST GEAR
               </h2>
             </div>
-            <Link href="/shop" className="border-b-2 border-on-surface font-headline font-bold text-xs md:text-sm tracking-widest pb-1 hover:text-primary hover:border-primary transition-all">
+            <Link href="/shop/new-arrivals" className="border-b-2 border-on-surface font-headline font-bold text-xs md:text-sm tracking-widest pb-1 hover:text-primary hover:border-primary transition-all">
               VIEW ALL PRODUCTS
             </Link>
           </div>

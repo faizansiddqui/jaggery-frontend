@@ -20,134 +20,246 @@ interface CartContextType {
   removeItem: (id: number, size: string, color?: string) => void;
   updateQty: (id: number, size: string, delta: number, color?: string) => void;
   clearCart: () => void;
+  refreshCart: () => Promise<void>;
+  isHydrating: boolean;
+  isSyncing: boolean;
+  syncError: string;
   total: number;
   itemCount: number;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+const toNumber = (value: unknown, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
 
-  const toNumber = (value: unknown, fallback = 0) => {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
+const normalizeItem = (input: Partial<CartItem> | Record<string, unknown>): CartItem => {
+  const source = input as Partial<CartItem> & Record<string, unknown>;
+  const id = toNumber(source.id, 0);
+  const qty = Math.max(1, Math.floor(toNumber(source.qty, 1)));
+  const price = Math.max(0, toNumber(source.price, 0));
+  return {
+    id,
+    name: String(source.name || 'Product'),
+    price,
+    qty,
+    color: source.color == null ? '' : String(source.color),
+    size: source.size == null ? '' : String(source.size),
+    image: String(source.image || ''),
+    collection: String(source.collection || 'CART ITEM'),
   };
+};
 
-  const normalizeItem = (input: Partial<CartItem> | Record<string, unknown>): CartItem => {
-    const source = input as Partial<CartItem> & Record<string, unknown>;
-    const id = toNumber(source.id, 0);
-    const qty = Math.max(1, Math.floor(toNumber(source.qty, 1)));
-    const price = Math.max(0, toNumber(source.price, 0));
-    return {
-      id,
-      name: String(source.name || 'Product'),
-      price,
-      qty,
-      color: String(source.color || 'Default'),
-      size: String(source.size || 'M'),
-      image: String(source.image || ''),
-      collection: String(source.collection || 'CART ITEM'),
-    };
-  };
-
-  const mergeByKey = (input: CartItem[]) => {
-    const merged = new Map<string, CartItem>();
-    input.forEach((item) => {
-      const safe = normalizeItem(item);
-      const key = `${safe.id}|${safe.color}|${safe.size}|${safe.name}`;
-      const prev = merged.get(key);
-      if (prev) {
-        merged.set(key, { ...prev, qty: prev.qty + safe.qty });
-      } else {
-        merged.set(key, safe);
-      }
-    });
-    return Array.from(merged.values());
-  };
-
-  const mapBackendItem = (item: Record<string, unknown>): CartItem => ({
-    id: toNumber(item.product_id ?? item.id, 0),
-    name: String(item.title || 'Product'),
-    price: toNumber(item.price, 0),
-    qty: Math.max(1, Math.floor(toNumber(item.qty, 1))),
-    color: String(item.color || 'Default'),
-    size: String(item.size || 'M'),
-    image: String(item.image || ''),
-    collection: 'CART ITEM',
+const mergeByKey = (input: CartItem[]) => {
+  const merged = new Map<string, CartItem>();
+  input.forEach((item) => {
+    const safe = normalizeItem(item);
+    const key = `${safe.id}|${safe.color}|${safe.size}|${safe.name}`;
+    const prev = merged.get(key);
+    if (prev) {
+      merged.set(key, { ...prev, qty: prev.qty + safe.qty });
+    } else {
+      merged.set(key, safe);
+    }
   });
+  return Array.from(merged.values());
+};
+
+const mapBackendItem = (item: Record<string, unknown>): CartItem => ({
+  id: toNumber(item.product_id ?? item.id, 0),
+  name: String(item.title || item.name || 'Product'),
+  price: toNumber(item.price, 0),
+  qty: Math.max(1, Math.floor(toNumber(item.qty, 1))),
+  color: item.color == null ? '' : String(item.color),
+  size: item.size == null ? '' : String(item.size),
+  image: String(item.image || ''),
+  collection: String(item.collection || 'CART ITEM'),
+});
+
+const normalizeServerItems = (serverItems: unknown[]) => {
+  return mergeByKey(
+    serverItems.map((entry) => mapBackendItem((entry || {}) as Record<string, unknown>)),
+  );
+};
+
+const isSameVariant = (item: CartItem, id: number, size: string, color?: string) => {
+  if (item.id !== id || item.size !== size) return false;
+  if (typeof color === 'undefined') return true;
+  return item.color === color;
+};
+
+const getInitialCartItems = (): CartItem[] => {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const saved = window.localStorage.getItem('sr_cart');
+    if (!saved) return [];
+
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+
+    return mergeByKey(parsed.map((entry) => normalizeItem(entry as Record<string, unknown>)));
+  } catch {
+    return [];
+  }
+};
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>(getInitialCartItems);
+  const [isHydrating, setIsHydrating] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState('');
+
+  const refreshCart = async () => {
+    try {
+      setSyncError('');
+      const serverItems = await fetchCartItems();
+      if (Array.isArray(serverItems)) {
+        setItems(normalizeServerItems(serverItems));
+      }
+    } catch {
+      setSyncError('Could not sync cart from server.');
+    }
+  };
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('sr_cart');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setItems(mergeByKey(parsed.map((entry) => normalizeItem(entry as Record<string, unknown>))));
-        }
-      }
-    } catch { }
-
     fetchCartItems()
       .then((serverItems) => {
-        if (serverItems.length > 0) {
-          setItems(mergeByKey(serverItems.map((i) => mapBackendItem(i as Record<string, unknown>))));
+        if (Array.isArray(serverItems)) {
+          setItems(normalizeServerItems(serverItems));
         }
       })
-      .catch(() => { });
+      .catch(() => {
+        setSyncError('Could not sync cart from server.');
+      })
+      .finally(() => {
+        setIsHydrating(false);
+      });
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('sr_cart', JSON.stringify(items));
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem('sr_cart', JSON.stringify(items));
   }, [items]);
 
   const addItem = (item: Omit<CartItem, 'qty'>) => {
     const safeItem = normalizeItem(item as Record<string, unknown>);
-    setItems(prev => {
-      const existing = prev.find(i => i.id === safeItem.id && i.color === safeItem.color && i.size === safeItem.size && i.name === safeItem.name);
-      if (existing) {
-        return prev.map(i => i.id === safeItem.id && i.color === safeItem.color && i.size === safeItem.size && i.name === safeItem.name ? { ...i, qty: i.qty + 1 } : i);
-      }
-      return [...prev, { ...safeItem, qty: 1 }];
-    });
+    if (safeItem.id <= 0) return;
 
-    if (safeItem.id > 0) {
-      addCartItem({
-        product_id: safeItem.id,
-        color: safeItem.color,
-        size: safeItem.size,
-        qty: 1,
-        price: safeItem.price,
-        mrp: safeItem.price,
-        title: safeItem.name,
-        image: safeItem.image,
-      }).catch(() => { });
-    }
+    setIsSyncing(true);
+    setSyncError('');
+
+    addCartItem({
+      product_id: safeItem.id,
+      color: safeItem.color,
+      size: safeItem.size,
+      qty: 1,
+      price: safeItem.price,
+      mrp: safeItem.price,
+      title: safeItem.name,
+      image: safeItem.image,
+    })
+      .then((serverItems) => {
+        if (Array.isArray(serverItems)) {
+          setItems(normalizeServerItems(serverItems));
+        }
+      })
+      .catch(() => {
+        setSyncError('Could not save cart changes. Please try again.');
+      })
+      .finally(() => {
+        setIsSyncing(false);
+      });
   };
 
   const removeItem = (id: number, size: string, color = '') => {
-    setItems(prev => prev.filter(i => !(i.id === id && i.size === size && (color ? i.color === color : true))));
-    if (id > 0) updateCartItem(id, size, 0, color).catch(() => { });
+    if (id <= 0) return;
+
+    setIsSyncing(true);
+    setSyncError('');
+
+    updateCartItem(id, size, 0, color)
+      .then((serverItems) => {
+        if (Array.isArray(serverItems)) {
+          setItems(normalizeServerItems(serverItems));
+          return;
+        }
+
+        setItems((prev) => prev.filter((item) => !isSameVariant(item, id, size, color)));
+      })
+      .catch(() => {
+        setSyncError('Could not remove item from cart.');
+      })
+      .finally(() => {
+        setIsSyncing(false);
+      });
   };
 
   const updateQty = (id: number, size: string, delta: number, color = '') => {
-    setItems(prev => {
-      const next = prev.map(i => i.id === id && i.size === size && (color ? i.color === color : true) ? { ...i, qty: Math.max(1, i.qty + delta) } : i);
-      const target = next.find(i => i.id === id && i.size === size && (color ? i.color === color : true));
-      if (target && id > 0) updateCartItem(id, size, target.qty, target.color).catch(() => { });
-      return next;
-    });
+    if (id <= 0 || delta === 0) return;
+
+    const current = items.find((item) => isSameVariant(item, id, size, color));
+    if (!current) return;
+
+    const nextQty = Math.max(1, current.qty + delta);
+    if (nextQty === current.qty) return;
+
+    setIsSyncing(true);
+    setSyncError('');
+
+    updateCartItem(id, size, nextQty, color)
+      .then((serverItems) => {
+        if (Array.isArray(serverItems)) {
+          setItems(normalizeServerItems(serverItems));
+        }
+      })
+      .catch(() => {
+        setSyncError('Could not update quantity.');
+      })
+      .finally(() => {
+        setIsSyncing(false);
+      });
   };
 
   const clearCart = () => {
-    setItems([]);
-    clearCartItems().catch(() => { });
+    setIsSyncing(true);
+    setSyncError('');
+
+    clearCartItems()
+      .then((serverItems) => {
+        if (Array.isArray(serverItems)) {
+          setItems(normalizeServerItems(serverItems));
+          return;
+        }
+
+        setItems([]);
+      })
+      .catch(() => {
+        setSyncError('Could not clear cart.');
+      })
+      .finally(() => {
+        setIsSyncing(false);
+      });
   };
   const total = items.reduce((acc, i) => acc + i.price * i.qty, 0);
   const itemCount = items.reduce((acc, i) => acc + i.qty, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQty, clearCart, total, itemCount }}>
+    <CartContext.Provider value={{
+      items,
+      addItem,
+      removeItem,
+      updateQty,
+      clearCart,
+      refreshCart,
+      isHydrating,
+      isSyncing,
+      syncError,
+      total,
+      itemCount,
+    }}>
       {children}
     </CartContext.Provider>
   );

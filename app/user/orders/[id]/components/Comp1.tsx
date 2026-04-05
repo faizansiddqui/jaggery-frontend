@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { cancelUserOrder, fetchOrders, requestUserOrderReturn } from '../../../../lib/apiClient';
 import { useRequireUserSession } from '../../../../lib/guards';
+import { useSiteSettings } from '../../../../context/SiteSettingsContext';
 
 interface UiItem {
     name: string;
@@ -22,8 +23,6 @@ interface UiOrder {
     total: number;
     items: UiItem[];
 }
-
-const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
 
 function mapOrder(raw: Record<string, unknown>): UiOrder {
     const items = Array.isArray(raw.items) ? raw.items : [];
@@ -56,6 +55,8 @@ function mapOrder(raw: Record<string, unknown>): UiOrder {
 }
 
 export default function OrderDetail({ orderId }: { orderId: string }) {
+    const { settings } = useSiteSettings();
+    const currency = settings.currencySymbol || '$';
     const [orders, setOrders] = useState<UiOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionBusy, setActionBusy] = useState(false);

@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Comp7 from '@/app/components/Comp7';
 import { useCart } from '@/app/context/CartContext';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { formatProductNameForPath } from '@/app/data/products';
 
 export default function CartPage() {
-  const { items, removeItem, updateQty, total, itemCount } = useCart();
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+  const { items, removeItem, updateQty, total, itemCount, isHydrating, isSyncing, syncError, refreshCart } = useCart();
+  const { settings } = useSiteSettings();
+  const currency = settings.currencySymbol || '$';
   const [promoCode, setPromoCode] = useState('');
   const [promoApplied, setPromoApplied] = useState(false);
   const discount = promoApplied ? total * 0.1 : 0;
@@ -28,12 +30,32 @@ export default function CartPage() {
           <span className="font-headline text-[10px] uppercase tracking-[0.4em] text-[#b90c1b] font-black">YOUR SELECTION</span>
           <h1 className="font-brand text-7xl md:text-9xl uppercase tracking-tighter mt-4">THE BAG</h1>
           {itemCount > 0 && <p className="font-headline text-sm uppercase tracking-widest opacity-50 mt-2">{itemCount} item{itemCount !== 1 ? 's' : ''}</p>}
+          {isSyncing && (
+            <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] mt-3 animate-pulse">Syncing bag with server...</p>
+          )}
+          {syncError && (
+            <div className="mt-4 border border-[#b90c1b]/30 bg-[#b90c1b]/5 px-4 py-3 flex items-center justify-between gap-3">
+              <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">{syncError}</p>
+              <button
+                onClick={() => refreshCart()}
+                className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4 hover:opacity-70"
+              >
+                Retry Sync
+              </button>
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           {/* Items */}
           <div className="lg:col-span-8 flex flex-col gap-10">
-            {items.length === 0 && (
+            {isHydrating && (
+              <div className="py-16 border border-[#1c1b1b]/10 bg-[#f6f3f2] flex flex-col items-center gap-3">
+                <span className="material-symbols-outlined text-5xl opacity-30 animate-pulse">sync</span>
+                <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">Loading your cart...</p>
+              </div>
+            )}
+            {items.length === 0 && !isHydrating && (
               <div className="py-20 flex flex-col items-center text-center gap-6">
                 <span className="material-symbols-outlined text-6xl opacity-20">shopping_bag</span>
                 <h3 className="font-brand text-3xl uppercase tracking-widest opacity-40">Bag is Empty</h3>
@@ -49,16 +71,34 @@ export default function CartPage() {
                   <div>
                     <span className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] font-black">{item.collection}</span>
                     <h3 className="font-brand text-3xl uppercase tracking-tight mt-1">{item.name}</h3>
-                    <span className="font-headline text-xs uppercase tracking-widest opacity-40">Color: {item.color} | Size: {item.size}</span>
+                    <span className="font-headline text-xs uppercase tracking-widest opacity-40">Color: {item.color || 'Default'} | Size: {item.size || 'M'}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mt-6">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center border border-[#1c1b1b]/20">
-                        <button onClick={() => updateQty(item.id, item.size, -1, item.color)} className="w-10 h-10 font-brand text-xl hover:bg-[#b90c1b] hover:text-white transition-colors flex items-center justify-center">−</button>
+                        <button
+                          disabled={isSyncing}
+                          onClick={() => updateQty(item.id, item.size, -1, item.color)}
+                          className="w-10 h-10 font-brand text-xl hover:bg-[#b90c1b] hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          −
+                        </button>
                         <span className="w-10 h-10 font-headline font-black text-sm flex items-center justify-center border-x border-[#1c1b1b]/10">{item.qty}</span>
-                        <button onClick={() => updateQty(item.id, item.size, 1, item.color)} className="w-10 h-10 font-brand text-xl hover:bg-[#b90c1b] hover:text-white transition-colors flex items-center justify-center">+</button>
+                        <button
+                          disabled={isSyncing}
+                          onClick={() => updateQty(item.id, item.size, 1, item.color)}
+                          className="w-10 h-10 font-brand text-xl hover:bg-[#b90c1b] hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          +
+                        </button>
                       </div>
-                      <button onClick={() => removeItem(item.id, item.size, item.color)} className="font-headline text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 hover:text-[#b90c1b] transition-all underline underline-offset-4">Remove</button>
+                      <button
+                        disabled={isSyncing}
+                        onClick={() => removeItem(item.id, item.size, item.color)}
+                        className="font-headline text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 hover:text-[#b90c1b] transition-all underline underline-offset-4 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        Remove
+                      </button>
                     </div>
                     <span className="font-brand text-3xl">{currency}{(item.price * item.qty).toFixed(2)}</span>
                   </div>

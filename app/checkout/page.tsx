@@ -24,11 +24,13 @@ import {
     updateUserAddress,
 } from '@/app/lib/apiClient';
 import { useCart } from '@/app/context/CartContext';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { getUserSession } from '@/app/lib/session';
 
 export default function CheckoutPage() {
     const { items, total, clearCart, itemCount } = useCart();
-    const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+    const { settings } = useSiteSettings();
+    const currency = settings.currencySymbol || '$';
     const [step, setStep] = useState<Step>('shipping');
     const [orderRef] = useState(() => `K-${Math.floor(Math.random() * 90000) + 10000}`);
     const [ship, setShip] = useState<ShipData>({ name: '', email: '', address: '', city: '', country: '', zip: '' });
@@ -138,7 +140,7 @@ export default function CheckoutPage() {
     return (
         <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
             <Comp1 />
-            <div className="pt-28 pb-20 px-4 md:px-8 max-w-[1440px] mx-auto">
+            <div className="pt-8 pb-5 px-4 md:px-8 max-w-[1440px] mx-auto">
                 <header className="mb-12 border-b-4 border-[#1c1b1b] pb-8">
                     <span className="font-headline text-[10px] uppercase tracking-[0.4em] text-[#b90c1b] font-black">Secure Checkout</span>
                     <h1 className="font-brand text-5xl md:text-8xl uppercase tracking-tighter mt-2">Checkout</h1>
@@ -213,7 +215,7 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {[
                                             ['Full Name', ship.name, (v: string) => setShip((p) => ({ ...p, name: v })), 'name'],
                                             ['Email', ship.email, (v: string) => setShip((p) => ({ ...p, email: v })), 'email'],
@@ -232,7 +234,7 @@ export default function CheckoutPage() {
                                             <input value={ship.address} onChange={(event) => setShip((p) => ({ ...p, address: event.target.value }))} className="bg-white border border-[#1c1b1b]/15 px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]" />
                                             {errors.address && <span className="font-headline text-[9px] uppercase tracking-widest text-[#b90c1b]">{errors.address}</span>}
                                         </label>
-                                    </div>
+                                    </div> */}
 
                                     <button
                                         onClick={() => {

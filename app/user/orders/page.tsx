@@ -6,6 +6,7 @@ import Comp7 from '@/app/components/Comp7';
 import GridSkeleton from '@/app/components/GridSkeleton';
 import { cancelUserOrder, fetchOrders, requestUserOrderReturn } from '@/app/lib/apiClient';
 import { useRequireUserSession } from '@/app/lib/guards';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 interface UiOrder {
   id: string;
@@ -16,7 +17,8 @@ interface UiOrder {
 }
 
 export default function OrderHistoryRoute() {
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+  const { settings } = useSiteSettings();
+  const currency = settings.currencySymbol || '$';
   const [orders, setOrders] = useState<UiOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyOrderId, setBusyOrderId] = useState<string | null>(null);

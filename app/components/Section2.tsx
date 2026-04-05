@@ -13,25 +13,25 @@ export default function Section2() {
             <div className="hidden md:flex gap-6">
               <a
                 className="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-[1rem] font-bold text-[#b90c1b] border-b-2 border-[#b90c1b] pb-1 transition-colors duration-200"
-                href="/"
+                href="/shop/new-arrivals"
               >
                 NEW ARRIVALS
               </a>
               <a
                 className="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-[1rem] font-bold text-[#1c1b1b] dark:text-zinc-400 pb-1 hover:text-[#b90c1b] transition-colors duration-200"
-                href="/"
+                href="/shop/jackets"
               >
                 JACKETS
               </a>
               <a
                 className="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-[1rem] font-bold text-[#1c1b1b] dark:text-zinc-400 pb-1 hover:text-[#b90c1b] transition-colors duration-200"
-                href="/"
+                href="/shop/hoodies"
               >
                 HOODIES
               </a>
               <a
                 className="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-[1rem] font-bold text-[#1c1b1b] dark:text-zinc-400 pb-1 hover:text-[#b90c1b] transition-colors duration-200"
-                href="/"
+                href="/shop/track-pants"
               >
                 TRACK PANTS
               </a>

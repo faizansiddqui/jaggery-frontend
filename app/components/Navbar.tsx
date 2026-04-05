@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { settings } = useSiteSettings();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,22 +18,22 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav 
-      id="navbar" 
+    <nav
+      id="navbar"
       className={`bg-[#fcf8f8] text-[#1c1b1b] sticky top-0 z-[100] px-6 lg:px-12 flex justify-between items-center border-b border-[#1c1b1b]/10 transition-all duration-500 ${scrolled ? 'h-16 bg-opacity-95 backdrop-blur-md' : 'h-20'}`}
     >
       {/* LOGO */}
       <Link href="/" className="font-brand text-3xl font-black tracking-widest text-[#1c1b1b] group hover:text-red-700 hover:scale-1.2">
-        {process.env.NEXT_PUBLIC_SITE_NAME || 'STREETRIOT'}
+        {settings.navbarTitle || settings.siteName || 'STREETRIOT'}
       </Link>
 
       {/* NAV LINKS */}
       <div className="hidden lg:flex items-center gap-10 font-headline uppercase tracking-[0.2em] text-[12px] font-bold">
-        <Link href="/shop" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">New Arrivals</Link>
-        <Link href="/shop" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Jackets</Link>
-        <Link href="/shop" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Hoodies</Link>
-        <Link href="/shop" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Track Pants</Link>
-        <Link href="/shop" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Sale</Link>
+        <Link href="/shop/new-arrivals" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">New Arrivals</Link>
+        <Link href="/shop/jackets" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Jackets</Link>
+        <Link href="/shop/hoodies" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Hoodies</Link>
+        <Link href="/shop/track-pants" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Track Pants</Link>
+        <Link href="/shop/sale" className="hover:text-[#b90c1b] transition-colors relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#b90c1b] after:transition-all hover:after:w-full">Sale</Link>
       </div>
 
       {/* NAV ICONS */}
@@ -53,8 +55,8 @@ export default function Navbar() {
         </div>
 
         {/* MOBILE HAMBURGER */}
-        <button 
-          className="lg:hidden flex flex-col gap-1.5 focus:outline-none" 
+        <button
+          className="lg:hidden flex flex-col gap-1.5 focus:outline-none"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -64,13 +66,13 @@ export default function Navbar() {
       {/* MOBILE MENU */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 top-[64px] bg-[#fcf8f8]/95 backdrop-blur-xl z-[99] p-10 flex flex-col gap-8 font-headline uppercase tracking-[0.2em] text-xl font-black animate-in fade-in slide-in-from-top-4">
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)}>New Arrivals</Link>
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)}>Jackets</Link>
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)}>Hoodies</Link>
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)}>Track Pants</Link>
+          <Link href="/shop/new-arrivals" onClick={() => setIsMobileMenuOpen(false)}>New Arrivals</Link>
+          <Link href="/shop/jackets" onClick={() => setIsMobileMenuOpen(false)}>Jackets</Link>
+          <Link href="/shop/hoodies" onClick={() => setIsMobileMenuOpen(false)}>Hoodies</Link>
+          <Link href="/shop/track-pants" onClick={() => setIsMobileMenuOpen(false)}>Track Pants</Link>
           <Link href="/user/profile" onClick={() => setIsMobileMenuOpen(false)}>My Profile</Link>
           <Link href="/user/orders" onClick={() => setIsMobileMenuOpen(false)}>My Orders</Link>
-          <Link href="/shop" className="text-[#b90c1b]" onClick={() => setIsMobileMenuOpen(false)}>Sale</Link>
+          <Link href="/shop/sale" className="text-[#b90c1b]" onClick={() => setIsMobileMenuOpen(false)}>Sale</Link>
         </div>
       )}
     </nav>

@@ -1,6 +1,7 @@
 import type { Product } from '@/app/data/products';
 import { normalizeBackendProduct } from '@/app/lib/backendProducts';
 import { getBackendBaseUrl, getCartId, getUserEmail, getUserToken, setCartId } from '@/app/lib/session';
+import { getAdminToken } from '@/app/lib/adminSession';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -33,6 +34,108 @@ export interface UserAddress {
 }
 
 export type UserAddressInput = Omit<UserAddress, 'id' | 'address_id' | 'email'>;
+
+export interface AdminOrderItem {
+    product_id: number;
+    quantity: number;
+    price: number;
+    color?: string;
+    size?: string;
+}
+
+export interface AdminOrder {
+    _id?: string;
+    order_id?: number;
+    order_code?: string;
+    status: string;
+    payment_status?: string;
+    payment_method?: string;
+    amount?: number;
+    createdAt?: string;
+    FullName?: string;
+    user_email?: string;
+    items: AdminOrderItem[];
+}
+
+export interface AdminCustomer {
+    email: string;
+    name: string;
+    ordersCount: number;
+    totalSpent: number;
+    lastOrderAt: string | null;
+    activeSessions: number;
+    status: string;
+}
+
+export interface AdminCustomerOverview {
+    stats: {
+        totalCustomers: number;
+        activeSessions: number;
+        conversionRate: number;
+        churnRate: number;
+    };
+    customers: AdminCustomer[];
+}
+
+export interface SiteSettings {
+    siteName: string;
+    navbarTitle: string;
+    footerTitle: string;
+    currencySymbol: string;
+    instagramUrl: string;
+    twitterUrl: string;
+    facebookUrl: string;
+    updatedBy?: string;
+    updatedAt?: string | null;
+}
+
+export interface AdminCustomerActivity {
+    customer: {
+        email: string;
+        name: string;
+        isBlocked: boolean;
+        blockedReason: string;
+        blockedAt: string | null;
+    };
+    summary: {
+        activeSessions: number;
+        ordersCount: number;
+        totalSpent: number;
+        wishlistCount: number;
+        recentSearches: string[];
+        recentViewed: number[];
+    };
+    orders: Array<{
+        orderId: number | null;
+        orderCode: string;
+        status: string;
+        amount: number;
+        itemCount: number;
+        createdAt: string | null;
+    }>;
+    wishlist: Array<{
+        productId: number;
+        productCode: string;
+        name: string;
+        price: number;
+        image: string;
+        addedAt: string | null;
+    }>;
+    cartEvents: Array<{
+        type: string;
+        title: string;
+        occurredAt: string | null;
+        metadata?: Record<string, unknown>;
+    }>;
+    timeline: Array<{
+        type: string;
+        title: string;
+        occurredAt: string | null;
+        order_code?: string;
+        product_id?: number;
+        metadata?: Record<string, unknown>;
+    }>;
+}
 
 function asRecord(value: unknown): AnyRecord {
     return value && typeof value === 'object' ? (value as AnyRecord) : {};
@@ -68,12 +171,21 @@ async function request(path: string, options: RequestInit = {}, auth = false) {
             headers.set('Authorization', `Bearer ${token}`);
         }
     }
+    const adminToken = getAdminToken();
+    if (adminToken) {
+        headers.set('x-admin-token', adminToken);
+    }
 
-    const response = await fetch(`${base}${path}`, {
-        ...options,
-        headers,
-        cache: 'no-store',
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${base}${path}`, {
+            ...options,
+            headers,
+            cache: 'no-store',
+        });
+    } catch {
+        throw new Error(`Failed to fetch. Check backend server and CORS at ${base}`);
+    }
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -146,20 +258,20 @@ export async function fetchCartItems() {
 }
 
 export async function addCartItem(item: CartPayloadItem) {
-    const payload = { cart_id: getCartId(), ...item };
+    const payload = { cart_id: getCartId(), email: getUserEmail(), ...item };
     const data = await request('/user/add-to-cart', { method: 'POST', body: JSON.stringify(payload) });
     if (typeof data.cart_id === 'string' && data.cart_id) setCartId(data.cart_id);
     return Array.isArray(data.items) ? data.items : [];
 }
 
 export async function updateCartItem(productId: number, size: string, qty: number, color = '') {
-    const payload = { cart_id: getCartId(), product_id: productId, color, size, qty };
+    const payload = { cart_id: getCartId(), email: getUserEmail(), product_id: productId, color, size, qty };
     const data = await request('/user/update-cart-item', { method: 'POST', body: JSON.stringify(payload) });
     return Array.isArray(data.items) ? data.items : [];
 }
 
 export async function clearCartItems() {
-    const payload = { cart_id: getCartId() };
+    const payload = { cart_id: getCartId(), email: getUserEmail() };
     const data = await request('/user/clear-cart', { method: 'POST', body: JSON.stringify(payload) });
     return Array.isArray(data.items) ? data.items : [];
 }
@@ -235,6 +347,154 @@ export async function adminResetPassword(username: string, currentPassword: stri
         method: 'POST',
         body: JSON.stringify({ username, currentPassword, newPassword }),
     });
+}
+
+export async function adminLogout() {
+    return request('/api/auth/admin-logout', {
+        method: 'POST',
+        body: JSON.stringify({}),
+    });
+}
+
+export async function fetchAdminOrders(): Promise<AdminOrder[]> {
+    const data = await request('/admin/get-orders');
+    const rows = Array.isArray(data.orders) ? data.orders : [];
+
+    return rows.map((entry) => {
+        const row = asRecord(entry);
+        const itemRows = Array.isArray(row.items) ? row.items : [];
+
+        return {
+            _id: typeof row._id === 'string' ? row._id : undefined,
+            order_id: Number(row.order_id || 0) || undefined,
+            order_code: typeof row.order_code === 'string' ? row.order_code : undefined,
+            status: String(row.status || 'pending'),
+            payment_status: typeof row.payment_status === 'string' ? row.payment_status : undefined,
+            payment_method: typeof row.payment_method === 'string' ? row.payment_method : undefined,
+            amount: Number(row.amount || 0),
+            createdAt: typeof row.createdAt === 'string' ? row.createdAt : undefined,
+            FullName: typeof row.FullName === 'string' ? row.FullName : undefined,
+            user_email: typeof row.user_email === 'string' ? row.user_email : undefined,
+            items: itemRows.map((item) => {
+                const mapped = asRecord(item);
+                return {
+                    product_id: Number(mapped.product_id || 0),
+                    quantity: Number(mapped.quantity || 0),
+                    price: Number(mapped.price || 0),
+                    color: typeof mapped.color === 'string' ? mapped.color : undefined,
+                    size: typeof mapped.size === 'string' ? mapped.size : undefined,
+                };
+            }),
+        } as AdminOrder;
+    });
+}
+
+export async function updateAdminOrderStatus(orderId: string, status: string, productId?: number) {
+    const payload: Record<string, unknown> = {
+        order_id: orderId,
+        status,
+    };
+    if (typeof productId === 'number' && Number.isFinite(productId)) {
+        payload.product_id = productId;
+    }
+
+    return request('/admin/update-order-status', {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+}
+
+export async function fetchAdminCustomersOverview(): Promise<AdminCustomerOverview> {
+    const data = await request('/admin/customers/overview');
+    const stats = asRecord(data.stats);
+    const customerRows = Array.isArray(data.customers) ? data.customers : [];
+
+    return {
+        stats: {
+            totalCustomers: Number(stats.totalCustomers || 0),
+            activeSessions: Number(stats.activeSessions || 0),
+            conversionRate: Number(stats.conversionRate || 0),
+            churnRate: Number(stats.churnRate || 0),
+        },
+        customers: customerRows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                email: String(row.email || ''),
+                name: String(row.name || ''),
+                ordersCount: Number(row.ordersCount || 0),
+                totalSpent: Number(row.totalSpent || 0),
+                lastOrderAt: row.lastOrderAt ? String(row.lastOrderAt) : null,
+                activeSessions: Number(row.activeSessions || 0),
+                status: String(row.status || 'NEW'),
+            } as AdminCustomer;
+        }),
+    };
+}
+
+const mapSiteSettings = (value: unknown): SiteSettings => {
+    const row = asRecord(value);
+    return {
+        siteName: String(row.siteName || 'STREETRIOT'),
+        navbarTitle: String(row.navbarTitle || row.siteName || 'STREETRIOT'),
+        footerTitle: String(row.footerTitle || row.siteName || 'STREETRIOT'),
+        currencySymbol: String(row.currencySymbol || '$'),
+        instagramUrl: String(row.instagramUrl || ''),
+        twitterUrl: String(row.twitterUrl || ''),
+        facebookUrl: String(row.facebookUrl || ''),
+        updatedBy: row.updatedBy ? String(row.updatedBy) : undefined,
+        updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+    };
+};
+
+export async function fetchAdminSiteSettings(): Promise<SiteSettings> {
+    const data = await request('/admin/settings');
+    return mapSiteSettings(data.settings);
+}
+
+export async function fetchPublicSiteSettings(): Promise<SiteSettings> {
+    const data = await request('/admin/settings/public');
+    return mapSiteSettings(data.settings);
+}
+
+export async function updateAdminSiteSettings(payload: Partial<SiteSettings>) {
+    const data = await request('/admin/settings', {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    return mapSiteSettings(data.settings);
+}
+
+export async function updateAdminCustomerStatus(email: string, isBlocked: boolean, blockedReason = '') {
+    return request(`/admin/customers/${encodeURIComponent(email)}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isBlocked, blockedReason }),
+    });
+}
+
+export async function fetchAdminCustomerActivity(email: string): Promise<AdminCustomerActivity> {
+    const data = await request(`/admin/customers/${encodeURIComponent(email)}/activity`);
+    const payload = asRecord(data);
+    return {
+        customer: {
+            email: String(asRecord(payload.customer).email || email),
+            name: String(asRecord(payload.customer).name || ''),
+            isBlocked: Boolean(asRecord(payload.customer).isBlocked),
+            blockedReason: String(asRecord(payload.customer).blockedReason || ''),
+            blockedAt: asRecord(payload.customer).blockedAt ? String(asRecord(payload.customer).blockedAt) : null,
+        },
+        summary: {
+            activeSessions: Number(asRecord(payload.summary).activeSessions || 0),
+            ordersCount: Number(asRecord(payload.summary).ordersCount || 0),
+            totalSpent: Number(asRecord(payload.summary).totalSpent || 0),
+            wishlistCount: Number(asRecord(payload.summary).wishlistCount || 0),
+            recentSearches: Array.isArray(asRecord(payload.summary).recentSearches) ? (asRecord(payload.summary).recentSearches as string[]) : [],
+            recentViewed: Array.isArray(asRecord(payload.summary).recentViewed) ? (asRecord(payload.summary).recentViewed as number[]) : [],
+        },
+        orders: Array.isArray(payload.orders) ? (payload.orders as AdminCustomerActivity['orders']) : [],
+        wishlist: Array.isArray(payload.wishlist) ? (payload.wishlist as AdminCustomerActivity['wishlist']) : [],
+        cartEvents: Array.isArray(payload.cartEvents) ? (payload.cartEvents as AdminCustomerActivity['cartEvents']) : [],
+        timeline: Array.isArray(payload.timeline) ? (payload.timeline as AdminCustomerActivity['timeline']) : [],
+    };
 }
 
 export async function submitProductReview(payload: {

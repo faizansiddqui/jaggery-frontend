@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/app/context/CartContext';
 import { useWishlist } from '@/app/context/WishlistContext';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import type { Product } from '@/app/data/products';
 import { fetchProductReviews, submitProductReview } from '@/app/lib/apiClient';
 import { getUserEmail } from '@/app/lib/session';
@@ -30,7 +31,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     const router = useRouter();
     const { items, addItem } = useCart();
     const { toggle, isInWishlist } = useWishlist();
-    const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+    const { settings } = useSiteSettings();
+    const currency = settings.currencySymbol || '$';
     const inWL = isInWishlist(product.id);
     const galleryImages = product.images && product.images.length > 0 ? product.images : [product.image];
     const originalPrice = typeof product.originalPrice === 'number' && product.originalPrice > product.price ? product.originalPrice : null;

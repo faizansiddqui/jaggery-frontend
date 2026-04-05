@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clearAdminSession, getAdminUsername } from '@/app/lib/adminSession';
 import { useRequireAdminSession } from '@/app/lib/guards';
+import { adminLogout } from '@/app/lib/apiClient';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 export default function AdminLayout({
   children,
@@ -14,13 +16,20 @@ export default function AdminLayout({
   const isLoginPage = pathname === '/admin/login';
   const { ready } = useRequireAdminSession('/admin/login', !isLoginPage);
   const username = getAdminUsername() || 'Admin User';
+  const { settings } = useSiteSettings();
 
   if (isLoginPage) return <>{children}</>;
   if (!ready) return <div className="min-h-screen bg-[#1c1b1b]" />;
 
-  const handleLogout = () => {
-    clearAdminSession();
-    window.location.href = '/admin/login';
+  const handleLogout = async () => {
+    try {
+      await adminLogout();
+    } catch {
+      // local session clear should still happen even if backend logout call fails
+    } finally {
+      clearAdminSession();
+      window.location.href = '/admin/login';
+    }
   };
 
   const menuItems = [
@@ -37,7 +46,7 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r border-[#ffffff]/10 flex flex-col fixed h-full bg-[#1c1b1b] z-50">
         <div className="p-8 border-b border-[#ffffff]/10">
-          <h1 className="font-brand text-3xl uppercase tracking-tighter text-[#b90c1b]">STREETRIOT</h1>
+          <h1 className="font-brand text-3xl uppercase tracking-tighter text-[#b90c1b]">{(settings.siteName || 'STREETRIOT').toUpperCase()}</h1>
           <p className="font-headline text-[9px] uppercase tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>
 

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Comp7 from '@/app/components/Comp7';
 import { useCart } from '@/app/context/CartContext';
 import { useWishlist } from '@/app/context/WishlistContext';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { formatProductNameForPath, products as localProducts } from '@/app/data/products';
 import { fetchBackendProducts } from '@/app/lib/backendProducts';
 
@@ -19,7 +20,8 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { addItem } = useCart();
   const { toggle, isInWishlist } = useWishlist();
-  const currency = process.env.NEXT_PUBLIC_CURRENCY || '$';
+  const { settings } = useSiteSettings();
+  const currency = settings.currencySymbol || '$';
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2200); };
 
