@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Comp4() {
   return (
     <>
@@ -18,12 +20,12 @@ export default function Comp4() {
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
             <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8">
               <h3 className="font-brand text-3xl md:text-5xl text-white mb-2 md:mb-4">OUTERWEAR</h3>
-              <a
+              <Link
                 className="text-white font-headline font-bold text-xs md:text-sm tracking-widest underline decoration-primary decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8"
-                href="#"
+                href="/shop/jackets"
               >
                 EXPLORE
-              </a>
+              </Link>
             </div>
           </div>
           <div className="relative aspect-[4/5] overflow-hidden group">
@@ -35,12 +37,12 @@ export default function Comp4() {
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
             <div className="absolute bottom-6 left-6 md:bottom-8 md:left-8">
               <h3 className="font-brand text-3xl md:text-5xl text-white mb-2 md:mb-4">BASICS</h3>
-              <a
+              <Link
                 className="text-white font-headline font-bold text-xs md:text-sm tracking-widest underline decoration-primary decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8"
-                href="#"
+                href="/shop/hoodies"
               >
                 EXPLORE
-              </a>
+              </Link>
             </div>
           </div>
           <div className="relative aspect-[4/5] overflow-hidden group">
@@ -54,12 +56,12 @@ export default function Comp4() {
               <h3 className="font-brand text-3xl md:text-5xl text-white mb-2 md:mb-4">
                 ACCESSORIES
               </h3>
-              <a
+              <Link
                 className="text-white font-headline font-bold text-xs md:text-sm tracking-widest underline decoration-primary decoration-2 md:decoration-4 underline-offset-4 md:underline-offset-8"
-                href="#"
+                href="/shop/accessories"
               >
                 EXPLORE
-              </a>
+              </Link>
             </div>
           </div>
         </div>
