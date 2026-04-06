@@ -153,9 +153,9 @@ export default function UserProfile() {
                   <p>{email || 'guest@streetriot.com'}</p>
                   <p>{gender || 'Not specified'}</p>
                 </div>
-                <button className="mt-auto font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] font-black hover:underline underline-offset-4 text-left">
+                <Link href="/user/profile" className="mt-auto font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] font-black hover:underline underline-offset-4 text-left">
                   Edit Profile →
-                </button>
+                </Link>
               </div>
               <div className="border border-[#1c1b1b]/10 bg-[#f6f3f2] p-10 flex flex-col gap-6">
                 <h4 className="font-brand text-2xl uppercase tracking-widest border-b border-[#1c1b1b]/10 pb-4">Primary Address</h4>
