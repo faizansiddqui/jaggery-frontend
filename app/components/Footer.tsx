@@ -81,8 +81,8 @@ export default function Footer() {
             <Truck className="w-6 h-6 text-[#b90c1b] group-hover:text-white" />
           </div>
           <div>
-            <h5 className="font-headline font-bold text-sm tracking-widest uppercase">GLOBAL SHIPPING</h5>
-            <p className="text-[10px] text-[#1c1b1b]/40 tracking-tighter mt-1 uppercase">D2C SPEED WORLDWIDE</p>
+            <h5 className="font-headline font-bold text-sm tracking-widest uppercase">FAST SHIPPING</h5>
+            <p className="text-[10px] text-[#1c1b1b]/40 tracking-tighter mt-1 uppercase">D2C SPEED ALL INDIA</p>
           </div>
         </div>
         <div className="flex items-center gap-4 group">
