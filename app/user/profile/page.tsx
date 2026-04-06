@@ -92,7 +92,7 @@ export default function UserProfile() {
                   <span className="material-symbols-outlined text-sm scale-0 group-hover:scale-100 transition-transform">arrow_forward</span>
                 </Link>
               ))}
-              <button onClick={onLogout} className="text-left flex items-center justify-between group p-5 border-b border-[#1c1b1b]/5 transition-all hover:bg-[#1c1b1b] hover:text-[#fcf8f8]">
+              <button onClick={onLogout} className="text-left flex items-center justify-between group p-5 cursor-pointer border-b border-[#1c1b1b]/5 transition-all hover:bg-[#b90c1b] hover:text-white">
                 <div className="flex items-center gap-4">
                   <span className="material-symbols-outlined text-sm">logout</span>
                   <span className="font-headline text-xs font-black uppercase tracking-widest">Logout</span>
@@ -119,7 +119,7 @@ export default function UserProfile() {
                   <option value="other">Other</option>
                 </select>
               </div>
-              <button onClick={onSaveProfile} className="mt-8 border-2 border-[#1c1b1b] px-8 py-4 font-brand text-xl uppercase hover:bg-[#1c1b1b] hover:text-[#fcf8f8] transition-all active:scale-95">
+              <button onClick={onSaveProfile} className="mt-8 border-2 cursor-pointer border-[#1c1b1b] px-8 py-4 font-brand text-xl uppercase hover:bg-[#1c1b1b] hover:text-[#fcf8f8] transition-all active:scale-95">
                 Save Profile
               </button>
               {message && <p className="font-headline text-[10px] uppercase tracking-widest mt-4 text-[#b90c1b]">{message}</p>}
