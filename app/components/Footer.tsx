@@ -7,7 +7,7 @@ export default function Footer() {
   const { settings } = useSiteSettings();
   const footerDescription =
     settings.footerDescription ||
-    "Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.";
+    "Forging the future of urban streetwear. Precision engineered, culturally driven, and all over India distributed.";
 
   return (
     <footer className="bg-[#fcf8f8] text-[#1c1b1b] border-t border-[#1c1b1b]/10 py-24 px-8 lg:px-24">
@@ -107,13 +107,13 @@ export default function Footer() {
 
       <div className="max-w-[1920px] mx-auto pt-12 flex flex-col md:flex-row justify-between items-center gap-8 font-headline text-[10px] tracking-[0.3em] text-[#1c1b1b]/40 uppercase">
         <div className="flex gap-8">
-          <span>© {new Date().getFullYear()} {(settings.siteName || 'STREETRIOT').toUpperCase()} INDUSTRIES</span>
+          <span>© {new Date().getFullYear()} {(settings.siteName || 'STREETRIOT').toUpperCase()}</span>
           <Link href="/privacy-policy" className="hover:text-[#b90c1b] transition-colors">PRIVACY POLICY</Link>
           <Link href="/terms-of-service" className="hover:text-[#b90c1b] transition-colors">TERMS OF SERVICE</Link>
         </div>
         <div className="flex items-center gap-2">
           <Heart className="w-4 h-4 text-[#b90c1b] animate-pulse" />
-          <span>HANDCRAFTED FOR THE GLOBAL UNDERGROUND</span>
+          <span>HANDCRAFTED FOR THE INDIA UNDERGROUND</span>
         </div>
         <div className="flex gap-6 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500">
           <CreditCard className="w-5 h-5" />

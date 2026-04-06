@@ -98,7 +98,7 @@ export default function AuthRoute() {
               type="button"
               onClick={onSendOtp}
               disabled={loading}
-              className="bg-[#1c1b1b] text-white px-6 py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors disabled:opacity-40"
+              className="border-2 border-[#1c1b1b] px-6 py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-[#1c1b1b] hover:text-white transition-colors disabled:opacity-40"
             >
               {loading ? 'Please Wait...' : otpSent ? 'Resend OTP' : 'Send OTP'}
             </button>
@@ -107,7 +107,7 @@ export default function AuthRoute() {
                 type="button"
                 onClick={onVerifyOtp}
                 disabled={loading}
-                className="border-2 border-[#1c1b1b] px-6 py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-[#1c1b1b] hover:text-white transition-colors disabled:opacity-40"
+                className="bg-[#1c1b1b] text-white px-6 py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors disabled:opacity-40"
               >
                 Verify & Continue
               </button>

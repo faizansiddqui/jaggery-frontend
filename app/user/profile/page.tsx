@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Comp1 from '@/app/journal/components/Comp1';
 import Comp7 from '@/app/components/Comp7';
 import { fetchOrders, fetchUserProfile, updateUserProfile } from '@/app/lib/apiClient';
 import { clearUserSession, getUserEmail } from '@/app/lib/session';
@@ -59,10 +58,15 @@ export default function UserProfile() {
       {/* <Comp1 /> */}
 
       <div className="pt-8 pb-5 px-4 md:px-8 max-w-[1440px] mx-auto" data-scroll-section>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+        <div id="user-profile-sticky-target" className="relative grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
 
           {/* Sidebar Navigation */}
-          <aside className="lg:col-span-4 flex flex-col gap-12">
+          <aside
+            className="lg:col-span-4 lg:sticky lg:top-28 h-fit self-start flex flex-col gap-12"
+            data-scroll
+            data-scroll-sticky
+            data-scroll-target="#user-profile-sticky-target"
+          >
             <div className="flex flex-col gap-4 border-b border-[#1c1b1b]/10 pb-12">
               <div className="w-24 h-24 bg-[#b90c1b] flex items-center justify-center font-brand text-4xl text-white">MV</div>
               <div>
