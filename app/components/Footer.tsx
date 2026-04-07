@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { CreditCard, Wallet, Landmark, Heart, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 
@@ -15,8 +16,10 @@ export default function Footer() {
 
         {/* BRAND COLUMN */}
         <div className="flex flex-col gap-6">
-          <Link href="/" className="font-brand text-4xl font-black tracking-widest text-[#1c1b1b]">
-            {settings.footerTitle || settings.siteName || 'STREETRIOT'}
+          <Link href="/" className="flex flex-col gap-4 text-[#1c1b1b]">
+            <span className="font-brand text-4xl font-black tracking-widest">
+              {settings.footerTitle || settings.siteName || 'STREETRIOT'}
+            </span>
           </Link>
           <p className="text-[#1c1b1b]/60 font-headline text-sm leading-relaxed max-w-xs uppercase tracking-widest">
             {footerDescription}

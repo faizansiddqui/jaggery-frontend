@@ -1,30 +1,206 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Comp7 from '@/app/components/Comp7';
 import { useCart } from '@/app/context/CartContext';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import { formatProductNameForPath } from '@/app/data/products';
+import { fetchPublicPromos, type PublicPromo, type PromoValidationResult, validatePromoCode } from '@/app/lib/apiClient';
+import { clearCheckoutPromoState, getCheckoutPromoState, setCheckoutPromoState } from '@/app/lib/session';
 
 export default function CartPage() {
   const { items, removeItem, updateQty, total, itemCount, isHydrating, isSyncing, syncError, refreshCart } = useCart();
   const { settings } = useSiteSettings();
   const currency = settings.currencySymbol || '$';
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const discount = promoApplied ? total * 0.1 : 0;
-  const finalTotal = total - discount;
 
-  const applyPromo = () => {
-    if (promoCode.toUpperCase() === 'KINETIC10') { setPromoApplied(true); }
-    else { alert('Invalid promo code. Try KINETIC10'); }
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidationResult | null>(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [publicPromos, setPublicPromos] = useState<PublicPromo[]>([]);
+  const [productPromos, setProductPromos] = useState<PublicPromo[]>([]);
+  const [publicPromosLoading, setPublicPromosLoading] = useState(true);
+  const [productPromosLoading, setProductPromosLoading] = useState(false);
+
+  const cartPayloadItems = useMemo(
+    () =>
+      items.map((item) => ({
+        product_id: Number(item.id || 0),
+        quantity: Number(item.qty || 1),
+        size: String(item.size || ''),
+        color: String(item.color || ''),
+        price: Number(item.price || 0),
+      })),
+    [items],
+  );
+  const promoTiles = useMemo(() => {
+    const map = new Map<string, PublicPromo>();
+    const ordered = [...productPromos, ...publicPromos];
+    ordered.forEach((promo) => {
+      const key = promo.code.toUpperCase();
+      if (!map.has(key)) {
+        map.set(key, { ...promo, code: key });
+      }
+    });
+    return Array.from(map.values());
+  }, [productPromos, publicPromos]);
+  const promosSectionLoading = publicPromosLoading || productPromosLoading;
+
+  const discount = Math.max(0, Number(appliedPromo?.discountAmount || 0));
+  const finalTotal = Math.max(0, total - discount);
+
+  useEffect(() => {
+    const saved = getCheckoutPromoState();
+    if (saved?.code) {
+      setPromoCode(saved.code);
+      validatePromoCode({ code: saved.code, items: cartPayloadItems })
+        .then((result) => {
+          setAppliedPromo(result);
+          setPromoError('');
+          setCheckoutPromoState({
+            code: result.code,
+            discountAmount: result.discountAmount,
+            description: result.description,
+          });
+        })
+        .catch(() => {
+          clearCheckoutPromoState();
+          setAppliedPromo(null);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadPublicPromos = async () => {
+      setPublicPromosLoading(true);
+      try {
+        const promos = await fetchPublicPromos();
+        if (!active) return;
+        setPublicPromos(promos);
+      } catch {
+        if (!active) return;
+        setPublicPromos([]);
+      } finally {
+        if (!active) return;
+        setPublicPromosLoading(false);
+      }
+    };
+
+    loadPublicPromos();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const ids = Array.from(
+      new Set(
+        items
+          .map((item) => Number(item.id || 0))
+          .filter((id) => Number.isFinite(id) && id > 0),
+      ),
+    );
+
+    if (!ids.length) {
+      setProductPromos([]);
+      setProductPromosLoading(false);
+      return;
+    }
+
+    const loadProductPromos = async () => {
+      setProductPromosLoading(true);
+      try {
+        const batch = await Promise.all(ids.map((id) => fetchPublicPromos(id)));
+        if (!active) return;
+        setProductPromos(batch.flat());
+      } catch {
+        if (!active) return;
+        setProductPromos([]);
+      } finally {
+        if (!active) return;
+        setProductPromosLoading(false);
+      }
+    };
+
+    loadProductPromos();
+    return () => {
+      active = false;
+    };
+  }, [items]);
+
+  useEffect(() => {
+    if (!appliedPromo?.code) return;
+    if (!items.length) {
+      setAppliedPromo(null);
+      setPromoCode('');
+      setPromoError('');
+      clearCheckoutPromoState();
+      return;
+    }
+
+    validatePromoCode({ code: appliedPromo.code, items: cartPayloadItems })
+      .then((result) => {
+        setAppliedPromo(result);
+        setPromoError('');
+        setCheckoutPromoState({
+          code: result.code,
+          discountAmount: result.discountAmount,
+          description: result.description,
+        });
+      })
+      .catch((error) => {
+        setAppliedPromo(null);
+        setPromoError(error instanceof Error ? error.message : 'Promo is no longer valid.');
+        clearCheckoutPromoState();
+      });
+  }, [appliedPromo?.code, cartPayloadItems, items.length]);
+
+  const applyPromo = async (codeArg?: string) => {
+    const code = (codeArg ?? promoCode).trim().toUpperCase();
+    if (!code) {
+      setPromoError('Enter a promo code first.');
+      return;
+    }
+
+    setPromoCode(code);
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const result = await validatePromoCode({
+        code,
+        items: cartPayloadItems,
+      });
+      setAppliedPromo(result);
+      setPromoCode(result.code);
+      setCheckoutPromoState({
+        code: result.code,
+        discountAmount: result.discountAmount,
+        description: result.description,
+      });
+    } catch (error) {
+      setAppliedPromo(null);
+      clearCheckoutPromoState();
+      setPromoError(error instanceof Error ? error.message : 'Invalid promo code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const removePromo = () => {
+    setAppliedPromo(null);
+    setPromoError('');
+    setPromoCode('');
+    clearCheckoutPromoState();
   };
 
   return (
     <main className="bg-[#fcf8f8] min-h-screen text-[#1c1b1b]">
-      {/* <Comp1 /> */}
       <div className="pt-8 pb-5 px-4 md:px-8 max-w-[1440px] mx-auto" data-scroll-section>
         <header className="mb-20 border-b-4 border-[#1c1b1b] pb-10">
           <span className="font-headline text-[10px] uppercase tracking-[0.4em] text-[#b90c1b] font-black">YOUR SELECTION</span>
@@ -40,14 +216,13 @@ export default function CartPage() {
                 onClick={() => refreshCart()}
                 className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4 hover:opacity-70"
               >
-                Retry Sync
+                Retry
               </button>
             </div>
           )}
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-          {/* Items */}
           <div className="lg:col-span-8 flex flex-col gap-10">
             {isHydrating && (
               <div className="py-16 border border-[#1c1b1b]/10 bg-[#f6f3f2] flex flex-col items-center gap-3">
@@ -81,7 +256,7 @@ export default function CartPage() {
                           onClick={() => updateQty(item.id, item.size, -1, item.color)}
                           className="w-10 h-10 font-brand text-xl hover:bg-[#b90c1b] hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                          −
+                          -
                         </button>
                         <span className="w-10 h-10 font-headline font-black text-sm flex items-center justify-center border-x border-[#1c1b1b]/10">{item.qty}</span>
                         <button
@@ -107,25 +282,115 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* Summary */}
           {items.length > 0 && (
             <div className="lg:col-span-4 lg:sticky lg:top-32 lg:self-start">
               <div className="bg-[#f6f3f2] p-8 flex flex-col gap-6 border-l-8 border-[#b90c1b]">
                 <h2 className="font-brand text-3xl uppercase tracking-widest border-b border-[#1c1b1b]/10 pb-4">Order Summary</h2>
                 <div className="flex flex-col gap-4 font-headline text-xs uppercase tracking-[0.15em]">
                   <div className="flex justify-between"><span className="opacity-40">Subtotal</span><span className="font-black">{currency}{total.toFixed(2)}</span></div>
-                  {promoApplied && <div className="flex justify-between"><span className="text-[#b90c1b] font-black">Promo (KINETIC10)</span><span className="text-[#b90c1b] font-black">−{currency}{discount.toFixed(2)}</span></div>}
-                  <div className="flex justify-between"><span className="opacity-40">Shipping</span><span className="text-[#b90c1b] font-black">Complementary</span></div>
-                  <div className="flex justify-between"><span className="opacity-40">Tax</span><span className="opacity-40">At checkout</span></div>
+                  {appliedPromo && (
+                    <div className="flex justify-between">
+                      <span className="text-[#b90c1b] font-black">Promo ({appliedPromo.code})</span>
+                      <span className="text-[#b90c1b] font-black">-{currency}{discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between"><span className="opacity-40">Shipping</span><span className="text-[#b90c1b] font-black">Free</span></div>
                 </div>
 
-                {/* Promo */}
-                {!promoApplied && (
+                {!appliedPromo && (
                   <div className="flex border border-[#1c1b1b]/20">
-                    <input value={promoCode} onChange={e => setPromoCode(e.target.value)}
+                    <input
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
                       className="flex-grow bg-white px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none placeholder:opacity-30"
-                      placeholder="PROMO CODE" />
-                    <button onClick={applyPromo} className="bg-[#1c1b1b] text-white px-4 font-headline text-[10px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors">Apply</button>
+                      placeholder="PROMO CODE"
+                    />
+                    <button
+                      onClick={applyPromo}
+                      disabled={promoLoading}
+                      className="bg-[#1c1b1b] cursor-pointer text-white px-4 font-headline text-[10px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors disabled:opacity-50"
+                    >
+                      {promoLoading ? 'Checking...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+
+                {promosSectionLoading && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Array.from({ length: 1 }).map((_, idx) => (
+                        <div
+                          key={`promo-skeleton-${idx}`}
+                          className="min-w-[200px] bg-white border border-[#1c1b1b]/15 p-4 border-l-5 border-[#b90c1b] shadow-[0_8px_30px_rgba(15,15,15,0.08)] flex flex-col gap-3 animate-pulse"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="h-3 w-20 bg-[#1c1b1b]/10" />
+                            <div className="h-3 w-14 bg-[#b90c1b]/10" />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="h-3 w-full bg-[#1c1b1b]/10" />
+                            <div className="h-3 w-4/5 bg-[#1c1b1b]/10" />
+                          </div>
+                          {/* <div className="h-3 w-24 bg-[#1c1b1b]/10" /> */}
+                          <div className="h-9 w-full border border-[#1c1b1b]/10 bg-[#1c1b1b]/[0.03]" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {promoTiles.length > 0 && !promosSectionLoading && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                    </div>
+                    <div className="flex flex-nowrap gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                      {promoTiles.map((promo, idx) => {
+                        const discountLabel = promo.discountType === 'PERCENT'
+                          ? `${promo.discountValue}% OFF`
+                          : `${currency}${promo.discountValue.toFixed(0)} OFF`;
+                        const requirement = promo.scope === 'PRODUCT'
+                          ? promo.requiredProductId
+                            ? `Min Qty ${promo.requiredQty}`
+                            : `Requires ${promo.requiredQty} pcs`
+                          : 'Applies on cart total';
+                        const isSelected = appliedPromo?.code === promo.code;
+
+                        return (
+                          <div
+                            key={`${promo.code}-${idx}`}
+                            className={`min-w-[280px] md:min-w-[200px] bg-white border ${isSelected ? 'border-[#b90c1b] bg-[#fff7f5]' : 'border-[#1c1b1b]/15 border-l-5 border-[#b90c1b]'} p-4 shadow-[0_8px_30px_rgba(15,15,15,0.08)] snap-start flex flex-col gap-2`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-headline text-[11px] uppercase tracking-[0.2em] text-[#1c1b1b]">{promo.code}</span>
+                              <span className="font-headline text-[9px] uppercase tracking-[0.2em] text-[#b90c1b]">{discountLabel}</span>
+                            </div>
+                            <p className="font-headline text-[11px] leading-relaxed tracking-wide text-[#1c1b1b]/75 break-words">{promo.description}</p>
+                            {/* <span className="font-headline text-[9px] uppercase tracking-[0.2em] text-[#1c1b1b]/50">{requirement}</span> */}
+                            <button
+                              type="button"
+                              onClick={() => applyPromo(promo.code)}
+                              className={`w-full mt-2 py-2 cursor-pointer font-headline text-[10px] uppercase tracking-[0.2em] border ${isSelected ? 'border-[#b90c1b] bg-[#b90c1b] text-white' : 'border-[#1c1b1b]/30 hover:border-[#b90c1b]'}`}
+                            >
+                              {isSelected ? 'Applied' : 'Apply'}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              {promoError && (
+                <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">{promoError}</p>
+              )}
+                {appliedPromo && (
+                  <div className="flex items-center justify-between border border-[#b90c1b]/30 bg-[#b90c1b]/5 px-4 py-3 gap-3">
+                    <p className="font-headline text-[10px] uppercase tracking-widest">{appliedPromo.description}</p>
+                    <button
+                      onClick={removePromo}
+                      className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4 hover:opacity-70"
+                    >
+                      Remove
+                    </button>
                   </div>
                 )}
 

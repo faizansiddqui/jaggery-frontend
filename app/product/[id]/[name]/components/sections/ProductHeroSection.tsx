@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Product } from '@/app/data/products';
+import { fetchPublicPromos, type PublicPromo } from '@/app/lib/apiClient';
 
 interface ProductHeroSectionProps {
     product: Product;
@@ -55,6 +56,32 @@ export default function ProductHeroSection({
     inWL,
 }: ProductHeroSectionProps) {
     const [shareState, setShareState] = useState('');
+    const [promos, setPromos] = useState<PublicPromo[]>([]);
+    const [promosLoading, setPromosLoading] = useState(true);
+
+    useEffect(() => {
+        let active = true;
+
+        const loadPromos = async () => {
+            setPromosLoading(true);
+            try {
+                const rows = await fetchPublicPromos(product.id);
+                if (!active) return;
+                setPromos(rows);
+            } catch {
+                if (!active) return;
+                setPromos([]);
+            } finally {
+                if (!active) return;
+                setPromosLoading(false);
+            }
+        };
+
+        loadPromos();
+        return () => {
+            active = false;
+        };
+    }, [product.id]);
 
     const handleShare = async () => {
         if (typeof window === 'undefined') return;
@@ -115,20 +142,22 @@ export default function ProductHeroSection({
 
                 <div className="lg:col-span-5 lg:sticky lg:top-24 self-start flex flex-col gap-8">
                     <header>
-                        <div className="mb-3 flex items-center justify-end lg:hidden">
-                            <button
-                                type="button"
-                                onClick={handleShare}
-                                className="h-10 w-10 border border-[#1c1b1b]/20 bg-white/70 flex items-center justify-center hover:border-[#b90c1b]"
-                                aria-label="Share product"
-                            >
-                                <span className="material-symbols-outlined text-[20px] text-[#1c1b1b]">ios_share</span>
-                            </button>
-                        </div>
+                        <div className='flex items-center justify-between'>
+                            <span className="inline-block bg-[#b90c1b] text-white px-3 py-1 font-headline text-[9px] font-bold uppercase tracking-widest mb-4">Limited Edition</span>
+                            <div className="mb-3 flex items-center justify-end lg:hidden">
+                                <button
+                                    type="button"
+                                    onClick={handleShare}
+                                    className="h-10 w-10 border border-[#1c1b1b]/20 bg-white/70 flex items-center justify-center hover:border-[#b90c1b]"
+                                    aria-label="Share product"
+                                >
+                                    <span className="material-symbols-outlined text-[20px] text-[#1c1b1b]">ios_share</span>
+                                </button>
+                            </div>
                         {shareState ? (
-                            <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] mb-2 lg:hidden">{shareState}</p>
-                        ) : null}
-                        <span className="inline-block bg-[#b90c1b] text-white px-3 py-1 font-headline text-[9px] font-bold uppercase tracking-widest mb-4">Limited Edition</span>
+                                <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] mb-2 lg:hidden">{shareState}</p>
+                            ) : null}
+                        </div>
                         <h1 className="font-brand text-5xl md:text-6xl uppercase leading-[0.85] tracking-tight mb-4">{product.name}</h1>
                         <div className="flex items-center gap-3">
                             <span className="font-brand text-4xl">{currency}{product.price.toFixed(2)}</span>
@@ -140,8 +169,64 @@ export default function ProductHeroSection({
                             )}
                         </div>
                     </header>
+                    {promosLoading && (
+                        <div className="space-y-3">
+                            <div className="grid grid-cols-1 gap-13">
+                                {Array.from({ length: 1 }).map((_, idx) => (
+                                    <div
+                                        key={`promo-skeleton-${idx}`}
+                                        className="min-w-[340px] bg-white border border-[#1c1b1b]/15 p-4 border-l-5 border-[#b90c1b] shadow-[0_8px_30px_rgba(15,15,15,0.08)] flex flex-col gap-3 animate-pulse"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="h-3 w-24 bg-[#1c1b1b]/10" />
+                                            <div className="h-3 w-16 bg-[#b90c1b]/10" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="h-3 w-full bg-[#1c1b1b]/10" />
+                                            <div className="h-3 w-5/6 bg-[#1c1b1b]/10" />
+                                        </div>
+                                        <div className="h-3 w-24 bg-[#1c1b1b]/10" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {promos.length > 0 && !promosLoading && (
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                {/* <p className="font-headline text-[9px] uppercase tracking-[0.32em] text-[#b90c1b]">Promo Codes</p> */}
+                            </div>
+                                <div className="flex flex-nowrap gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                                {promos.map((promo, idx) => {
+                                    const discountLabel = promo.discountType === 'PERCENT'
+                                        ? `${promo.discountValue}% OFF`
+                                        : `${currency}${promo.discountValue.toFixed(0)} OFF`;
+                                        const requirement = promo.scope === 'PRODUCT'
+                                            ? promo.requiredProductId
+                                                ? `Min Qty ${promo.requiredQty}`
+                                                : `Requires ${promo.requiredQty} pcs`
+                                            : 'Applies on cart total';
+
+                                    return (
+                                        <div
+                                            key={`${promo.code}-${idx}`}
+                                            className="min-w-[340px] bg-white border border-[#1c1b1b]/15 p-4 border-l-5 border-[#b90c1b] border- shadow-[0_8px_30px_rgba(15,15,15,0.08)] snap-start flex flex-col gap-2"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-headline text-[11px] uppercase tracking-[0.2em] text-[#1c1b1b]">{promo.code}</span>
+                                                <span className="font-headline text-[9px] uppercase tracking-[0.2em] text-[#b90c1b]">{discountLabel}</span>
+                                            </div>
+                                            <p className="font-headline text-[11px] leading-relaxed tracking-wide text-[#1c1b1b]/75">{promo.description}</p>
+                                            <span className="font-headline text-[9px] uppercase tracking-[0.2em] text-[#1c1b1b]/50">{requirement}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-[#f6f3f2] border-l-5 border-[#b90c1b] p-6 flex flex-col gap-6">
+
                         {richDescriptionHtml ? (
                             <div
                                 className="font-headline text-[11px] tracking-wide leading-relaxed opacity-80 text-[#4e4d4d] [&_h1]:font-brand [&_h1]:text-2xl [&_h1]:uppercase [&_h1]:leading-tight [&_h2]:font-brand [&_h2]:text-xl [&_h2]:uppercase [&_h2]:leading-tight [&_h3]:font-headline [&_h3]:text-sm [&_h3]:font-bold [&_h3]:uppercase [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_strong]:font-bold"

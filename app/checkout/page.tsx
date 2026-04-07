@@ -20,6 +20,7 @@ import {
     createUserAddress,
     fetchPublicSiteSettings,
     fetchUserAddresses,
+    validatePromoCode,
     type UserAddress,
     type UserAddressInput,
     updateUserAddress,
@@ -27,7 +28,7 @@ import {
 } from '@/app/lib/apiClient';
 import { useCart } from '@/app/context/CartContext';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
-import { getUserSession } from '@/app/lib/session';
+import { clearCheckoutPromoState, getCheckoutPromoState, getUserSession } from '@/app/lib/session';
 import { launchRazorpayCheckout } from '@/app/checkout/lib/razorpayCheckout';
 
 function AddressCardSkeleton() {
@@ -65,9 +66,11 @@ export default function CheckoutPage() {
     const [addressBusy, setAddressBusy] = useState(false);
     const [addressLoading, setAddressLoading] = useState(false);
     const [addressLoadError, setAddressLoadError] = useState('');
+    const [promoCode, setPromoCode] = useState('');
+    const [promoDiscount, setPromoDiscount] = useState(0);
 
-    const shipping = total > 200 ? 0 : 15;
-    const finalTotal = total + shipping;
+    const shipping = 0;
+    const finalTotal = Math.max(0, total + shipping - promoDiscount);
     const selectedAddress = useMemo(() => addresses.find((entry) => entry.address_id === selectedAddressId) || null, [addresses, selectedAddressId]);
 
     const validateShip = () => {
@@ -94,6 +97,37 @@ export default function CheckoutPage() {
         const nextPath = encodeURIComponent('/checkout');
         router.replace(`/user/auth?next=${nextPath}`);
     }, [authChecked, isAuthenticated, router]);
+
+    useEffect(() => {
+        const saved = getCheckoutPromoState();
+        if (saved?.code) setPromoCode(saved.code);
+    }, []);
+
+    useEffect(() => {
+        if (!promoCode || !items.length) {
+            setPromoDiscount(0);
+            return;
+        }
+
+        validatePromoCode({
+            code: promoCode,
+            items: items.map((item) => ({
+                product_id: item.id,
+                quantity: item.qty,
+                color: item.color,
+                size: item.size,
+                price: item.price,
+            })),
+        })
+            .then((result) => {
+                setPromoDiscount(Number(result.discountAmount || 0));
+            })
+            .catch(() => {
+                setPromoDiscount(0);
+                setPromoCode('');
+                clearCheckoutPromoState();
+            });
+    }, [promoCode, items]);
 
     useEffect(() => {
         if (!isAuthenticated) return;
@@ -329,6 +363,7 @@ export default function CheckoutPage() {
                                                 color: item.color,
                                             })),
                                             selectedAddressId || undefined,
+                                            promoCode || undefined,
                                         );
 
                                         const orderData = (orderPayload.order || {}) as Record<string, unknown>;
@@ -342,8 +377,11 @@ export default function CheckoutPage() {
                                         }
 
                                         const liveSettings = await fetchPublicSiteSettings().catch(() => null);
-                                        const razorpayStoreName =
-                                            String(liveSettings?.siteName || settings.siteName || settings.navbarTitle || 'STREETRIOT').trim();
+                                        const razorpayStoreName = (
+                                            String(liveSettings?.siteName || settings.siteName || settings.navbarTitle || 'STREETRIOT')
+                                                .trim()
+                                                .toUpperCase() || 'STREETRIOT'
+                                        );
 
                                         const payment = await launchRazorpayCheckout({
                                             key: razorpayKey,
@@ -351,7 +389,7 @@ export default function CheckoutPage() {
                                             currency: payCurrency,
                                             orderId: razorpayOrderId,
                                             name: razorpayStoreName,
-                                            description: `${razorpayStoreName} Checkout`,
+                                            description: `${razorpayStoreName} CHECKOUT`,
                                             prefill: {
                                                 name: ship.name,
                                                 email: ship.email,
@@ -363,6 +401,7 @@ export default function CheckoutPage() {
                                         const paymentId = String(payment.razorpay_payment_id || '');
 
                                         clearCart();
+                                        clearCheckoutPromoState();
 
                                         const query = new URLSearchParams({
                                             orderCode,

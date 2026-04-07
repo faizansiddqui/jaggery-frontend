@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { useCart } from "@/app/context/CartContext";
@@ -50,8 +51,10 @@ export default function Navbar() {
       className={`bg-[#fcf8f8] text-[#1c1b1b] sticky top-0 z-[100] px-6 lg:px-12 flex justify-between items-center border-b border-[#1c1b1b]/10 transition-all duration-500 ${scrolled ? 'h-16 bg-opacity-95 backdrop-blur-md' : 'h-20'}`}
     >
       {/* LOGO */}
-      <Link href="/" className="font-brand text-3xl font-black tracking-widest text-[#1c1b1b] group hover:text-red-700 hover:scale-1.2">
-        {settings.navbarTitle || settings.siteName || 'STREETRIOT'}
+      <Link href="/" className="group flex items-center gap-3 text-[#1c1b1b] hover:text-red-700">
+        <span className="font-brand text-3xl font-black tracking-widest">
+          {settings.navbarTitle || settings.siteName || 'STREETRIOT'}
+        </span>
       </Link>
 
       {/* NAV LINKS */}

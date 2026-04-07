@@ -109,9 +109,10 @@ function formatMoney(amount: number) {
     return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
 }
 
-async function loadLogoDataUrl() {
+async function loadLogoDataUrl(logoUrl?: string) {
+    const targetUrl = String(logoUrl || '').trim() || '/logo.png';
     try {
-        const response = await fetch('/logo.png', { cache: 'force-cache' });
+        const response = await fetch(targetUrl, { cache: 'force-cache' });
         if (!response.ok) return '';
         const blob = await response.blob();
         return await new Promise<string>((resolve) => {
@@ -125,7 +126,7 @@ async function loadLogoDataUrl() {
     }
 }
 
-function buildInvoiceHtml(order: UiOrder, currency: string, logoDataUrl = '') {
+function buildInvoiceHtml(order: UiOrder, currency: string, brandName: string, logoDataUrl = '') {
     const addressLines = [
         order.address.fullName,
         order.address.line1,
@@ -153,8 +154,8 @@ function buildInvoiceHtml(order: UiOrder, currency: string, logoDataUrl = '') {
 
     const shippingFee = Math.max(0, order.total - order.subtotal);
     const logoMarkup = logoDataUrl
-        ? `<img src="${logoDataUrl}" alt="StreetRiot" style="height:48px;width:auto;display:block;" />`
-        : '<div style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:24px;letter-spacing:1px;">STREETRIOT</div>';
+        ? `<img src="${logoDataUrl}" alt="${brandName}" style="height:48px;width:auto;display:block;" />`
+        : `<div style="font-family:Arial,Helvetica,sans-serif;font-weight:900;font-size:24px;letter-spacing:1px;">${brandName}</div>`;
 
     return `
       <!doctype html>
@@ -219,7 +220,7 @@ function buildInvoiceHtml(order: UiOrder, currency: string, logoDataUrl = '') {
                     </div>
 
                     <div style="padding:14px 22px;border-top:1px solid #ebe3e3;font-size:11px;letter-spacing:0.7px;opacity:0.65;">
-                        STREETRIOT | ENGINEERED FOR THE STREETS
+                        ${brandName} | ENGINEERED FOR THE STREETS
                     </div>
                 </div>
       </body>
@@ -320,8 +321,9 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
 
     const handleDownloadInvoice = async () => {
         if (!order || !canDownloadInvoice) return;
-        const logoDataUrl = await loadLogoDataUrl();
-        const html = buildInvoiceHtml(order, currency, logoDataUrl);
+        const brandName = String(settings.siteName || 'STREETRIOT').toUpperCase();
+        const logoDataUrl = await loadLogoDataUrl(settings.logoUrl);
+        const html = buildInvoiceHtml(order, currency, brandName, logoDataUrl);
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');

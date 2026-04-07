@@ -9,6 +9,7 @@ import {
     createAdminInstagramGalleryItem,
     deleteAdminInstagramGalleryItem,
     fetchAdminSiteSettings,
+    uploadAdminSiteLogo,
     updateAdminSiteSettings,
     type SiteSettings,
 } from '@/app/lib/apiClient';
@@ -122,6 +123,10 @@ export default function AdminSettings() {
     const [uploadingInstagram, setUploadingInstagram] = useState(false);
     const [processingInstagramId, setProcessingInstagramId] = useState<string | null>(null);
     const [savingInstagramHandle, setSavingInstagramHandle] = useState(false);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoInputKey, setLogoInputKey] = useState(0);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [logoPreviewUrl, setLogoPreviewUrl] = useState('');
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -163,6 +168,20 @@ export default function AdminSettings() {
 
         load();
     }, [applyLocalSettings]);
+
+    useEffect(() => {
+        if (!logoFile) {
+            setLogoPreviewUrl('');
+            return;
+        }
+
+        const nextPreviewUrl = URL.createObjectURL(logoFile);
+        setLogoPreviewUrl(nextPreviewUrl);
+
+        return () => {
+            URL.revokeObjectURL(nextPreviewUrl);
+        };
+    }, [logoFile]);
 
     const dirty = useMemo(() => {
         return (
@@ -277,6 +296,34 @@ export default function AdminSettings() {
         }
     };
 
+    const onUploadLogo = async () => {
+        if (!logoFile) {
+            setError('Select a logo image first.');
+            return;
+        }
+
+        try {
+            setUploadingLogo(true);
+            setMessage('');
+            setError('');
+            const updated = await uploadAdminSiteLogo({
+                logo: logoFile,
+                updatedBy: username,
+            });
+            applyLocalSettings(updated);
+            setInstagramItems(updated.instagramGallery || []);
+            setLogoFile(null);
+            setLogoPreviewUrl('');
+            setLogoInputKey((prev) => prev + 1);
+            await refreshSettings();
+            setMessage('Brand logo updated successfully.');
+        } catch (uploadError) {
+            setError(uploadError instanceof Error ? uploadError.message : 'Failed to upload brand logo.');
+        } finally {
+            setUploadingLogo(false);
+        }
+    };
+
     const onDeleteInstagramItem = async (itemId: string) => {
         const confirmed = window.confirm('Delete this Instagram feed item permanently?');
         if (!confirmed) return;
@@ -323,6 +370,8 @@ export default function AdminSettings() {
         clearAdminSession();
         window.location.href = '/admin/login';
     };
+
+    const activeLogoPreview = logoPreviewUrl || settings.logoUrl || '';
 
     return (
         <div className="flex flex-col gap-12">
@@ -391,6 +440,39 @@ export default function AdminSettings() {
                                     className="bg-transparent border-b-2 border-[#ffffff]/10 py-3 font-headline text-xs uppercase tracking-widest focus:border-[#b90c1b] outline-none"
                                 />
                             </label>
+                        </div>
+
+                        <div className="border border-[#ffffff]/10 p-6 flex flex-col gap-4">
+                            <p className="font-headline text-[9px] uppercase tracking-[0.25em] opacity-50">Brand Logo</p>
+                            <div className="grid grid-cols-1 md:grid-cols-[140px_1fr_auto] gap-4 items-end">
+                                <div className="w-[140px] h-[140px] border border-[#ffffff]/10 bg-[#0f0f0f] flex items-center justify-center overflow-hidden">
+                                    {activeLogoPreview ? (
+                                        <Image src={activeLogoPreview} alt={form.siteName || 'brand logo'} width={240} height={120} unoptimized className="max-w-full max-h-full object-contain" />
+                                    ) : (
+                                        <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">No logo</span>
+                                    )}
+                                </div>
+                                <div className='flex items-start flex-col gap-9'>
+                                    <label className="flex flex-col gap-2">
+                                        <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">Upload Logo</span>
+                                        <input
+                                            key={logoInputKey}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                                            className="bg-[#0f0f0f] border border-[#ffffff]/15 px-2 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                        />
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={onUploadLogo}
+                                        disabled={uploadingLogo || !logoFile}
+                                        className="bg-[#b90c1b] text-white py-3 px-6 font-headline text-[11px] uppercase tracking-widest hover:bg-[#d21628] disabled:opacity-40"
+                                    >
+                                        {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -500,6 +582,11 @@ export default function AdminSettings() {
 
                     <section className="bg-[#b90c1b] p-10 flex flex-col gap-6 text-white">
                         <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-white/20 pb-6">Runtime Preview</h3>
+                        {activeLogoPreview ? (
+                            <div className="w-full h-24 border border-white/20 bg-white/10 flex items-center justify-center overflow-hidden">
+                                <Image src={activeLogoPreview} alt={form.siteName || 'brand logo'} width={260} height={100} unoptimized className="max-w-full max-h-full object-contain" />
+                            </div>
+                        ) : null}
                         <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Navbar: {form.navbarTitle || 'STREETRIOT'}</p>
                         <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Footer: {form.footerTitle || 'STREETRIOT'}</p>
                         <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Company Email: {form.companyEmail || 'not set'}</p>

@@ -32,6 +32,7 @@ const defaultSettings: SiteSettings = {
     emailFooterDescription:
         process.env.NEXT_PUBLIC_EMAIL_FOOTER_DESCRIPTION ||
         'This is an automated message from StreetRiot commerce engine.',
+    logoUrl: process.env.NEXT_PUBLIC_BRAND_LOGO_URL || process.env.NEXT_PUBLIC_LOGO_URL || '',
     currencySymbol: process.env.NEXT_PUBLIC_CURRENCY || '$',
     instagramUrl: process.env.NEXT_PUBLIC_INSTAGRAM_URL || '',
     instagramHandle: process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE || 'kinetic_riot',
@@ -73,6 +74,8 @@ const hasSameSettings = (a: SiteSettings, b: SiteSettings) => {
         a.companyAddress === b.companyAddress &&
         a.companyEmail === b.companyEmail &&
         a.emailFooterDescription === b.emailFooterDescription &&
+        a.logoUrl === b.logoUrl &&
+        (a.logoPublicId || '') === (b.logoPublicId || '') &&
         a.currencySymbol === b.currencySymbol &&
         a.instagramUrl === b.instagramUrl &&
         a.instagramHandle === b.instagramHandle &&

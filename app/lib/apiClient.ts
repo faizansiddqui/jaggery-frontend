@@ -207,6 +207,8 @@ export interface SiteSettings {
     companyAddress: string;
     companyEmail: string;
     emailFooterDescription: string;
+    logoUrl: string;
+    logoPublicId?: string;
     currencySymbol: string;
     instagramUrl: string;
     instagramHandle: string;
@@ -222,6 +224,112 @@ export interface SiteSettings {
     facebookUrl: string;
     updatedBy?: string;
     updatedAt?: string | null;
+}
+
+export interface AdminAnalyticsOverview {
+    periodDays: number;
+    metrics: {
+        averageOrderValue: number;
+        averageOrderValueTrend: number;
+        customerLtv: number;
+        customerLtvTrend: number;
+        repurchaseRate: number;
+        repurchaseRateTrend: number;
+        cartAbandonment: number;
+        cartAbandonmentTrend: number;
+    };
+    regional: Array<{
+        region: string;
+        currentRevenue: number;
+        previousRevenue: number;
+        growthPercent: number;
+    }>;
+    topProducts: {
+        mostAddedToCart: Array<{
+            productId: number;
+            productName: string;
+            productImage: string;
+            metric: number;
+        }>;
+        mostWishlisted: Array<{
+            productId: number;
+            productName: string;
+            productImage: string;
+            metric: number;
+        }>;
+        mostOrdered: Array<{
+            productId: number;
+            productName: string;
+            productImage: string;
+            metric: number;
+        }>;
+        bestSelling: Array<{
+            productId: number;
+            productName: string;
+            productImage: string;
+            metric: number;
+        }>;
+    };
+    performanceIndex: number;
+    notes: string;
+}
+
+export interface AdminProductLite {
+    _id?: string;
+    product_id?: number;
+    createdAt?: string;
+    name?: string;
+    collection?: string;
+    category?: string;
+    image?: string;
+    price?: number;
+}
+
+export interface PromoCodeConfig {
+    id: string;
+    code: string;
+    description: string;
+    scope: 'CART' | 'PRODUCT';
+    discountType: 'PERCENT' | 'FLAT';
+    discountValue: number;
+    minCartValue: number;
+    maxDiscount: number;
+    requiredProductId: number;
+    requiredQty: number;
+    startAt: string | null;
+    endAt: string | null;
+    usageLimit: number;
+    usedCount: number;
+    isActive: boolean;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: string | null;
+    updatedAt: string | null;
+}
+
+export interface PromoValidationResult {
+    code: string;
+    description: string;
+    scope: 'CART' | 'PRODUCT';
+    discountType: 'PERCENT' | 'FLAT';
+    discountValue: number;
+    requiredProductId?: number;
+    requiredQty: number;
+    minCartValue: number;
+    maxDiscount: number;
+    subtotal: number;
+    discountAmount: number;
+    totalAfterDiscount: number;
+}
+
+export interface PublicPromo {
+    code: string;
+    description: string;
+    scope: 'CART' | 'PRODUCT';
+    discountType: 'PERCENT' | 'FLAT';
+    discountValue: number;
+    requiredProductId?: number;
+    requiredQty: number;
 }
 
 type SiteSettingsInstagramItem = SiteSettings['instagramGallery'][number];
@@ -526,11 +634,16 @@ export async function updateUserAddress(addressId: number, payload: UserAddressI
     return mapAddress(asRecord(data.address || data.data));
 }
 
-export async function createBackendOrder(items: Array<{ product_id: number; quantity: number; size: string; color?: string }>, address_id?: number) {
+export async function createBackendOrder(
+    items: Array<{ product_id: number; quantity: number; size: string; color?: string }>,
+    address_id?: number,
+    promo_code?: string,
+) {
     const email = getUserEmail();
+    const cart_id = getCartId();
     return request('/user/create-order', {
         method: 'POST',
-        body: JSON.stringify({ items, address_id: address_id || null, email }),
+        body: JSON.stringify({ items, address_id: address_id || null, email, cart_id, promo_code: promo_code || '' }),
     });
 }
 
@@ -538,10 +651,113 @@ export async function verifyBackendPayment(payload: {
     razorpay_order_id: string;
     razorpay_payment_id: string;
     razorpay_signature: string;
+    cart_id?: string;
 }) {
+    const cart_id = payload.cart_id || getCartId();
     return request('/user/payment-success', {
         method: 'POST',
+        body: JSON.stringify({ ...payload, cart_id }),
+    });
+}
+
+export async function validatePromoCode(payload: {
+    code: string;
+    items: Array<{ product_id: number; quantity: number; size?: string; color?: string; price?: number }>;
+}) {
+    const data = await request('/user/validate-promo', {
+        method: 'POST',
         body: JSON.stringify(payload),
+    });
+
+    const promo = asRecord(data.promo);
+    return {
+        code: String(promo.code || ''),
+        description: String(promo.description || ''),
+        scope: (String(promo.scope || 'CART').toUpperCase() === 'PRODUCT' ? 'PRODUCT' : 'CART') as PromoValidationResult['scope'],
+        discountType: (String(promo.discountType || 'FLAT').toUpperCase() === 'PERCENT' ? 'PERCENT' : 'FLAT') as PromoValidationResult['discountType'],
+        discountValue: Number(promo.discountValue || 0),
+        requiredProductId: Number(promo.requiredProductId || 0) || undefined,
+        requiredQty: Number(promo.requiredQty || 1) || 1,
+        minCartValue: Number(promo.minCartValue || 0),
+        maxDiscount: Number(promo.maxDiscount || 0),
+        subtotal: Number(data.subtotal || 0),
+        discountAmount: Number(data.discountAmount || 0),
+        totalAfterDiscount: Number(data.totalAfterDiscount || 0),
+    } as PromoValidationResult;
+}
+
+const mapPublicPromo = (value: unknown): PublicPromo => {
+    const row = asRecord(value);
+    const scope = String(row.scope || 'CART').toUpperCase() === 'PRODUCT' ? 'PRODUCT' : 'CART';
+    const discountType = String(row.discountType || 'FLAT').toUpperCase() === 'PERCENT' ? 'PERCENT' : 'FLAT';
+    return {
+        code: String(row.code || '').toUpperCase(),
+        description: String(row.description || ''),
+        scope,
+        discountType,
+        discountValue: Number(row.discountValue || 0),
+        requiredProductId: Number(row.requiredProductId || 0) || undefined,
+        requiredQty: Number(row.requiredQty || 1) || 1,
+    };
+};
+
+export async function fetchPublicPromos(productId?: number): Promise<PublicPromo[]> {
+    const query = productId ? `?product_id=${encodeURIComponent(String(productId))}` : '';
+    const data = await request(`/user/promos/public${query}`);
+    const rows = Array.isArray(data.promos) ? data.promos : [];
+    return rows.map((entry) => mapPublicPromo(entry));
+}
+
+const mapPromo = (value: unknown): PromoCodeConfig => {
+    const row = asRecord(value);
+    return {
+        id: String(row.id || row._id || ''),
+        code: String(row.code || '').toUpperCase(),
+        description: String(row.description || ''),
+        scope: String(row.scope || 'CART').toUpperCase() === 'PRODUCT' ? 'PRODUCT' : 'CART',
+        discountType: String(row.discountType || 'FLAT').toUpperCase() === 'PERCENT' ? 'PERCENT' : 'FLAT',
+        discountValue: Number(row.discountValue || 0),
+        minCartValue: Number(row.minCartValue || 0),
+        maxDiscount: Number(row.maxDiscount || 0),
+        requiredProductId: Number(row.requiredProductId || 0),
+        requiredQty: Number(row.requiredQty || 1),
+        startAt: row.startAt ? String(row.startAt) : null,
+        endAt: row.endAt ? String(row.endAt) : null,
+        usageLimit: Number(row.usageLimit || 0),
+        usedCount: Number(row.usedCount || 0),
+        isActive: row.isActive !== false,
+        createdBy: String(row.createdBy || ''),
+        updatedBy: String(row.updatedBy || ''),
+        createdAt: row.createdAt ? String(row.createdAt) : null,
+        updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+    };
+};
+
+export async function fetchAdminPromos(): Promise<PromoCodeConfig[]> {
+    const data = await request('/admin/promos');
+    const rows = Array.isArray(data.promos) ? data.promos : [];
+    return rows.map((entry) => mapPromo(entry));
+}
+
+export async function createAdminPromo(payload: Partial<PromoCodeConfig>) {
+    const data = await request('/admin/promos', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    return mapPromo(data.promo);
+}
+
+export async function updateAdminPromo(id: string, payload: Partial<PromoCodeConfig>) {
+    const data = await request(`/admin/promos/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    return mapPromo(data.promo);
+}
+
+export async function deleteAdminPromo(id: string) {
+    return request(`/admin/promos/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
     });
 }
 
@@ -690,6 +906,32 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
     });
 }
 
+export async function fetchAdminProductsLite(): Promise<AdminProductLite[]> {
+    const data = await request('/admin/get-products');
+    const rows = Array.isArray(data.products) ? data.products : [];
+    return rows.map((entry) => {
+        const row = asRecord(entry);
+        return {
+            _id: typeof row._id === 'string' ? row._id : undefined,
+            product_id: Number(row.product_id || 0) || undefined,
+            createdAt: typeof row.createdAt === 'string' ? row.createdAt : undefined,
+            name:
+                typeof row.name === 'string'
+                    ? row.name
+                    : typeof row.title === 'string'
+                        ? row.title
+                        : undefined,
+            collection: typeof row.collection === 'string' ? row.collection : undefined,
+            category: typeof row.category === 'string' ? row.category : undefined,
+            image:
+                Array.isArray(row.product_image) && typeof row.product_image[0] === 'string'
+                    ? row.product_image[0]
+                    : undefined,
+            price: Number(row.price || row.selling_price || 0) || undefined,
+        } as AdminProductLite;
+    });
+}
+
 export async function updateAdminOrderStatus(orderId: string, status: string, productId?: number) {
     const payload: Record<string, unknown> = {
         order_id: orderId,
@@ -738,6 +980,56 @@ export async function fetchAdminCustomersOverview(): Promise<AdminCustomerOvervi
                 status: String(row.status || 'NEW'),
             } as AdminCustomer;
         }),
+    };
+}
+
+export async function fetchAdminAnalyticsOverview(days = 30): Promise<AdminAnalyticsOverview> {
+    const data = await request(`/admin/analytics/overview?days=${encodeURIComponent(String(days))}`);
+    const metrics = asRecord(data.metrics);
+    const regionalRows = Array.isArray(data.regional) ? data.regional : [];
+    const topProducts = asRecord(data.topProducts);
+    const mapTopList = (value: unknown) => {
+        const rows = Array.isArray(value) ? value : [];
+        return rows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                productId: Number(row.productId || 0),
+                productName: String(row.productName || ''),
+                productImage: String(row.productImage || ''),
+                metric: Number(row.metric || 0),
+            };
+        });
+    };
+
+    return {
+        periodDays: Number(data.periodDays || days),
+        metrics: {
+            averageOrderValue: Number(metrics.averageOrderValue || 0),
+            averageOrderValueTrend: Number(metrics.averageOrderValueTrend || 0),
+            customerLtv: Number(metrics.customerLtv || 0),
+            customerLtvTrend: Number(metrics.customerLtvTrend || 0),
+            repurchaseRate: Number(metrics.repurchaseRate || 0),
+            repurchaseRateTrend: Number(metrics.repurchaseRateTrend || 0),
+            cartAbandonment: Number(metrics.cartAbandonment || 0),
+            cartAbandonmentTrend: Number(metrics.cartAbandonmentTrend || 0),
+        },
+        regional: regionalRows.map((entry) => {
+            const row = asRecord(entry);
+            return {
+                region: String(row.region || 'UNKNOWN / GLOBAL'),
+                currentRevenue: Number(row.currentRevenue || 0),
+                previousRevenue: Number(row.previousRevenue || 0),
+                growthPercent: Number(row.growthPercent || 0),
+            };
+        }),
+        topProducts: {
+            mostAddedToCart: mapTopList(topProducts.mostAddedToCart),
+            mostWishlisted: mapTopList(topProducts.mostWishlisted),
+            mostOrdered: mapTopList(topProducts.mostOrdered),
+            bestSelling: mapTopList(topProducts.bestSelling),
+        },
+        performanceIndex: Number(data.performanceIndex || 0),
+        notes: String(data.notes || ''),
     };
 }
 
@@ -802,6 +1094,8 @@ const mapSiteSettings = (value: unknown): SiteSettings => {
             row.emailFooterDescription ||
             'This is an automated message from StreetRiot commerce engine.'
         ),
+        logoUrl: String(row.logoUrl || ''),
+        logoPublicId: row.logoPublicId ? String(row.logoPublicId) : undefined,
         currencySymbol: String(row.currencySymbol || '$'),
         instagramUrl: String(row.instagramUrl || ''),
         instagramHandle,
@@ -828,6 +1122,19 @@ export async function updateAdminSiteSettings(payload: Partial<SiteSettings>) {
         method: 'PATCH',
         body: JSON.stringify(payload),
     });
+    return mapSiteSettings(data.settings);
+}
+
+export async function uploadAdminSiteLogo(payload: { logo: File; updatedBy?: string }) {
+    const form = new FormData();
+    form.append('logo', payload.logo);
+    if (payload.updatedBy) form.append('updatedBy', payload.updatedBy);
+
+    const data = await request('/admin/settings/logo', {
+        method: 'POST',
+        body: form,
+    });
+
     return mapSiteSettings(data.settings);
 }
 
@@ -1020,6 +1327,32 @@ export async function fetchAdminProductNotifyRequests(status?: 'pending' | 'noti
             } as ProductNotifyRequest;
         }),
     };
+}
+
+export async function updateAdminProductNotifyRequest(
+    id: string,
+    payload: { status?: 'pending' | 'notified'; isActive?: boolean }
+): Promise<ProductNotifyRequest | null> {
+    const data = await request(`/admin/communications/product-notify/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload || {}),
+    });
+    const row = asRecord(data.request);
+    if (!row || !row.id) return null;
+    return {
+        id: String(row.id || row._id || ''),
+        email: String(row.email || ''),
+        product_id: Number(row.product_id || 0),
+        product_name: String(row.product_name || ''),
+        color: typeof row.color === 'string' ? row.color : undefined,
+        size: typeof row.size === 'string' ? row.size : undefined,
+        source: String(row.source || 'product_detail'),
+        status: String(row.status || 'pending') === 'notified' ? 'notified' : 'pending',
+        isActive: row.isActive !== false,
+        requestedAt: row.requestedAt ? String(row.requestedAt) : null,
+        notifiedAt: row.notifiedAt ? String(row.notifiedAt) : null,
+        updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+    } as ProductNotifyRequest;
 }
 
 export async function fetchAdminReviews(): Promise<{

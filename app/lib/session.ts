@@ -6,6 +6,7 @@ export interface UserSession {
 const TOKEN_KEY = 'streetriot_user_token';
 const EMAIL_KEY = 'streetriot_user_email';
 const CART_ID_KEY = 'streetriot_cart_id';
+const CHECKOUT_PROMO_KEY = 'streetriot_checkout_promo';
 const BROWSER_PROXY_BASE = '/api/backend';
 const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
 
@@ -107,4 +108,49 @@ export function setCartId(cartId: string) {
         return;
     }
     window.localStorage.setItem(CART_ID_KEY, cartId);
+}
+
+export interface CheckoutPromoState {
+    code: string;
+    discountAmount: number;
+    description: string;
+}
+
+export function getCheckoutPromoState(): CheckoutPromoState | null {
+    if (!isBrowser()) return null;
+    try {
+        const raw = window.localStorage.getItem(CHECKOUT_PROMO_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as Partial<CheckoutPromoState>;
+        const code = String(parsed?.code || '').trim().toUpperCase();
+        if (!code) return null;
+        return {
+            code,
+            discountAmount: Number(parsed?.discountAmount || 0),
+            description: String(parsed?.description || ''),
+        };
+    } catch {
+        return null;
+    }
+}
+
+export function setCheckoutPromoState(state: CheckoutPromoState | null) {
+    if (!isBrowser()) return;
+    if (!state || !state.code) {
+        window.localStorage.removeItem(CHECKOUT_PROMO_KEY);
+        return;
+    }
+    window.localStorage.setItem(
+        CHECKOUT_PROMO_KEY,
+        JSON.stringify({
+            code: String(state.code || '').trim().toUpperCase(),
+            discountAmount: Number(state.discountAmount || 0),
+            description: String(state.description || ''),
+        }),
+    );
+}
+
+export function clearCheckoutPromoState() {
+    if (!isBrowser()) return;
+    window.localStorage.removeItem(CHECKOUT_PROMO_KEY);
 }

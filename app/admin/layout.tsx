@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+// import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { clearAdminSession, getAdminUsername } from '@/app/lib/adminSession';
 import { useRequireAdminSession } from '@/app/lib/guards';
@@ -39,6 +40,7 @@ export default function AdminLayout({
     { name: 'Customers', icon: 'group', href: '/admin/customers' },
     { name: 'Reviews', icon: 'rate_review', href: '/admin/reviews' },
     { name: 'Communications', icon: 'mark_email_read', href: '/admin/communications' },
+    { name: 'Promos', icon: 'sell', href: '/admin/promos' },
     { name: 'Analytics', icon: 'analytics', href: '/admin/analytics' },
     { name: 'Settings', icon: 'settings', href: '/admin/settings' },
   ];
@@ -48,6 +50,18 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r border-[#ffffff]/10 flex flex-col fixed h-full bg-[#1c1b1b] z-50">
         <div className="p-8 border-b border-[#ffffff]/10">
+          {/* {settings.logoUrl ? (
+            <div className="mb-4 flex items-center">
+              <Image
+                src={settings.logoUrl}
+                alt={settings.siteName || 'brand logo'}
+                width={180}
+                height={60}
+                unoptimized
+                className="h-10 w-auto object-contain"
+              />
+            </div>
+          ) : null} */}
           <h1 className="font-brand text-3xl uppercase tracking-tighter text-[#b90c1b]">{(settings.siteName || 'STREETRIOT').toUpperCase()}</h1>
           <p className="font-headline text-[9px] uppercase tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>
@@ -70,7 +84,7 @@ export default function AdminLayout({
           <div className="w-10 h-10 bg-[#b90c1b] flex items-center justify-center font-brand text-xs">SA</div>
           <div className="flex flex-col">
             <span className="font-headline text-[10px] uppercase tracking-[0.1em] font-black">{username}</span>
-            <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">Super Admin</span>
+            <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">Admin</span>
           </div>
           <button onClick={handleLogout} className="ml-auto material-symbols-outlined text-sm opacity-60 hover:opacity-100" aria-label="Admin logout">logout</button>
         </div>
@@ -82,7 +96,7 @@ export default function AdminLayout({
 
         {/* Footer info for admin */}
         <div className="mt-20 pt-8 border-t border-[#ffffff]/10 flex justify-between items-center opacity-30 font-headline text-[9px] uppercase tracking-widest">
-          <span>StreetRiot // 2026</span>
+          <span> {settings.navbarTitle || settings.siteName || 'STREETRIOT'} // 2026</span>
         </div>
       </main>
     </div>

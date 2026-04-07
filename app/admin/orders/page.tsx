@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
    fetchAdminOrders,
+   fetchAdminOrderLabel,
    type AdminOrder,
+   updateAdminOrderStatus,
 } from '@/app/lib/apiClient';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
@@ -82,6 +84,22 @@ const getOrderTotal = (order: AdminOrder) => {
    }, 0);
 };
 
+const getOrderAmountNormalized = (order: AdminOrder) => {
+   const explicit = Number(order.amount || 0);
+   const itemsTotal = (order.items || []).reduce((sum, item) => {
+      const price = Number(item.price || 0);
+      const qty = Number(item.quantity || 0);
+      return sum + (Number.isFinite(price) ? price : 0) * (Number.isFinite(qty) ? qty : 0);
+   }, 0);
+
+   if (Number.isFinite(explicit) && explicit > 0) {
+      if (itemsTotal > 0 && explicit > itemsTotal * 5) return explicit / 100;
+      if (itemsTotal <= 0 && explicit >= 100) return explicit / 100;
+      return explicit;
+   }
+   return itemsTotal;
+};
+
 const getOrderTimestamp = (order: AdminOrder) => {
    const value = order.createdAt ? new Date(order.createdAt).getTime() : 0;
    return Number.isFinite(value) ? value : 0;
@@ -93,6 +111,20 @@ const getStatusIcon = (status: string) => {
    if (normalized === 'cancelled' || normalized === 'returned') return 'cancel';
    if (normalized === 'processing' || normalized === 'verified') return 'inventory_2';
    return 'local_shipping';
+};
+
+const isPaidStatus = (order: AdminOrder) => {
+   const payment = normalizeStatus(String(order.payment_status || ''));
+   if (payment === 'paid') return true;
+   const status = normalizeStatus(String(order.status || ''));
+   return ['confirmed', 'processing', 'shipped', 'in transit', 'in_transit', 'delivered'].includes(status);
+};
+
+const isRefundStatus = (order: AdminOrder) => {
+   const payment = normalizeStatus(String(order.payment_status || ''));
+   if (payment.includes('refund')) return true;
+   const status = normalizeStatus(String(order.status || ''));
+   return ['cancelled', 'returned', 'refunded', 'rto'].some((token) => status.includes(token));
 };
 
 const formatAddress = (order: AdminOrder) => {
@@ -126,6 +158,10 @@ export default function OrdersManagement() {
    const [startDate, setStartDate] = useState('');
    const [endDate, setEndDate] = useState('');
    const [activeOrderKey, setActiveOrderKey] = useState('');
+   const [statusUpdate, setStatusUpdate] = useState('');
+   const [statusBusy, setStatusBusy] = useState(false);
+   const [statusMessage, setStatusMessage] = useState('');
+   const [labelBusy, setLabelBusy] = useState(false);
    const { settings } = useSiteSettings();
    const currency = settings.currencySymbol || '$';
 
@@ -157,6 +193,73 @@ export default function OrdersManagement() {
          },
          { all: 0, active: 0, resolved: 0 },
       );
+   }, [orders]);
+
+   const salesStats = useMemo(() => {
+      let totalSales = 0;
+      let totalProcessing = 0;
+      let totalRefund = 0;
+      let totalPending = 0;
+      let paidCount = 0;
+      let refundCount = 0;
+
+      const productAgg = new Map<number, { name: string; qty: number; revenue: number }>();
+
+      orders.forEach((order) => {
+         const amount = getOrderAmountNormalized(order);
+         const paid = isPaidStatus(order);
+         const refund = isRefundStatus(order);
+         const active = isActiveStatus(normalizeStatus(order.status || ''));
+         const payment = normalizeStatus(String(order.payment_status || ''));
+
+         if (paid && !refund) {
+            totalSales += amount;
+            paidCount += 1;
+         }
+         if (active) totalProcessing += amount;
+         if (refund) {
+            totalRefund += amount;
+            refundCount += 1;
+         }
+         if (!paid && !refund && payment === 'pending') {
+            totalPending += amount;
+         }
+
+         (order.items || []).forEach((item) => {
+            const productId = Number(item.product_id || 0);
+            if (!productId) return;
+            const qty = Math.max(0, Number(item.quantity || 0));
+            const price = Math.max(0, Number(item.price || 0));
+            const name = String(item.product_name || `Product ${productId}`);
+            const current = productAgg.get(productId) || { name, qty: 0, revenue: 0 };
+            current.qty += qty;
+            current.revenue += qty * price;
+            productAgg.set(productId, current);
+         });
+      });
+
+      const topProducts = Array.from(productAgg.entries())
+         .sort((a, b) => b[1].qty - a[1].qty || b[1].revenue - a[1].revenue)
+         .slice(0, 6)
+         .map(([productId, data]) => ({
+            productId,
+            name: data.name,
+            qty: data.qty,
+            revenue: data.revenue,
+         }));
+
+      const avgOrderValue = paidCount > 0 ? totalSales / paidCount : 0;
+
+      return {
+         totalSales,
+         totalProcessing,
+         totalRefund,
+         totalPending,
+         paidCount,
+         refundCount,
+         avgOrderValue,
+         topProducts,
+      };
    }, [orders]);
 
    const filteredOrders = useMemo(() => {
@@ -213,6 +316,12 @@ export default function OrdersManagement() {
       if (!activeOrderKey) return null;
       return orders.find((order) => getOrderKey(order) === activeOrderKey) || null;
    }, [orders, activeOrderKey]);
+
+   useEffect(() => {
+      if (!activeOrder) return;
+      setStatusUpdate(String(activeOrder.status || 'pending'));
+      setStatusMessage('');
+   }, [activeOrder]);
 
    useEffect(() => {
       if (!activeOrderKey) return;
@@ -315,6 +424,64 @@ export default function OrdersManagement() {
                </div>
             </div>
          </header>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">TOTAL SALES</p>
+               <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalSales.toFixed(2)}</p>
+               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{salesStats.paidCount} paid orders</p>
+            </div>
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">PROCESSING AMOUNT</p>
+               <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalProcessing.toFixed(2)}</p>
+               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{counts.active} active shipments</p>
+            </div>
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">REFUND AMOUNT</p>
+               <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalRefund.toFixed(2)}</p>
+               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{salesStats.refundCount} refund orders</p>
+            </div>
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">PENDING AMOUNT</p>
+               <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalPending.toFixed(2)}</p>
+               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">awaiting payment</p>
+            </div>
+         </div>
+
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">AVERAGE ORDER VALUE</p>
+               <p className="font-brand text-3xl mt-3">{currency}{salesStats.avgOrderValue.toFixed(2)}</p>
+            </div>
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">TOTAL ORDERS</p>
+               <p className="font-brand text-3xl mt-3">{counts.all}</p>
+            </div>
+            <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">RESOLVED ORDERS</p>
+               <p className="font-brand text-3xl mt-3">{counts.resolved}</p>
+            </div>
+         </div>
+
+         <div className="bg-[#1c1b1b] border border-[#ffffff]/10 p-6">
+            <h3 className="font-brand text-2xl uppercase tracking-widest border-b border-[#ffffff]/10 pb-4 mb-4">Top Product Orders</h3>
+            {salesStats.topProducts.length === 0 ? (
+               <p className="font-headline text-[10px] uppercase tracking-widest opacity-40">No product order data available.</p>
+            ) : (
+               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {salesStats.topProducts.map((prod) => (
+                     <div key={prod.productId} className="border border-[#ffffff]/10 p-4">
+                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">PRODUCT {prod.productId}</p>
+                        <p className="font-headline text-xs uppercase tracking-widest mt-2">{prod.name}</p>
+                        <div className="flex justify-between mt-3 font-headline text-[10px] uppercase tracking-widest opacity-60">
+                           <span>Qty {prod.qty}</span>
+                           <span>{currency}{prod.revenue.toFixed(2)}</span>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            )}
+         </div>
 
          {error && (
             <div className="border border-[#b90c1b]/30 bg-[#b90c1b]/10 px-4 py-3 flex items-center justify-between gap-4">
@@ -421,11 +588,111 @@ export default function OrdersManagement() {
 
                   <div className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6 space-y-5 text-[#fcf8f8]" onWheel={(event) => event.stopPropagation()}>
                      <div className="border border-[#ffffff]/10 p-4 bg-[#0f0f0f]/60">
+                        <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">Order Controls</p>
+                        <div className="mt-3 grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
+                           <select
+                              value={statusUpdate}
+                              onChange={(event) => setStatusUpdate(event.target.value)}
+                              className="w-full bg-[#1c1b1b] border border-[#ffffff]/10 px-3 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                              aria-label="Update order status"
+                           >
+                              {[
+                                 'pending',
+                                 'confirmed',
+                                 'processing',
+                                 'verified',
+                                 'shipped',
+                                 'in_transit',
+                                 'out_for_delivery',
+                                 'delivered',
+                                 'cancelled',
+                                 'returned',
+                                 'refunded',
+                              ].map((status) => (
+                                 <option key={status} value={status}>
+                                    {formatStatusLabel(status)}
+                                 </option>
+                              ))}
+                           </select>
+                           <button
+                              type="button"
+                              onClick={async () => {
+                                 if (!activeOrder) return;
+                                 const orderId = getOrderKey(activeOrder);
+                                 if (!orderId) return;
+                                 setStatusBusy(true);
+                                 setStatusMessage('');
+                                 try {
+                                    await updateAdminOrderStatus(orderId, statusUpdate);
+                                    setStatusMessage('Status updated');
+                                    await loadOrders();
+                                 } catch (err) {
+                                    setStatusMessage(err instanceof Error ? err.message : 'Status update failed');
+                                 } finally {
+                                    setStatusBusy(false);
+                                 }
+                              }}
+                              disabled={statusBusy}
+                              className="px-5 bg-[#1c1b1b] border border-[#ffffff]/10 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b] disabled:opacity-50"
+                           >
+                              {statusBusy ? 'Updating...' : 'Update Status'}
+                           </button>
+                           <button
+                              type="button"
+                              onClick={async () => {
+                                 if (!activeOrder) return;
+                                 const orderId = getOrderKey(activeOrder);
+                                 if (!orderId) return;
+                                 setLabelBusy(true);
+                                 setStatusMessage('');
+                                 try {
+                                    const res = await fetchAdminOrderLabel(orderId);
+                                    if (res.label_url) {
+                                       window.open(res.label_url, '_blank', 'noopener,noreferrer');
+                                    }
+                                 } catch (err) {
+                                    setStatusMessage(err instanceof Error ? err.message : 'Label download failed');
+                                 } finally {
+                                    setLabelBusy(false);
+                                 }
+                              }}
+                              disabled={labelBusy}
+                              className="px-5 bg-[#b90c1b] text-white font-headline text-[10px] uppercase tracking-widest hover:opacity-90 disabled:opacity-50"
+                           >
+                              {labelBusy ? 'Loading...' : 'Download Label'}
+                           </button>
+                        </div>
+                        {statusMessage && (
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-70 mt-3">{statusMessage}</p>
+                        )}
+                     </div>
+
+                     <div className="border border-[#ffffff]/10 p-4 bg-[#0f0f0f]/60">
                         <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">Shipping Address</p>
                         <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 mt-2 break-words">{formatAddress(activeOrder)}</p>
                         <p className="font-headline text-[10px] uppercase tracking-widest opacity-80 mt-2">
                            Type: {String(activeOrder.address?.addressType || activeOrder.addressType || 'N/A')}
                         </p>
+                     </div>
+
+                     <div className="border border-[#ffffff]/10 p-4 bg-[#0f0f0f]/60">
+                        <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">Courier Details</p>
+                        <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">Provider: {String(activeOrder.delivery_provider || 'N/A')}</p>
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">Courier: {String(activeOrder.courier_name || 'N/A')}</p>
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">AWB: {String(activeOrder.shiprocket_awb || 'N/A')}</p>
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">Shipment ID: {String(activeOrder.shiprocket_shipment_id || 'N/A')}</p>
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">Order ID: {String(activeOrder.shiprocket_order_id || 'N/A')}</p>
+                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">ETD: {String(activeOrder.courier_etd || 'N/A')}</p>
+                           {activeOrder.shiprocket?.trackingUrl ? (
+                              <p className="font-headline text-[10px] uppercase tracking-widest opacity-90 break-words">
+                                 Tracking URL: <a className="underline underline-offset-4" href={activeOrder.shiprocket.trackingUrl} target="_blank" rel="noreferrer">Open</a>
+                              </p>
+                           ) : null}
+                           {activeOrder.shiprocket_error ? (
+                              <p className="font-headline text-[10px] uppercase tracking-widest text-[#b90c1b] break-words">Shiprocket Error: {activeOrder.shiprocket_error}</p>
+                           ) : null}
+                        </div>
                      </div>
 
                      <div className="border border-[#ffffff]/10 p-4 bg-[#0f0f0f]/60">
