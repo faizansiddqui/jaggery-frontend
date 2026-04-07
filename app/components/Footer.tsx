@@ -71,7 +71,7 @@ export default function Footer() {
         <div className="flex flex-col gap-6">
           <h4 className="font-brand text-xl tracking-[0.2em] uppercase">The Network</h4>
           <ul className="flex flex-col gap-4 font-headline text-sm text-[#1c1b1b]/60 uppercase tracking-widest">
-            <li><Link href="/journal" className="hover:text-[#b90c1b] transition-colors">THE JOURNAL</Link></li>
+            {/* <li><Link href="/journal" className="hover:text-[#b90c1b] transition-colors">THE JOURNAL</Link></li> */}
             <li><Link href="/contact" className="hover:text-[#b90c1b] transition-colors">CONTACT</Link></li>
           </ul>
         </div>
