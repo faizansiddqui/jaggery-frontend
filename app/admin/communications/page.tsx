@@ -38,9 +38,10 @@ export default function AdminCommunicationsPage() {
     const [stockActiveFilter, setStockActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
     const [stockSort, setStockSort] = useState<'recent' | 'status' | 'product'>('recent');
 
-    const load = async () => {
+    const load = async (options?: { silent?: boolean }) => {
+        const silent = options?.silent === true;
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             setError('');
             const [subscriberData, contactData, productNotifyData] = await Promise.all([
                 fetchAdminNewsletterSubscribers(),
@@ -53,12 +54,19 @@ export default function AdminCommunicationsPage() {
         } catch (loadError) {
             setError(loadError instanceof Error ? loadError.message : 'Could not load communications data.');
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
     useEffect(() => {
         load();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            load({ silent: true });
+        }, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const stats = useMemo(() => {

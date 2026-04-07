@@ -280,7 +280,7 @@ export default function ProductHeroSection({
                                 disabled={notifyPending || notifyLoading}
                                 className="w-full py-3 border-2 border-[#1c1b1b] font-headline text-[12px] uppercase tracking-[0.2em] transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1c1b1b] hover:text-white"
                             >
-                                {notifyPending ? 'Notified' : notifyLoading ? 'Saving...' : 'Notify Me'}
+                                {notifyPending ? 'Notify Set' : notifyLoading ? 'Saving...' : 'Notify Me'}
                             </button>
                         )}
                         <button onClick={handleWishlist} className={`w-full py-3 border-2 font-headline text-[12px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${inWL ? 'bg-[#1c1b1b] text-white border-[#1c1b1b]' : 'border-[#1c1b1b]/20 hover:border-[#1c1b1b]'}`}>
