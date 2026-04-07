@@ -306,7 +306,7 @@ export default function CartPage() {
                       placeholder="PROMO CODE"
                     />
                     <button
-                      onClick={applyPromo}
+                      onClick={() => applyPromo()}
                       disabled={promoLoading}
                       className="bg-[#1c1b1b] cursor-pointer text-white px-4 font-headline text-[10px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors disabled:opacity-50"
                     >
