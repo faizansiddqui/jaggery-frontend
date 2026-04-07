@@ -76,6 +76,7 @@ export default function Footer() {
           </ul>
         </div>
       </div>
+      
 
       {/* SERVICE CARDS */}
       <div className="max-w-[1920px] mx-auto mt-24 mb-16 grid grid-cols-1 md:grid-cols-3 gap-10 border-y border-[#1c1b1b]/10 py-12">
