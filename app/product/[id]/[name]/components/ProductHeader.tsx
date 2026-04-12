@@ -39,7 +39,7 @@ export default function ProductHeader() {
           <p className="text-lg">
             Experience the unadulterated sweetness of the earth. Our Amila Gold Jaggery is crafted from the first press of sun-ripened sugarcane, concentrated using heritage techniques passed down through generations.
           </p>
-          
+
           <div className="space-y-3">
             <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Select Weight</span>
             <div className="flex gap-3 flex-wrap">
@@ -81,7 +81,7 @@ export default function ProductHeader() {
               Add to Cart
             </button>
           </div>
-          
+
           <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-widest justify-center sm:justify-start">
             <span className="material-symbols-outlined text-secondary icon-filled">verified</span>
             Natural & Pure Guaranteed
