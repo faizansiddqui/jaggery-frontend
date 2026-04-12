@@ -2,128 +2,181 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
-import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { useCart } from "@/app/context/CartContext";
 
+const NAV_LINKS = [
+  { href: "/", label: "Home", icon: "home" },
+  { href: "/shop", label: "Shop", icon: "storefront" },
+  { href: "/search", label: "Our Story", icon: "auto_stories" },
+  { href: "/search", label: "Wholesale", icon: "local_shipping" },
+];
+
 export default function Navbar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { itemCount, isHydrating } = useCart();
   const [scrolled, setScrolled] = useState(false);
-  const { settings } = useSiteSettings();
   const stableCartCount = isHydrating ? 0 : itemCount;
-  const cartCountLabel = stableCartCount > 99 ? "99+" : String(stableCartCount);
-
-  const mobileMenuLinks = [
-    { href: "/shop/new-arrivals", label: "New Arrivals" },
-    { href: "/shop/jackets", label: "Jackets" },
-    { href: "/shop/hoodies", label: "Hoodies" },
-    { href: "/shop/track-pants", label: "Track Pants" },
-    { href: "/user/profile", label: "My Profile" },
-    { href: "/user/orders", label: "My Orders" },
-    { href: "/shop/sale", label: "Sale" },
-  ];
-
-  const desktopNavLinkClass = "py-1 hover:text-[#b90c1b] transition-colors";
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [isMobileMenuOpen]);
+    document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen]);
 
   return (
-    <nav
-      id="navbar"
-      className={`bg-[#fcf8f8] text-[#1c1b1b] sticky top-0 z-[100] px-6 lg:px-12 flex justify-between items-center border-b border-[#1c1b1b]/10 transition-all duration-500 ${scrolled ? 'h-16 bg-opacity-95 backdrop-blur-md' : 'h-20'}`}
-    >
-      {/* LOGO */}
-      <Link href="/" className="group flex items-center gap-3 text-[#1c1b1b] hover:text-red-700">
-        <span className="font-brand text-3xl font-black tracking-widest">
-          {settings.navbarTitle || settings.siteName || 'STREETRIOT'}
-        </span>
-      </Link>
-
-      {/* NAV LINKS */}
-      <div className="hidden lg:flex items-center gap-10 font-headline uppercase tracking-[0.2em] text-[12px] font-bold">
-        <Link href="/shop/new-arrivals" className={desktopNavLinkClass}>New Arrivals</Link>
-        <Link href="/shop/jackets" className={desktopNavLinkClass}>Jackets</Link>
-        <Link href="/shop/hoodies" className={desktopNavLinkClass}>Hoodies</Link>
-        <Link href="/shop/track-pants" className={desktopNavLinkClass}>Track Pants</Link>
-        <Link href="/shop/sale" className={desktopNavLinkClass}>Sale</Link>
-      </div>
-
-      {/* NAV ICONS */}
-      <div className="flex items-center gap-6">
-        <div className="hidden lg:flex items-center gap-5">
-          <Link href="/search" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center group">
-            <Search className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-          </Link>
-          <Link href="/user/profile" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center group">
-            <User className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
-          <Link href="/user/wishlist" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center group">
-            <Heart className="w-5 h-5 group-hover:scale-125 transition-transform" />
-          </Link>
-          <Link href="/cart" className="hover:text-[#b90c1b] transition-all hover:scale-110 flex items-center relative group">
-            <ShoppingCart className="w-5 h-5 group-hover:rotate-[-5deg] transition-transform" />
-            <span className="absolute -top-2 -right-2 bg-[#b90c1b] text-white text-[9px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold animate-pulse leading-none">
-              {cartCountLabel}
-            </span>
-          </Link>
-        </div>
-
-        {/* MOBILE HAMBURGER */}
-        <button
-          className={`lg:hidden relative flex flex-col gap-1.5 bg-white focus:outline-none transition-transform duration-300 ${isMobileMenuOpen ? "z-[130]" : "z-[110]"}`}
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6 text-[#1c1b1b]" /> : <Menu className="w-6 h-6 text-[#1c1b1b]" />}
-        </button>
-      </div>
-
-      {/* MOBILE MENU */}
-      <div
-        className={`lg:hidden fixed inset-0 z-[120] transition-opacity duration-400 ${isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+    <>
+      {/* ── Top Bar ── */}
+      <nav
+        id="navbar"
+        className={`fixed top-0 w-full z-999 transition-all duration-300 ${scrolled ? "glass-nav shadow-sm text-green-900 hover:text-secondary" : "bg-transparent text-green-900 hover:text-secondary"
           }`}
       >
-        <button
-          aria-label="Close mobile menu"
-          className="absolute inset-0 bg-white"
-          onClick={() => setIsMobileMenuOpen(false)}
+        <div className="flex justify-between items-center px-6 lg:px-10 py-4">
+          {/* Left: Hamburger */}
+          <button
+            aria-label="Open menu"
+            onClick={() => setSidebarOpen(true)}
+            className="flex flex-col justify-center gap-[5px] cursor-pointer w-9 h-9 group"
+          >
+            <span className={`block h-[2px] bg-green-900 rounded-full transition-all duration-300 ${scrolled ? "" : "bg-green-900 text-green-900 hover:text-secondary"}`} style={{ width: "24px" }} />
+            <span className={`block h-[2px] bg-green-900 rounded-full transition-all duration-300 ${scrolled ? "" : "bg-green-900 text-green-900 hover:text-secondary"}`} style={{ width: "18px" }} />
+            <span className={`block h-[2px] bg-green-900 rounded-full transition-all duration-300 ${scrolled ? "" : "bg-green-900 text-green-900 hover:text-secondary"}`} style={{ width: "24px" }} />
+          </button>
+
+          {/* Center: Logo + Brand */}
+          <Link
+            href="/"
+            className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
+          >
+            {/* Logo Image */}
+            <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
+            <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+          </Link>
+
+          {/* Right: Search + Cart */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/search"
+              className={`transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
+            >
+              <span className="material-symbols-outlined text-[22px]">search</span>
+            </Link>
+            <Link
+              href="/user/profile"
+              className={`transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
+            >
+              <span className="material-symbols-outlined text-[22px]">person</span>
+            </Link>
+            <Link
+              href="/cart"
+              className={`relative transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
+            >
+              <span className="material-symbols-outlined text-[22px]">shopping_cart</span>
+              {stableCartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-secondary text-white text-[9px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold leading-none">
+                  {stableCartCount > 99 ? "99+" : stableCartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Sidebar Overlay ── */}
+      <div
+        className={`fixed inset-0 z-[200] transition-all duration-400 ${sidebarOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
+      >
+        {/* Backdrop */}
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-400 ${sidebarOpen ? "opacity-100" : "opacity-0"
+            }`}
         />
 
-        <div
-          className={`absolute left-0 right-0 ${scrolled ? "top-16" : "top-20"} bg-white/95 backdrop-blur-xl border-b border-[#1c1b1b]/10 p-8 flex flex-col gap-7 font-headline uppercase tracking-[0.2em] text-xl font-black transform-gpu transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-12 opacity-0"
+        {/* Sidebar Panel */}
+        <aside
+          className={`absolute left-0 top-0 h-full w-80 bg-surface-container-low flex flex-col shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
         >
-          {mobileMenuLinks.map((entry, index) => (
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
             <Link
-              key={entry.href}
-              href={entry.href}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`transition-all duration-500 hover:text-[#b90c1b] ${isMobileMenuOpen ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
-                }`}
-              style={{ transitionDelay: `${index * 35}ms` }}
+            href="/"
+            className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
+          >
+            {/* Logo Image */}
+            <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
+            <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+          </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close sidebar"
+              className="w-9 h-9 flex items-center justify-center rounded-full cursor-pointer hover:bg-surface-container transition-colors text-on-surface-variant"
             >
-              {entry.label}
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+
+          {/* Nav Links */}
+          <nav className="flex-1 flex flex-col px-6 py-8 gap-1 overflow-y-auto">
+            {NAV_LINKS.map((link, i) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                  }`}
+                style={{ transitionDelay: sidebarOpen ? `${i * 55 + 100}ms` : "0ms" }}
+              >
+                <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">
+                  {link.icon}
+                </span>
+                <span className="font-headline text-lg font-bold tracking-tight">{link.label}</span>
+              </Link>
+            ))}
+
+            <div className="my-4 border-t border-outline-variant/20" />
+
+            {/* Profile Link */}
+            <Link
+              href="/user/profile"
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                }`}
+              style={{ transitionDelay: sidebarOpen ? `${NAV_LINKS.length * 55 + 100}ms` : "0ms" }}
+            >
+              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">person</span>
+              <span className="font-headline text-lg font-bold tracking-tight">My Profile</span>
             </Link>
-          ))}
-        </div>
+
+            <Link
+              href="/cart"
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                }`}
+              style={{ transitionDelay: sidebarOpen ? `${(NAV_LINKS.length + 1) * 55 + 100}ms` : "0ms" }}
+            >
+              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">shopping_cart</span>
+              <span className="font-headline text-lg font-bold tracking-tight">
+                Cart {stableCartCount > 0 && <span className="ml-1 bg-secondary text-white text-[10px] px-1.5 py-0.5 rounded-full">{stableCartCount}</span>}
+              </span>
+            </Link>
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="px-8 py-6 border-t border-outline-variant/20 bg-primary/5">
+            <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant opacity-70 leading-relaxed">
+              Pure • Unrefined • Ethical <br />© 2024 Amila Gold
+            </p>
+          </div>
+        </aside>
       </div>
-    </nav>
+    </>
   );
 }

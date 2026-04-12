@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, Bebas_Neue } from "next/font/google";
+import { Manrope, Newsreader } from "next/font/google";
 import "./globals.css";
 import ClientWrapper from "./components/ClientWrapper";
 import { Providers } from "./context/providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-headline" });
-const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-brand" });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  variable: "--font-headline",
+  display: "swap",
+  style: ["normal", "italic"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
-  title: "STREETRIOT | Precision Streetwear",
-  description: "High-performance streetwear for the global underground.",
+  title: "Amila Gold | Pure Desi Jaggery",
+  description: "The gold standard of ancient agrarian wisdom. Pure, unrefined jaggery harvested with integrity and refined for the modern palate.",
 };
 
 export default function RootLayout({
@@ -21,9 +26,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+        <link rel="icon" href="/logo.png" />
       </head>
-      <body suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable} ${bebasNeue.variable} font-body bg-background text-on-background antialiased`}>
+      <body
+        suppressHydrationWarning
+        className={`${manrope.variable} ${newsreader.variable} font-body bg-surface text-on-surface antialiased selection:bg-secondary-container selection:text-on-secondary-container`}
+      >
         <Providers>
           <ClientWrapper>{children}</ClientWrapper>
         </Providers>

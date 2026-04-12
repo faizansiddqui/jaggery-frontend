@@ -2,8 +2,6 @@
 import React from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import MobileBottomTabs from "./MobileBottomTabs";
-import SmoothScroll from "./SmoothScroll";
 import { usePathname } from "next/navigation";
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
@@ -17,13 +15,8 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       <Navbar />
-      <SmoothScroll>
-        <main className="flex-grow pb-20 lg:pb-0">
-          {children}
-        </main>
-        <Footer />
-      </SmoothScroll>
-      <MobileBottomTabs />
+      <main className="flex-grow">{children}</main>
+      <Footer />
     </>
   );
 }

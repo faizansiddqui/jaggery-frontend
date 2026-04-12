@@ -17,6 +17,12 @@ const defaultProxyTarget = process.env.NODE_ENV === "production"
 const backendProxyTarget = normalizeTarget(process.env.BACKEND_PROXY_TARGET || defaultProxyTarget);
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "fonts.gstatic.com" },
+    ],
+  },
   async rewrites() {
     return [
       {

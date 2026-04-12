@@ -1,29 +1,15 @@
-import Comp1 from "./components/Comp1";
-import Comp2 from "./components/Comp2";
-import Comp3 from "./components/Comp3";
-import Comp4 from "./components/Comp4";
-import Comp5 from "./components/Comp5";
-import Comp6 from "./components/Comp6";
-import Comp7 from "./components/Comp7";
-import Comp8 from "./components/Comp8";
-// import Comp9 from "./components/Comp9";
-import Comp10 from "./components/Comp10";
-import Comp11 from "./components/Comp11";
+import { HeroSection, HeritageSection, FeaturedProducts } from "./components/HomeSections";
+import { SlowCraftSection, TestimonialsSection, NewsletterSection } from "./components/HomeSections2";
 
 export default function HomeRoute() {
   return (
-    <div data-scroll-section>
-      <Comp1 />
-      <Comp2 />
-      <Comp3 />
-      <Comp4 />
-      <Comp5 />
-      <Comp6 />
-      <Comp7 />
-      {/* <Comp9 /> */}
-      <Comp10 />
-      <Comp11 />
-      <Comp8 />
-    </div>
+    <main>
+      <HeroSection />
+      <FeaturedProducts />
+      <HeritageSection />
+      <SlowCraftSection />
+      <TestimonialsSection />
+      <NewsletterSection />
+    </main>
   );
 }

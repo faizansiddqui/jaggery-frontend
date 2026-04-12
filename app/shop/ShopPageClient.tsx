@@ -2,67 +2,60 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-const SEARCH_RESULTS = [
+const products = [
   {
-    id: "classic-golden-block",
-    name: "Classic Golden Block",
+    id: "golden-cubes",
+    name: "Golden Cubes Jaggery",
+    rating: 5,
+    reviews: 124,
     price: "$18.00",
     originalPrice: "$24.00",
-    desc: "Pure, unrefined cane sugar block with notes of butterscotch and toasted pecan. Harvested from the 2024 winter crop.",
-    badge: { text: "Best Seller", variant: "primary" as const },
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC73S2Jq9DAlW_NKPe3q7o6U0YC4DVMKyL7extUX4Pcmpv-qMDqbefzhKMgtYymty8eq-7r0kEHKlD-nj9CxoJS0DUMa06MW3WmneW_3Dk0NcUkybN1nBpuPLhcmyawnqO9B6O3NtYkbT0aDzYfAC_NCkTMopNBHSK5IiyzBMygAVZpAAmXIPhd3iRFUXiCcq578V8qUI0cc0TzdF8TknOd0y8PPpmvwvp28Ij4OUHDwksaXeHyILtqs69hhB2OvxWT2vgqKJVJ8ho",
+    desc: "Perfectly portioned cubes for tea and coffee. Melt-in-mouth texture with rich molasses notes.",
+    badge: "A-Grade\nPurity",
+    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCIS8EPKFVs5mUMbb5J8_8xQKqVxNN5GkO2kJTxXwSDcOmj5rqbQ27i8iwHpeqYv9kqemV4VQhSvKlL-GcPm5IZzx_4VEY73psNyIB7r8d6W5YuFR-lOm8wHlPzPB3cnUQEdpSf-1aen6LA2EbVS_gzonsAqEN0ZRJYJdW8PoEFT6PYSKZYygzAr--1_MAm8a7ERp5mvc1pXWO3TS3QU872WBBDyPCSjD7X96piBBCYBi0NDGVh5DQH6pjcgze1yh47fzCbBtvudlM",
+    offset: false,
   },
   {
-    id: "artisanal-granules",
-    name: "Artisanal Granules",
-    price: "$14.00",
-    originalPrice: "$18.00",
-    desc: "Easily dissolvable granular jaggery, perfect for coffee and traditional baking. 100% sulfur-free processing.",
+    id: "fine-grain-powder",
+    name: "Fine Grain Powder",
+    rating: 4,
+    reviews: 89,
+    price: "$14.50",
+    originalPrice: "$19.00",
+    desc: "Easy-to-use alternative to refined sugar. Ideal for baking and daily wellness drinks.",
     badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDkpxDoXHgQ7ap_rsnam7ufj5SQbx9cE0AtoMgbFxvTtUM_nzwkITkG13fZlML3ttv2ZrozVj5XnYRyyiRnnJ5GHNpQIWU6jYZ1Ju4B3Ez-pCg237E4EKAfr1YKfR54l2pnHFSPfm9LAocPb8I15SW3rS5OQAcY4kDGzZdXivtUaV_urrnQfj3dhBzW5TLAniz1w4CKM5KeyaCH01K_br5Bsgrt-0pFmJN333Luv7Ak9n-S0GSNZKf8rApwM99OfS7TfmT8fLUTrMw",
+    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBvrpNnTOU9uI8jDb9vTjIypI6V9vQmQxqlj6IPYFUoWiBbyUgenqtyhYOX25-mObVvfF2LQLMmNcYB1pOraWpuTHeHvfTB98fjkAuIpOC_F7noQ7PkQ-G3MxbKbgYpzM8YsXrw9cOLEPjkayUq3NJ6rbwP9Zq5CpFyouxxdganCxZKjk5Jdvqd5-KQt0A1ov9ZAuEksjRPw5z7NNz-9JGfRkVGGIMI8RoDLl6exvcybOCfgKilLc8bFFO-1tBb0FOuqgwWJtxff2I",
+    offset: false,
   },
   {
-    id: "ginger-spiced-bites",
-    name: "Ginger Spiced Bites",
+    id: "raw-heritage-blocks",
+    name: "Raw Heritage Blocks",
+    rating: 5,
+    reviews: 210,
     price: "$22.00",
     originalPrice: "$28.00",
-    desc: "Bite-sized delights infused with organic dry ginger. A traditional remedy for digestive wellness.",
-    badge: { text: "New Harvest", variant: "secondary" as const },
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBbK1YVUepa-0sYl8dTnZWUPXWTT7ilefcZZKa8W81UGeStsuPKuG6Pm5XOmfHcFzE53rwBweoOTp9cKuvve21Earn0J9PJ4tZDYY8y03FRoOTE5FQmDeYdXVB8LxyeOx75_8Xp49RwL3XxAOsCO5XOhuwNORbcU56ia3nHwFujriNQ-Gxs_tCdq7x-HzcmGJRz-qfjJJObhkXMwL2FYSXppmVYPKf7hD-kW71xtuvNt-BSgkm27kZwrnRNODHAL7PrzD_xhDx7lls",
+    desc: "The most authentic form. Whole blocks of unrefined sweetness, packed with minerals.",
+    badge: null,
+    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDeQPDYQbBkmOHhxTLZqkd72_XKrRGwjBqcBiXPFckQbFyzSbyf4Ogk_jsqfxZUabN9OTPjoMmrnVe9DZ3f6x9YAmtD13Yjqrt69M0-L-nMSp0GqHV55BK1BhJmp2deU4FJ5zcepKyYLGIUArjup6ZeXrCle3TfIim7LFeCDClMReuKeuNOCO4CfhsF-JrhIRZt5CLcV43H_9mfYNu_ciMKHGjnOQMGE3YdYCeJKJ3EAZfI9QMCgQBMb4XblVDIcmgTXW5JTub_CDY",
+    offset: true,
   },
   {
-    id: "dark-heritage-palm",
-    name: "Dark Heritage Palm",
-    price: "$32.00",
-    originalPrice: "$40.00",
-    desc: "Rare palm jaggery sourced from ancient groves. Deep smoky profile with a mineral-rich finish.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDt8oUUwZ789qNKEKf_mIbsyuXICPlPGWgijFHWlxxR1QgjK9gEV6jD7MzUm9rHrEZ6Lor86VYgVphz0Ml6Pjnf9p09JQFh3yNxDckToojPhNeow8fHED99iqvsFruBSZkaUTAkPbVfJAmxThyKFfwDSq1GyL0HUWkdbkwnWXgmQ8mKER5T2omhpZC9g6Mn3CFVheSqXLhPFsSi5H50fyut7TExrek7-dJ_MRUpOB5Gtv3seR4PqPEqc1ovfEknndodyq5y9kJusGo",
-  },
-  {
-    id: "liquid-gold-nectar",
-    name: "Liquid Gold Nectar",
-    price: "$28.00",
-    originalPrice: "$35.00",
-    desc: "Slow-boiled syrup with a velvety consistency. Ideal for gourmet plating and drizzling over desserts.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBOcxYWdeJy2Mie1FAMyroJHc9Mx2DnB2x8HJeMJwjsUGUvyw_v8uiw5QNfpzkSAuM2lP3EEj6UylOGPeUoBJb4UB3ruWhpxRWtve_pJYpkR-9UVtS35fDKlO6eN6Y_IeO7W03kIK04bQP-Pod6pQU_y0WzWic7XMZt06m5ZLdqQczVWmu5nlFTKO9XAu53GJF-WPnTuIeconvlW7lojj6Y8ThIWZGS-OCJmPG3WUIrKwVY8fLvSVwk0A9VwSBUK1etFzW3ZmPC-1M",
-  },
-  {
-    id: "harvest-discovery-kit",
-    name: "Harvest Discovery Kit",
-    price: "$45.00",
-    originalPrice: "$55.00",
-    desc: "A curated trio of our most popular varieties. Discover the spectrum of unrefined sweetness.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDu5jyU8emnCJI5FkbP_gDhOQbA3byyYLCiTV6fLeqqYdG0QXPC2UTA68QAeGXiCUDWglJYUu6lB4F3l7PtJkeJBcH9-50NMpqMat-XdNJI4KrwvJAXX2_cN3y11bam27Y1mBM3p5Jscn2MM227ynBV2p9mLxinZglqJAO_QYKM0FSemCNzCUD9TLr0xzZgrW19euS04o3NJCD8DBvgqNEjaPc0OvOEw3aYUl7NMCXWdhXgpiGDQiMxpD8d-x5LZjB5sVvluRqtaXg",
+    id: "spiced-ginger-blend",
+    name: "Spiced Ginger Blend",
+    rating: 4,
+    reviews: 45,
+    price: "$21.50",
+    originalPrice: "$27.00",
+    desc: "Infused with ginger and cardamom for an aromatic winter warmth. A culinary treasure.",
+    badge: "Limited",
+    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC32wz4FjU0MNkBWuF5bAW__RvleGx2Vs_xHO_xheEa_xiyB6VX4BpmpLMbeHgdbuj0LjriYL2UUmWIehXL_nyd_xLOEHTZofi3DcV0A1KJ99BjljQWqAYXuhPSAkL8UtgZ-jIemptaF0NiEPk0jTNgLzl7GzRp_cdJVuJCd3r3XvgyMgTg7LvQhJNtZ8S1hYmGdqTXAUPYyY-aEFA",
+    offset: true,
   },
 ];
 
+const filterOptions = ["Artisan Cubes", "Fine Powder", "Traditional Blocks"];
 const weightOptions = ["500g", "1kg", "2.5kg", "Bulk 5kg"];
-
 const CATEGORIES = ["Solid Blocks", "Granular Powder", "Infused Spiced"];
-const HARVEST_TYPES = ["Organic", "Heritage", "Fair Trade"];
 
 const sortOptions = [
   { label: "Featured", value: "featured" },
@@ -72,22 +65,35 @@ const sortOptions = [
   { label: "Name: Z to A", value: "name-desc" },
 ];
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("Desi Jaggery");
-  const [checkedCategories, setCheckedCategories] = useState(["Solid Blocks"]);
-  const [activeHarvest, setActiveHarvest] = useState("Organic");
-  const [page, setPage] = useState(1);
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5 text-secondary">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <span key={s} className="material-symbols-outlined text-sm" style={{ fontVariationSettings: `'FILL' ${s <= rating ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24` }}>
+          star
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export default function ShopPageClient() {
   const [activeWeight, setActiveWeight] = useState("1kg");
+  const [checkedFilters, setCheckedFilters] = useState(["Artisan Cubes"]);
+  const [checkedCategories, setCheckedCategories] = useState(["Solid Blocks"]);
   const [sortOption, setSortOption] = useState("featured");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
 
+  const toggleFilter = (f: string) =>
+    setCheckedFilters((prev) => prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]);
+
   const toggleCat = (c: string) =>
     setCheckedCategories((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const getSortedResults = () => {
-    const sorted = [...SEARCH_RESULTS];
+  const getSortedProducts = () => {
+    const sorted = [...products];
     switch (sortOption) {
       case "price-asc":
         return sorted.sort((a, b) => parseFloat(a.price.replace("$", "")) - parseFloat(b.price.replace("$", "")));
@@ -100,33 +106,25 @@ export default function SearchPage() {
       default:
         return sorted;
     }
-  }; return (
-    <main className="pt-28 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
+  };
+  return (
+    <main className="pt-24 pb-12 px-6 lg:px-12 max-w-7xl mx-auto">
       {/* Header */}
-      <header className="mb-12">
-        <nav className="flex text-sm font-label text-on-surface-variant mb-4 gap-2">
-          <Link href="/shop" className="hover:text-secondary transition-colors">Shop</Link>
-          <span>/</span>
-          <span className="text-secondary">Search Results</span>
-        </nav>
-        <h1 className="font-headline text-5xl md:text-6xl font-bold text-primary tracking-tight">
-          Search results for{" "}
-          <span className="italic text-secondary">&ldquo;{query}&rdquo;</span>
-        </h1>
-        <p className="mt-4 text-on-surface-variant font-body text-lg">
-          Found {SEARCH_RESULTS.length * 2} treasures from our latest harvest.
-        </p>
-        {/* Search Bar */}
-        <div className="mt-6 flex items-center gap-4 max-w-lg">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full bg-surface-container-low border-none rounded-full px-6 py-3 text-sm focus:ring-2 focus:ring-secondary/20 font-body outline-none"
-              placeholder="Search jaggery..."
-            />
-            <span className="material-symbols-outlined absolute right-4 top-3 text-on-surface-variant text-lg">search</span>
+      <header className="mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <h1 className="font-headline text-5xl lg:text-7xl text-primary tracking-tight leading-none mb-6">
+              The Golden Harvest
+            </h1>
+            <p className="text-on-surface-variant text-lg max-w-lg">
+              From the sun-drenched fields of the heartland to your table. Experience the unrefined purity of
+              heritage jaggery, crafted using century-old techniques.
+            </p>
+          </div>
+          <div className="flex items-center gap-4 text-sm font-label uppercase tracking-widest text-secondary">
+            <span>Curated Selection</span>
+            <div className="h-px w-12 bg-secondary/30" />
+            <span>Est. 1924</span>
           </div>
         </div>
       </header>
@@ -255,6 +253,7 @@ export default function SearchPage() {
         </div>
       </>
 
+      {/* Layout */}
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Sidebar Filters - Hidden on Mobile */}
         <aside className="hidden lg:block w-full lg:w-64 flex-shrink-0">
@@ -326,8 +325,8 @@ export default function SearchPage() {
 
 
 
-        {/* Results Grid */}
-        <div className="flex-1">
+        {/* Product Grid */}
+        <div className="lg:col-span-9">
           {/* Desktop Sort Bar */}
           <div className="hidden lg:flex items-center gap-4 mb-8 overflow-x-auto pb-2">
             <span className="text-sm font-label uppercase tracking-widest text-on-surface-variant whitespace-nowrap">Sort by:</span>
@@ -335,7 +334,7 @@ export default function SearchPage() {
               <button
                 key={option.value}
                 onClick={() => setSortOption(option.value)}
-                className={`px-4 py-2 rounded-full text-sm font-body whitespace-nowrap transition-all ${sortOption === option.value
+                className={`px-4 py-2 rounded-full text-sm fontorizonta-body whitespace-nowrap transition-all ${sortOption === option.value
                   ? "bg-secondary text-on-secondary"
                   : "bg-surface-container-low text-on-surface hover:bg-surface-container-high"
                   }`}
@@ -344,69 +343,50 @@ export default function SearchPage() {
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {getSortedResults().map((p) => (
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-8 gap-y-16">
+            {getSortedProducts().map((p) => (
               <Link href={`/product/${p.id}/${p.name.toLowerCase().replace(/\s+/g, '-')}`} key={p.id}>
-                <div className="group">
-                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface-container-high">
+                <article className={`group relative ${p.offset ? "md:mt-12" : ""}`}>
+                  <div className="relative mb-6 overflow-hidden rounded-xl bg-surface-container-high aspect-[4/5]">
                     <img
                       src={p.img}
                       alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     {p.badge && (
-                      <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-label font-bold uppercase tracking-widest ${p.badge.variant === "secondary" ? "bg-secondary text-on-secondary italic font-headline" : "bg-primary text-on-primary"
-                        }`}>
-                        {p.badge.text}
+                      <div className="heritage-badge w-10 h-10 lg:w-20 lg:h-20 absolute top-2 right-2 lg:top-4 lg:right-4">
+                        <span className="font-headline text-[6px] lg:text-[10px] uppercase leading-tight font-bold text-secondary whitespace-pre-line text-center">
+                          {p.badge}
+                        </span>
                       </div>
                     )}
-                    <button className="absolute bottom-4 right-4 w-12 h-12 bg-surface/90 backdrop-blur shadow-lg rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-all">
-                      <span className="material-symbols-outlined">add_shopping_cart</span>
-                    </button>
                   </div>
-                  <div className="mt-6 space-y-2">
-                    <div className="flex flex-col lg:flex-row justify-between items-start">
-                      <h3 className="font-headline text-xl lg:text-2xl font-bold text-primary">{p.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="font-headline text-xl text-secondary">{p.price}</span>
-                        {p.originalPrice && (
-                          <span className="font-body text-sm text-on-surface-variant line-through">{p.originalPrice}</span>
-                        )}
-                      </div>
+                  <div className="flex flex-col lg:flex-row justify-between items-start mb-2">
+                    <div>
+                      <h3 className="font-headline text-xl lg:text-2xl text-primary mb-1">{p.name}</h3>
+                      {/* <div className="flex items-center gap-1">
+                      <StarRating rating={p.rating} />
+                      <span className="text-[10px] font-label text-on-surface-variant ml-1">({p.reviews})</span>
+                    </div> */}
                     </div>
-                    {/* <p className="text-on-surface-variant font-body text-sm line-clamp-2">{p.desc}</p> */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-headline text-xl lg:text-2xl text-secondary">{p.price}</span>
+                      {p.originalPrice && (
+                        <span className="font-body text-sm text-on-surface-variant line-through">{p.originalPrice}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
+                  {/* <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">{p.desc}</p> */}
+                  <div
+                    onClick={(e) => e.preventDefault()}
+                    className="block flex items-center justify-center w-full py-3 rounded-full border-[1.5px] border-secondary text-secondary font-label text-sm uppercase tracking-widest hover:bg-secondary/10 transition-colors text-center"
+                  >
+                    Add to
+                    <span className="material-symbols-outlined">add_shopping_cart</span>
+                  </div>
+                </article>
               </Link>
             ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-16 flex items-center justify-center gap-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-            <div className="flex gap-2">
-              {[1, 2, 3].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setPage(n)}
-                  className={`w-12 h-12 rounded-full font-bold transition-colors ${page === n ? "bg-primary text-on-primary" : "border border-transparent text-on-surface hover:bg-surface-container-high"
-                    }`}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setPage((p) => Math.min(3, p + 1))}
-              className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
           </div>
         </div>
       </div>

@@ -1,13 +1,10 @@
-import Comp1 from "./components/Comp1";
-import Comp2 from "./components/Comp2";
-import Comp3 from "./components/Comp3";
+import ShopPageClient from "./ShopPageClient";
 
-export default function ShopAllRoute() {
-  return (
-    <div data-scroll-section>
-      <Comp1 />
-      <Comp2 />
-      <Comp3 />
-    </div>
-  );
+export const metadata = {
+  title: "The Golden Harvest | Amila Gold",
+  description: "Explore the finest pure, unrefined jaggery from heirloom cane fields. Heritage jaggery crafted using century-old techniques.",
+};
+
+export default function ShopPage() {
+  return <ShopPageClient />;
 }
