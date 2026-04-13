@@ -107,13 +107,13 @@ export default function Navbar() {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between px-8 py-6 border-b border-outline-variant/20">
             <Link
-            href="/"
-            className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
-          >
-            {/* Logo Image */}
-            <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
-            <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
-          </Link>
+              href="/"
+              className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
+            >
+              {/* Logo Image */}
+              <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
+              <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+            </Link>
             <button
               onClick={() => setSidebarOpen(false)}
               aria-label="Close sidebar"

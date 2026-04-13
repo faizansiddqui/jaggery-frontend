@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {ChevronLeft, ChevronRight} from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 // Hero Section
 function HeroSection() {
