@@ -33,15 +33,15 @@ export default function Navbar() {
       {/* ── Top Bar ── */}
       <nav
         id="navbar"
-        className={`fixed top-0 w-full z-999 transition-all duration-300 ${scrolled ? "glass-nav shadow-sm text-green-900 hover:text-secondary" : "bg-transparent text-green-900 hover:text-secondary"
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? "glass-nav shadow-sm text-green-900 hover:text-secondary" : "bg-transparent text-green-900 hover:text-secondary"
           }`}
       >
-        <div className="flex justify-between items-center px-6 lg:px-10 py-4">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10 md:h-20">
           {/* Left: Hamburger */}
           <button
             aria-label="Open menu"
             onClick={() => setSidebarOpen(true)}
-            className="flex flex-col justify-center gap-[5px] cursor-pointer w-9 h-9 group"
+            className="flex h-9 w-9 shrink-0 cursor-pointer flex-col justify-center gap-[5px] group"
           >
             <span className={`block h-[2px] bg-green-900 rounded-full transition-all duration-300 ${scrolled ? "" : "bg-green-900 text-green-900 hover:text-secondary"}`} style={{ width: "24px" }} />
             <span className={`block h-[2px] bg-green-900 rounded-full transition-all duration-300 ${scrolled ? "" : "bg-green-900 text-green-900 hover:text-secondary"}`} style={{ width: "18px" }} />
@@ -51,32 +51,32 @@ export default function Navbar() {
           {/* Center: Logo + Brand */}
           <Link
             href="/"
-            className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
+            className={`flex items-center gap-1.5 sm:gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
           >
             {/* Logo Image */}
-            <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
-            <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+            <Image src="/logo.png" alt="Amila Gold Logo" width={28} height={28} className="h-7 w-7 sm:h-8 sm:w-8" />
+            <span className="hidden sm:inline font-headline text-xl md:text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
           </Link>
 
           {/* Right: Search + Cart */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               href="/search"
               className={`transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
             >
-              <span className="material-symbols-outlined text-[22px]">search</span>
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">search</span>
             </Link>
             <Link
               href="/user/profile"
               className={`transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
             >
-              <span className="material-symbols-outlined text-[22px]">person</span>
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">person</span>
             </Link>
             <Link
               href="/cart"
               className={`relative transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
             >
-              <span className="material-symbols-outlined text-[22px]">shopping_cart</span>
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">shopping_cart</span>
               {stableCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-secondary text-white text-[9px] min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold leading-none">
                   {stableCartCount > 99 ? "99+" : stableCartCount}
@@ -101,7 +101,7 @@ export default function Navbar() {
 
         {/* Sidebar Panel */}
         <aside
-          className={`absolute left-0 top-0 h-full w-80 bg-surface-container-low flex flex-col shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          className={`absolute left-0 top-0 h-dvh w-[86vw] max-w-sm bg-surface-container-low flex flex-col shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
         >
           {/* Sidebar Header */}

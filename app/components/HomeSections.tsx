@@ -56,7 +56,7 @@ function HeroSection() {
 
   return (
     <>
-      <section className="relative h-[40vh] md:h-[85vh] pt-16 md:pt-17 overflow-hidden">
+      <section className="relative h-[32vh] sm:h-[36vh] md:h-[80vh] pt-16 md:pt-20 overflow-hidden">
         <div ref={heroRef} className="flex h-full w-full overflow-x-auto scroll-smooth snap-x snap-mandatory hide-scrollbar">
           {banners.map((slide, index) => (
             <Link
@@ -67,16 +67,16 @@ function HeroSection() {
               onClick={() => setActiveIndex(index)}
             >
               <img
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
                 src={slide.img}
                 alt={slide.title}
               />
               <div className="absolute inset-0 bg-black/35" />
               <div className="absolute inset-x-0 top-1/2 mx-auto w-full max-w-4xl px-8 text-white -translate-y-1/2">
-                <span className="font-label uppercase tracking-[0.3em] text-sm text-secondary">
+                <span className="font-label uppercase tracking-[0.3em] text-[10px] sm:text-sm text-secondary">
                   {slide.subtitle}
                 </span>
-                <h1 className="font-headline text-5xl md:text-7xl leading-tight mt-6 max-w-3xl">
+                <h1 className="font-headline text-3xl sm:text-4xl md:text-7xl leading-tight mt-4 sm:mt-6 max-w-3xl">
                   {slide.title}
                 </h1>
                 {/* <div className="mt-8 flex flex-wrap gap-4">
