@@ -1,61 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useCart } from "@/app/context/CartContext";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
+import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
+import { fetchBackendProducts } from "@/app/lib/backendProducts";
+import { createProductHref, type Product as BackendProduct } from "@/app/data/products";
+import {
+  type ListingProduct,
+  minMaxListingPrice,
+  productMatchesWeightFilters,
+  sortPriceForProduct,
+  resolveListingVariant,
+  collectWeightOptions,
+} from "@/app/lib/shopListing";
 
-const products = [
-  {
-    id: "golden-cubes",
-    name: "Golden Cubes Jaggery",
-    rating: 5,
-    reviews: 124,
-    price: "$18.00",
-    originalPrice: "$24.00",
-    desc: "Perfectly portioned cubes for tea and coffee. Melt-in-mouth texture with rich molasses notes.",
-    badge: "A-Grade\nPurity",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCIS8EPKFVs5mUMbb5J8_8xQKqVxNN5GkO2kJTxXwSDcOmj5rqbQ27i8iwHpeqYv9kqemV4VQhSvKlL-GcPm5IZzx_4VEY73psNyIB7r8d6W5YuFR-lOm8wHlPzPB3cnUQEdpSf-1aen6LA2EbVS_gzonsAqEN0ZRJYJdW8PoEFT6PYSKZYygzAr--1_MAm8a7ERp5mvc1pXWO3TS3QU872WBBDyPCSjD7X96piBBCYBi0NDGVh5DQH6pjcgze1yh47fzCbBtvudlM",
-    offset: false,
-  },
-  {
-    id: "fine-grain-powder",
-    name: "Fine Grain Powder",
-    rating: 4,
-    reviews: 89,
-    price: "$14.50",
-    originalPrice: "$19.00",
-    desc: "Easy-to-use alternative to refined sugar. Ideal for baking and daily wellness drinks.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBvrpNnTOU9uI8jDb9vTjIypI6V9vQmQxqlj6IPYFUoWiBbyUgenqtyhYOX25-mObVvfF2LQLMmNcYB1pOraWpuTHeHvfTB98fjkAuIpOC_F7noQ7PkQ-G3MxbKbgYpzM8YsXrw9cOLEPjkayUq3NJ6rbwP9Zq5CpFyouxxdganCxZKjk5Jdvqd5-KQt0A1ov9ZAuEksjRPw5z7NNz-9JGfRkVGGIMI8RoDLl6exvcybOCfgKilLc8bFFO-1tBb0FOuqgwWJtxff2I",
-    offset: false,
-  },
-  {
-    id: "raw-heritage-blocks",
-    name: "Raw Heritage Blocks",
-    rating: 5,
-    reviews: 210,
-    price: "$22.00",
-    originalPrice: "$28.00",
-    desc: "The most authentic form. Whole blocks of unrefined sweetness, packed with minerals.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDeQPDYQbBkmOHhxTLZqkd72_XKrRGwjBqcBiXPFckQbFyzSbyf4Ogk_jsqfxZUabN9OTPjoMmrnVe9DZ3f6x9YAmtD13Yjqrt69M0-L-nMSp0GqHV55BK1BhJmp2deU4FJ5zcepKyYLGIUArjup6ZeXrCle3TfIim7LFeCDClMReuKeuNOCO4CfhsF-JrhIRZt5CLcV43H_9mfYNu_ciMKHGjnOQMGE3YdYCeJKJ3EAZfI9QMCgQBMb4XblVDIcmgTXW5JTub_CDY",
-    offset: true,
-  },
-  {
-    id: "spiced-ginger-blend",
-    name: "Spiced Ginger Blend",
-    rating: 4,
-    reviews: 45,
-    price: "$21.50",
-    originalPrice: "$27.00",
-    desc: "Infused with ginger and cardamom for an aromatic winter warmth. A culinary treasure.",
-    badge: "Limited",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC32wz4FjU0MNkBWuF5bAW__RvleGx2Vs_xHO_xheEa_xiyB6VX4BpmpLMbeHgdbuj0LjriYL2UUmWIehXL_nyd_xLOEHTZofi3DcV0A1KJ99BjljQWqAYXuhPSAkL8UtgZ-jIemptaF0NiEPk0jTNgLzl7GzRp_cdJVuJCd3r3XvgyMgTg7LvQhJNtZ8S1hYmGdqTXAUPYyY-aEFA",
-    offset: true,
-  },
-];
-
-const filterOptions = ["Artisan Cubes", "Fine Powder", "Traditional Blocks"];
-const weightOptions = ["500g", "1kg", "2.5kg", "Bulk 5kg"];
-const CATEGORIES = ["Solid Blocks", "Granular Powder", "Infused Spiced"];
+type Product = ListingProduct;
 
 const sortOptions = [
   { label: "Featured", value: "featured" },
@@ -65,67 +26,171 @@ const sortOptions = [
   { label: "Name: Z to A", value: "name-desc" },
 ];
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5 text-secondary">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} className="material-symbols-outlined text-sm" style={{ fontVariationSettings: `'FILL' ${s <= rating ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24` }}>
-          star
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export default function ShopPageClient() {
-  const [activeWeight, setActiveWeight] = useState("1kg");
-  const [checkedFilters, setCheckedFilters] = useState(["Artisan Cubes"]);
-  const [checkedCategories, setCheckedCategories] = useState(["Solid Blocks"]);
+  const { addItem, isVariantInCart } = useCart();
+  const { settings } = useSiteSettings();
+  const currencySymbol = settings.currencySymbol || "₹";
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedWeights, setSelectedWeights] = useState<string[]>([]);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState("featured");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 9;
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchBackendProducts();
+        const normalized: Product[] = (data as BackendProduct[]).map((p) => ({
+          id: p.id,
+          publicId: p.publicId,
+          name: p.name,
+          slug: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'),
+          price: Number(p.price || 0),
+          originalPrice: p.originalPrice,
+          image: p.image || '',
+          category: p.category || 'shop',
+          collection: p.collection || 'SHOP',
+          description: p.description || '',
+          quantity: Number(p.quantity || 0),
+          variants: Array.isArray(p.variants) ? p.variants : [],
+        }));
+        setProducts(normalized);
+        if (normalized.length > 0) {
+          let minP = Infinity;
+          let maxP = -Infinity;
+          for (const p of normalized) {
+            const { min, max } = minMaxListingPrice(p);
+            minP = Math.min(minP, min);
+            maxP = Math.max(maxP, max);
+          }
+          if (Number.isFinite(maxP)) setMaxPrice(Math.ceil(maxP));
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
 
-  const toggleFilter = (f: string) =>
-    setCheckedFilters((prev) => prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]);
+  // Extract unique categories from products
+  const CATEGORIES = useMemo(() => {
+    return [...new Set(products.map(p => p.category).filter(Boolean))];
+  }, [products]);
 
+  // Calculate dynamic price range from products
+  const priceRange = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 1000 };
+    let minP = Infinity;
+    let maxP = -Infinity;
+    for (const p of products) {
+      const { min, max } = minMaxListingPrice(p);
+      minP = Math.min(minP, min);
+      maxP = Math.max(maxP, max);
+    }
+    if (!Number.isFinite(minP)) return { min: 0, max: 1000 };
+    return { min: Math.floor(minP), max: Math.ceil(maxP) };
+  }, [products]);
+
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
+
+  const AVAILABLE_WEIGHTS = useMemo(() => collectWeightOptions(products), [products]);
+
+  const handleAddToCart = (product: Product) => {
+    const rv = resolveListingVariant(product, selectedWeights);
+    if (rv.stock <= 0) return;
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: rv.price,
+      color: "",
+      size: rv.label,
+      image: rv.image,
+      collection: product.collection || "SHOP COLLECTION",
+    });
+  };
+
+  const toggleWeight = (w: string) => {
+    setSelectedWeights((prev) =>
+      prev.includes(w) ? prev.filter((x) => x !== w) : [...prev, w]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setCheckedCategories([]);
+    setMaxPrice(priceRange.max);
+    setSelectedWeights([]);
+  };
   const toggleCat = (c: string) =>
     setCheckedCategories((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const getSortedProducts = () => {
-    const sorted = [...products];
+  const filteredProducts = useMemo(() => {
+    let results = products;
+
+    if (checkedCategories.length > 0) {
+      results = results.filter((p) => checkedCategories.includes(p.category));
+    }
+
+    results = results.filter((p) => minMaxListingPrice(p).min <= maxPrice);
+
+    if (selectedWeights.length > 0) {
+      results = results.filter((p) => productMatchesWeightFilters(p, selectedWeights));
+    }
+
+    return results;
+  }, [products, checkedCategories, maxPrice, selectedWeights]);
+
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [checkedCategories, maxPrice, selectedWeights, sortOption]);
+
+  const sortedProducts = useMemo(() => {
+    const list = [...filteredProducts];
     switch (sortOption) {
       case "price-asc":
-        return sorted.sort((a, b) => parseFloat(a.price.replace("$", "")) - parseFloat(b.price.replace("$", "")));
+        return list.sort(
+          (a, b) => sortPriceForProduct(a, selectedWeights) - sortPriceForProduct(b, selectedWeights)
+        );
       case "price-desc":
-        return sorted.sort((a, b) => parseFloat(b.price.replace("$", "")) - parseFloat(a.price.replace("$", "")));
+        return list.sort(
+          (a, b) => sortPriceForProduct(b, selectedWeights) - sortPriceForProduct(a, selectedWeights)
+        );
       case "name-asc":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+        return list.sort((a, b) => a.name.localeCompare(b.name));
       case "name-desc":
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+        return list.sort((a, b) => b.name.localeCompare(a.name));
       default:
-        return sorted;
+        return list;
     }
-  };
+  }, [filteredProducts, sortOption, selectedWeights]);
+
   return (
     <main className="pt-24 pb-12 px-6 lg:px-12 max-w-7xl mx-auto">
       {/* Header */}
-      <header className="mb-16">
+      <header className="mb-5">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl">
             <h1 className="font-headline text-5xl lg:text-7xl text-primary tracking-tight leading-none mb-6">
               The Golden Harvest
             </h1>
-            <p className="text-on-surface-variant text-lg max-w-lg">
+            {/* <p className="text-on-surface-variant text-lg max-w-lg">
               From the sun-drenched fields of the heartland to your table. Experience the unrefined purity of
               heritage jaggery, crafted using century-old techniques.
-            </p>
+            </p> */}
           </div>
-          <div className="flex items-center gap-4 text-sm font-label uppercase tracking-widest text-secondary">
+          {/* <div className="flex items-center gap-4 text-sm font-label uppercase tracking-widest text-secondary">
             <span>Curated Selection</span>
             <div className="h-px w-12 bg-secondary/30" />
             <span>Est. 1924</span>
-          </div>
+          </div> */}
         </div>
       </header>
 
@@ -186,7 +251,7 @@ export default function ShopPageClient() {
           className={`fixed top-0 right-0 h-full w-80 max-w-full bg-surface-container-low shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${showMobileFilter ? "translate-x-0" : "translate-x-full"
             }`}
         >
-          <div className="p-6 h-full overflow-y-auto">
+          <div className="p-6 h-full overflow-y-auto" data-lenis-prevent="true">
             <div className="flex justify-between items-center mb-8">
               <h3 className="font-headline text-2xl font-bold text-primary">Filters</h3>
               <button
@@ -206,7 +271,7 @@ export default function ShopPageClient() {
                       <div className="w-5 h-5 rounded border border-outline-variant group-hover:border-secondary flex items-center justify-center transition-colors">
                         {checkedCategories.includes(cat) && <div className="w-2.5 h-2.5 bg-secondary rounded-sm" />}
                       </div>
-                      <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} readOnly />
+                      <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} />
                       <span className="font-body text-on-surface group-hover:text-secondary transition-colors">{cat}</span>
                     </label>
                   ))}
@@ -216,10 +281,17 @@ export default function ShopPageClient() {
               <div>
                 <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Price Range</h4>
                 <div className="space-y-4">
-                  <input type="range" className="w-full accent-secondary" min={5} max={45} defaultValue={45} />
+                  <input
+                    type="range"
+                    className="w-full accent-secondary"
+                    min={priceRange.min}
+                    max={priceRange.max}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  />
                   <div className="flex justify-between text-sm font-body text-on-surface-variant">
-                    <span>$5.00</span>
-                    <span>$45.00</span>
+                    <span>{currencySymbol}{priceRange.min}</span>
+                    <span>{currencySymbol}{maxPrice}</span>
                   </div>
                 </div>
               </div>
@@ -227,11 +299,11 @@ export default function ShopPageClient() {
               <div>
                 <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Weight</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  {weightOptions.map((w) => (
+                  {AVAILABLE_WEIGHTS.map((w) => (
                     <button
                       key={w}
-                      onClick={() => setActiveWeight(w)}
-                      className={`px-4 py-2 text-sm border-b text-left transition-all ${activeWeight === w
+                      onClick={() => toggleWeight(w)}
+                      className={`px-4 py-2 text-sm border-b text-left transition-all ${selectedWeights.includes(w)
                         ? "border-secondary text-secondary font-bold bg-surface-container-low"
                         : "border-outline-variant/20 hover:border-secondary"
                         }`}
@@ -269,7 +341,7 @@ export default function ShopPageClient() {
                         <div className="w-5 h-5 rounded border border-outline-variant group-hover:border-secondary flex items-center justify-center transition-colors">
                           {checkedCategories.includes(cat) && <div className="w-2.5 h-2.5 bg-secondary rounded-sm" />}
                         </div>
-                        <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} readOnly />
+                        <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} />
                         <span className="font-body text-on-surface group-hover:text-secondary transition-colors">{cat}</span>
                       </label>
                     ))}
@@ -279,10 +351,17 @@ export default function ShopPageClient() {
                 <div>
                   <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Price Range</h4>
                   <div className="space-y-4">
-                    <input type="range" className="w-full accent-secondary" min={5} max={45} defaultValue={45} />
+                    <input
+                      type="range"
+                      className="w-full accent-secondary"
+                      min={priceRange.min}
+                      max={priceRange.max}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    />
                     <div className="flex justify-between text-sm font-body text-on-surface-variant">
-                      <span>$5.00</span>
-                      <span>$45.00</span>
+                      <span>{currencySymbol}{priceRange.min}</span>
+                      <span>{currencySymbol}{maxPrice}</span>
                     </div>
                   </div>
                 </div>
@@ -290,11 +369,11 @@ export default function ShopPageClient() {
                 <section>
                   <h3 className="font-headline text-xl text-primary mb-6">Weight Variation</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {weightOptions.map((w) => (
+                    {AVAILABLE_WEIGHTS.map((w) => (
                       <button
                         key={w}
-                        onClick={() => setActiveWeight(w)}
-                        className={`px-4 py-2 text-sm border-b text-left transition-all ${activeWeight === w
+                        onClick={() => toggleWeight(w)}
+                        className={`px-4 py-2 text-sm border-b text-left transition-all ${selectedWeights.includes(w)
                           ? "border-secondary text-secondary font-bold bg-surface-container-low"
                           : "border-outline-variant/20 hover:border-secondary"
                           }`}
@@ -334,7 +413,7 @@ export default function ShopPageClient() {
               <button
                 key={option.value}
                 onClick={() => setSortOption(option.value)}
-                className={`px-4 py-2 rounded-full text-sm fontorizonta-body whitespace-nowrap transition-all ${sortOption === option.value
+                className={`px-4 py-2 rounded-full text-sm font-body whitespace-nowrap transition-all ${sortOption === option.value
                   ? "bg-secondary text-on-secondary"
                   : "bg-surface-container-low text-on-surface hover:bg-surface-container-high"
                   }`}
@@ -343,51 +422,118 @@ export default function ShopPageClient() {
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-8 gap-y-16">
-            {getSortedProducts().map((p) => (
-              <Link href={`/product/${p.id}/${p.name.toLowerCase().replace(/\s+/g, '-')}`} key={p.id}>
-                <article className={`group relative ${p.offset ? "md:mt-12" : ""}`}>
-                  <div className="relative mb-6 overflow-hidden rounded-xl bg-surface-container-high aspect-[4/5]">
-                    <img
-                      src={p.img}
-                      alt={p.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    {p.badge && (
-                      <div className="heritage-badge w-10 h-10 lg:w-20 lg:h-20 absolute top-2 right-2 lg:top-4 lg:right-4">
-                        <span className="font-headline text-[6px] lg:text-[10px] uppercase leading-tight font-bold text-secondary whitespace-pre-line text-center">
-                          {p.badge}
-                        </span>
+
+          {isLoading ? (
+            <ProductGridSkeleton count={9} />
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <span className="material-symbols-outlined text-8xl text-on-surface-variant/30 mb-4">inventory_2</span>
+              <h3 className="font-headline text-3xl text-primary mb-2">No products found</h3>
+              <p className="text-on-surface-variant text-lg text-center max-w-md">
+                No products match your current filters. Try adjusting your search criteria.
+              </p>
+              {(checkedCategories.length > 0 || maxPrice < priceRange.max || selectedWeights.length > 0) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="mt-6 px-6 py-3 rounded-full bg-secondary text-on-secondary font-label text-sm uppercase tracking-widest hover:bg-secondary/90 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-16">
+                {sortedProducts.slice(
+                  (currentPage - 1) * PRODUCTS_PER_PAGE,
+                  currentPage * PRODUCTS_PER_PAGE
+                ).map((p) => (
+                  <Link href={createProductHref(p)} key={p.id}>
+                    <article className="group relative">
+                      {(() => {
+                        const rv = resolveListingVariant(p, selectedWeights);
+                        const inCart = isVariantInCart(p.id, rv.label, "");
+                        const outOfStock = rv.stock <= 0;
+                        return (
+                          <>
+                      <div className="relative mb-6 overflow-hidden rounded-xl bg-surface-container-high aspect-[4/5]">
+                        {rv.image ? (
+                          <Image
+                            src={rv.image}
+                            alt={p.name}
+                            fill
+                            unoptimized
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        ) : null}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col lg:flex-row justify-between items-start mb-2">
-                    <div>
-                      <h3 className="font-headline text-xl lg:text-2xl text-primary mb-1">{p.name}</h3>
-                      {/* <div className="flex items-center gap-1">
-                      <StarRating rating={p.rating} />
-                      <span className="text-[10px] font-label text-on-surface-variant ml-1">({p.reviews})</span>
-                    </div> */}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-headline text-xl lg:text-2xl text-secondary">{p.price}</span>
-                      {p.originalPrice && (
-                        <span className="font-body text-sm text-on-surface-variant line-through">{p.originalPrice}</span>
-                      )}
-                    </div>
-                  </div>
-                  {/* <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">{p.desc}</p> */}
-                  <div
-                    onClick={(e) => e.preventDefault()}
-                    className="block flex items-center justify-center w-full py-3 rounded-full border-[1.5px] border-secondary text-secondary font-label text-sm uppercase tracking-widest hover:bg-secondary/10 transition-colors text-center"
+                      <div className="flex flex-col lg:flex-row justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-headline text-xl lg:text-2xl text-primary mb-1">{p.name}</h3>
+                        </div>
+                      </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-headline text-xl lg:text-2xl text-secondary">{currencySymbol}{rv.price}</span>
+                          {rv.originalPrice ? (
+                            <span className="font-body text-sm text-on-surface-variant line-through">{currencySymbol}{rv.originalPrice}</span>
+                          ) : null}
+                        </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleAddToCart(p);
+                        }}
+                        disabled={inCart || outOfStock}
+                        className={`w-full py-3 rounded-full font-label text-sm uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${inCart || outOfStock ? "bg-primary text-white border-[1.5px] border-primary disabled:opacity-75" : "border-[1.5px] border-secondary text-secondary hover:bg-secondary/10"}`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          {outOfStock ? "block" : inCart ? "done" : "add_shopping_cart"}
+                        </span>
+                        {outOfStock ? "Out of Stock" : inCart ? "Added to Cart" : "Add to Cart"}
+                      </button>
+                          </>
+                        );
+                      })()}
+                    </article>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-16 flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Add to
-                    <span className="material-symbols-outlined">add_shopping_cart</span>
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <div className="flex gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setCurrentPage(n)}
+                        className={`w-12 h-12 rounded-full font-bold transition-colors ${currentPage === n ? "bg-primary text-on-primary" : "border border-transparent text-on-surface hover:bg-surface-container-high"
+                          }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
                   </div>
-                </article>
-              </Link>
-            ))}
-          </div>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </main>

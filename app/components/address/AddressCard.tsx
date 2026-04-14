@@ -12,7 +12,7 @@ interface AddressCardProps {
 export default function AddressCard({ address, selected, onSelect, onEdit }: AddressCardProps) {
     return (
         <article
-            className={`border p-4 transition-colors ${selected ? 'border-[#b90c1b] bg-[#fff7f7]' : 'border-[#1c1b1b]/10 bg-white'}`}
+            className={`rounded-2xl border p-4 transition-colors ${selected ? 'border-primary bg-primary/5' : 'border-outline-variant/30 bg-surface hover:border-primary/50'}`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div>
@@ -31,13 +31,13 @@ export default function AddressCard({ address, selected, onSelect, onEdit }: Add
             <div className="mt-4 flex gap-2">
                 <button
                     onClick={onSelect}
-                    className={`px-3 py-2 font-headline text-[10px] uppercase tracking-widest transition-colors ${selected ? 'bg-[#b90c1b] text-white' : 'border border-[#1c1b1b]/20 hover:border-[#1c1b1b]'}`}
+                    className={`px-3 py-2 rounded-full font-headline text-[10px] uppercase tracking-widest transition-colors ${selected ? 'bg-primary text-on-primary' : 'border border-outline-variant/30 hover:border-primary'}`}
                 >
                     {selected ? 'Selected' : 'Use This'}
                 </button>
                 <button
                     onClick={onEdit}
-                    className="px-3 py-2 border border-[#1c1b1b]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#1c1b1b]"
+                    className="px-3 py-2 rounded-full border border-outline-variant/30 font-headline text-[10px] uppercase tracking-widest hover:border-primary"
                 >
                     Edit
                 </button>

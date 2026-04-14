@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div data-scroll-section className="pt-10 pb-20 px-6 md:px-12">
+    <div data-scroll-section className="pt-25 pb-20 px-6 md:px-12">
       <div className="max-w-5xl mx-auto flex flex-col gap-10">
         <header className="border-b border-[#1c1b1b]/10 pb-6">
           <p className="font-headline text-[10px] uppercase tracking-[0.2em] text-[#b90c1b]">Legal</p>

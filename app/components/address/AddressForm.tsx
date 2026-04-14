@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import type { UserAddressInput } from '@/app/lib/apiClient';
 
 interface AddressFormProps {
@@ -33,7 +34,7 @@ function Field({
                 value={value}
                 placeholder={placeholder}
                 onChange={(event) => onChange(event.target.value)}
-                className="bg-white border border-[#1c1b1b]/15 px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-primary"
             />
         </label>
     );
@@ -48,12 +49,89 @@ export default function AddressForm({
     onSubmit,
     onCancel,
 }: AddressFormProps) {
+    const countryDialCode = (countryName: string) => {
+        const map: Record<string, string> = {
+            india: '+91',
+            us: '+1',
+            usa: '+1',
+            'united states': '+1',
+            uk: '+44',
+            'united kingdom': '+44',
+            uae: '+971',
+            canada: '+1',
+            australia: '+61',
+        };
+        const key = String(countryName || '').trim().toLowerCase();
+        return map[key] || '+91';
+    };
+
+    const normalizePhone = (raw: string) => {
+        const cleaned = String(raw || '').replace(/[^\d+]/g, '').trim();
+        if (!cleaned) return '';
+        if (cleaned.startsWith('+')) return cleaned;
+        if (cleaned.startsWith('00')) return `+${cleaned.slice(2)}`;
+        const noLeadingZero = cleaned.replace(/^0+/, '');
+        const code = countryDialCode(value.country);
+        return `${code}${noLeadingZero}`;
+    };
+
     const setField = (key: keyof UserAddressInput, fieldValue: string) => {
+        if (key === 'phone1' || key === 'phone2') {
+            onChange({ ...value, [key]: normalizePhone(fieldValue) });
+            return;
+        }
         onChange({ ...value, [key]: fieldValue });
     };
 
+    useEffect(() => {
+        const pin = String(value.pinCode || '').replace(/\D/g, '');
+        if (pin.length !== 6) return;
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`, { cache: 'no-store' });
+                if (!res.ok) return;
+                const data = await res.json();
+                const first = Array.isArray(data) ? data[0] : null;
+                const office = Array.isArray(first?.PostOffice) ? first.PostOffice[0] : null;
+                if (!office) return;
+
+                // Keep auto-fill helpful, but never override user's manual edits.
+                const hasDistrict = String(value.district || '').trim().length > 0;
+                const hasState = String(value.state || '').trim().length > 0;
+                const hasCountry = String(value.country || '').trim().length > 0;
+                const hasCity = String(value.city || '').trim().length > 0;
+
+                const nextDistrict = hasDistrict ? value.district : String(office.District || '');
+                const nextState = hasState ? value.state : String(office.State || '');
+                const nextCountry = hasCountry ? value.country : String(office.Country || 'India');
+                const nextCity = hasCity ? value.city : String(office.Block || office.Name || '');
+
+                if (
+                    nextDistrict === value.district &&
+                    nextState === value.state &&
+                    nextCountry === value.country &&
+                    nextCity === value.city
+                ) {
+                    return;
+                }
+
+                onChange({
+                    ...value,
+                    pinCode: pin,
+                    district: nextDistrict,
+                    state: nextState,
+                    country: nextCountry,
+                    city: nextCity,
+                });
+            } catch {
+                // ignore pincode lookup failures
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [onChange, value.pinCode]);
+
     return (
-        <div className="bg-[#f6f3f2] border border-[#1c1b1b]/10 p-5 md:p-6">
+        <div className="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Full Name" value={value.FullName} onChange={(next) => setField('FullName', next)} />
                 <Field label="Phone" value={value.phone1} onChange={(next) => setField('phone1', next)} />
@@ -78,7 +156,7 @@ export default function AddressForm({
                     <select
                         value={value.addressType}
                         onChange={(event) => setField('addressType', event.target.value)}
-                        className="bg-white border border-[#1c1b1b]/15 px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                        className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-primary"
                     >
                         <option value="Home">Home</option>
                         <option value="Office">Office</option>
@@ -87,13 +165,13 @@ export default function AddressForm({
                 </label>
             </div>
 
-            {error && <p className="mt-4 font-headline text-[10px] uppercase tracking-widest text-[#b90c1b]">{error}</p>}
+            {error && <p className="mt-4 font-headline text-[10px] uppercase tracking-widest text-error">{error}</p>}
 
             <div className="mt-5 flex flex-wrap gap-3">
                 <button
                     onClick={onSubmit}
                     disabled={busy}
-                    className="bg-[#1c1b1b] text-white px-5 py-3 font-headline text-[10px] uppercase tracking-widest hover:bg-[#b90c1b] transition-colors disabled:opacity-70"
+                    className="bg-primary text-on-primary px-5 py-3 rounded-full font-headline text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-70"
                 >
                     {busy ? 'Saving...' : submitLabel}
                 </button>
@@ -101,7 +179,7 @@ export default function AddressForm({
                     <button
                         onClick={onCancel}
                         disabled={busy}
-                        className="border border-[#1c1b1b]/20 px-5 py-3 font-headline text-[10px] uppercase tracking-widest hover:border-[#1c1b1b]"
+                        className="border border-outline-variant/30 rounded-full px-5 py-3 font-headline text-[10px] uppercase tracking-widest hover:border-primary"
                     >
                         Cancel
                     </button>

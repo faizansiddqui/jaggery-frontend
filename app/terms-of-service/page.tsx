@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Terms of Service | STREETRIOT',
-  description: 'Read the terms and conditions for using STREETRIOT services.',
-};
+'use client';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 export default function TermsOfServicePage() {
+  const { settings } = useSiteSettings();
+  const brandName = settings.siteName || 'STREETRIOT';
+  const legalEmail = settings.companyEmail || 'support@example.com';
+
   return (
-    <div data-scroll-section className="pt-10 pb-20 px-6 md:px-12">
+    <div data-scroll-section className="pt-25 pb-20 px-6 md:px-12">
       <div className="max-w-5xl mx-auto flex flex-col gap-10">
         <header className="border-b border-[#1c1b1b]/10 pb-6">
           <p className="font-headline text-[10px] uppercase tracking-[0.2em] text-[#b90c1b]">Legal</p>
@@ -18,7 +18,7 @@ export default function TermsOfServicePage() {
         <section className="space-y-4">
           <h2 className="font-brand text-3xl uppercase tracking-wide">Acceptance of Terms</h2>
           <p className="font-headline text-sm leading-7 text-[#1c1b1b]/75">
-            By using this website, you agree to these terms and all applicable policies referenced by STREETRIOT.
+            By using this website, you agree to these terms and all applicable policies referenced by {brandName}.
           </p>
         </section>
 
@@ -46,14 +46,14 @@ export default function TermsOfServicePage() {
         <section className="space-y-4">
           <h2 className="font-brand text-3xl uppercase tracking-wide">Intellectual Property</h2>
           <p className="font-headline text-sm leading-7 text-[#1c1b1b]/75">
-            All content, branding, product assets, and design elements are owned by STREETRIOT and protected under applicable laws.
+            All content, branding, product assets, and design elements are owned by {brandName} and protected under applicable laws.
           </p>
         </section>
 
         <section className="space-y-4">
           <h2 className="font-brand text-3xl uppercase tracking-wide">Contact</h2>
           <p className="font-headline text-sm leading-7 text-[#1c1b1b]/75">
-            For legal concerns related to these terms, please contact us through the official support and contact channels.
+            For legal concerns related to these terms, please contact us at <a className="text-primary font-bold" href={`mailto:${legalEmail}`}>{legalEmail}</a>.
           </p>
         </section>
       </div>

@@ -25,9 +25,20 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     return [
+      // Admin routes: /api/backend/admin/* -> backend/api/backend/admin/*
       {
-        source: "/api/backend/:path*",
-        destination: `${backendProxyTarget}/:path*`,
+        source: "/api/backend/admin/:path*",
+        destination: `${backendProxyTarget}/api/backend/admin/:path*`,
+      },
+      // User routes: /api/backend/user/* -> backend/user/*
+      {
+        source: "/api/backend/user/:path*",
+        destination: `${backendProxyTarget}/user/:path*`,
+      },
+      // Auth routes: /api/backend/api/auth/* -> backend/api/auth/*
+      {
+        source: "/api/backend/api/auth/:path*",
+        destination: `${backendProxyTarget}/api/auth/:path*`,
       },
     ];
   },

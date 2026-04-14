@@ -20,6 +20,13 @@ interface WishlistContextType {
 }
 
 const WishlistContext = createContext<WishlistContextType | null>(null);
+const mapProductToWishlistItem = (product: Partial<WishlistItem> & Record<string, unknown>): WishlistItem => ({
+  id: Number(product.id || product.product_id || 0),
+  name: String(product.name || product.title || 'Product'),
+  price: Number(product.price || 0),
+  image: String(product.image || ''),
+  collection: String(product.collection || ''),
+});
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -32,15 +39,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     fetchWishlistProducts()
       .then((products) => {
-        if (products.length > 0) {
-          setItems(products.map((p) => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            image: p.image,
-            collection: p.collection,
-          })));
-        }
+        setItems(products.map((p) => mapProductToWishlistItem(p as unknown as Record<string, unknown>)));
       })
       .catch(() => { });
   }, []);
@@ -51,7 +50,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const addItem = (item: WishlistItem) => {
     setItems(prev => prev.find(i => i.id === item.id) ? prev : [...prev, item]);
-    addWishlistProduct(item.id).catch(() => { });
+    addWishlistProduct(item.id)
+      .then((data) => {
+        const products = Array.isArray((data as Record<string, unknown>).products)
+          ? ((data as Record<string, unknown>).products as Record<string, unknown>[])
+          : [];
+        setItems(products.map((p) => mapProductToWishlistItem(p)));
+      })
+      .catch(() => { });
   };
 
   const removeItem = (id: number) => {
@@ -61,7 +67,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
 
     setItems(prev => prev.filter(i => i.id !== id));
-    removeWishlistProduct(id).catch(() => { });
+    removeWishlistProduct(id)
+      .then((data) => {
+        const products = Array.isArray((data as Record<string, unknown>).products)
+          ? ((data as Record<string, unknown>).products as Record<string, unknown>[])
+          : [];
+        setItems(products.map((p) => mapProductToWishlistItem(p)));
+      })
+      .catch(() => { });
   };
   const isInWishlist = (id: number) => items.some(i => i.id === id);
   const toggle = (item: WishlistItem) => isInWishlist(item.id) ? removeItem(item.id) : addItem(item);

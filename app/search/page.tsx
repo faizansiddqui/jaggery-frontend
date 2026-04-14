@@ -1,68 +1,22 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useCart } from "@/app/context/CartContext";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
+import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
+import { fetchBackendProducts } from "@/app/lib/backendProducts";
+import { createProductHref, type Product as BackendProduct } from "@/app/data/products";
+import {
+  type ListingProduct,
+  minMaxListingPrice,
+  productMatchesWeightFilters,
+  sortPriceForProduct,
+  resolveListingVariant,
+  collectWeightOptions,
+} from "@/app/lib/shopListing";
 
-const SEARCH_RESULTS = [
-  {
-    id: "classic-golden-block",
-    name: "Classic Golden Block",
-    price: "$18.00",
-    originalPrice: "$24.00",
-    desc: "Pure, unrefined cane sugar block with notes of butterscotch and toasted pecan. Harvested from the 2024 winter crop.",
-    badge: { text: "Best Seller", variant: "primary" as const },
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC73S2Jq9DAlW_NKPe3q7o6U0YC4DVMKyL7extUX4Pcmpv-qMDqbefzhKMgtYymty8eq-7r0kEHKlD-nj9CxoJS0DUMa06MW3WmneW_3Dk0NcUkybN1nBpuPLhcmyawnqO9B6O3NtYkbT0aDzYfAC_NCkTMopNBHSK5IiyzBMygAVZpAAmXIPhd3iRFUXiCcq578V8qUI0cc0TzdF8TknOd0y8PPpmvwvp28Ij4OUHDwksaXeHyILtqs69hhB2OvxWT2vgqKJVJ8ho",
-  },
-  {
-    id: "artisanal-granules",
-    name: "Artisanal Granules",
-    price: "$14.00",
-    originalPrice: "$18.00",
-    desc: "Easily dissolvable granular jaggery, perfect for coffee and traditional baking. 100% sulfur-free processing.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDkpxDoXHgQ7ap_rsnam7ufj5SQbx9cE0AtoMgbFxvTtUM_nzwkITkG13fZlML3ttv2ZrozVj5XnYRyyiRnnJ5GHNpQIWU6jYZ1Ju4B3Ez-pCg237E4EKAfr1YKfR54l2pnHFSPfm9LAocPb8I15SW3rS5OQAcY4kDGzZdXivtUaV_urrnQfj3dhBzW5TLAniz1w4CKM5KeyaCH01K_br5Bsgrt-0pFmJN333Luv7Ak9n-S0GSNZKf8rApwM99OfS7TfmT8fLUTrMw",
-  },
-  {
-    id: "ginger-spiced-bites",
-    name: "Ginger Spiced Bites",
-    price: "$22.00",
-    originalPrice: "$28.00",
-    desc: "Bite-sized delights infused with organic dry ginger. A traditional remedy for digestive wellness.",
-    badge: { text: "New Harvest", variant: "secondary" as const },
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBbK1YVUepa-0sYl8dTnZWUPXWTT7ilefcZZKa8W81UGeStsuPKuG6Pm5XOmfHcFzE53rwBweoOTp9cKuvve21Earn0J9PJ4tZDYY8y03FRoOTE5FQmDeYdXVB8LxyeOx75_8Xp49RwL3XxAOsCO5XOhuwNORbcU56ia3nHwFujriNQ-Gxs_tCdq7x-HzcmGJRz-qfjJJObhkXMwL2FYSXppmVYPKf7hD-kW71xtuvNt-BSgkm27kZwrnRNODHAL7PrzD_xhDx7lls",
-  },
-  {
-    id: "dark-heritage-palm",
-    name: "Dark Heritage Palm",
-    price: "$32.00",
-    originalPrice: "$40.00",
-    desc: "Rare palm jaggery sourced from ancient groves. Deep smoky profile with a mineral-rich finish.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDt8oUUwZ789qNKEKf_mIbsyuXICPlPGWgijFHWlxxR1QgjK9gEV6jD7MzUm9rHrEZ6Lor86VYgVphz0Ml6Pjnf9p09JQFh3yNxDckToojPhNeow8fHED99iqvsFruBSZkaUTAkPbVfJAmxThyKFfwDSq1GyL0HUWkdbkwnWXgmQ8mKER5T2omhpZC9g6Mn3CFVheSqXLhPFsSi5H50fyut7TExrek7-dJ_MRUpOB5Gtv3seR4PqPEqc1ovfEknndodyq5y9kJusGo",
-  },
-  {
-    id: "liquid-gold-nectar",
-    name: "Liquid Gold Nectar",
-    price: "$28.00",
-    originalPrice: "$35.00",
-    desc: "Slow-boiled syrup with a velvety consistency. Ideal for gourmet plating and drizzling over desserts.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBOcxYWdeJy2Mie1FAMyroJHc9Mx2DnB2x8HJeMJwjsUGUvyw_v8uiw5QNfpzkSAuM2lP3EEj6UylOGPeUoBJb4UB3ruWhpxRWtve_pJYpkR-9UVtS35fDKlO6eN6Y_IeO7W03kIK04bQP-Pod6pQU_y0WzWic7XMZt06m5ZLdqQczVWmu5nlFTKO9XAu53GJF-WPnTuIeconvlW7lojj6Y8ThIWZGS-OCJmPG3WUIrKwVY8fLvSVwk0A9VwSBUK1etFzW3ZmPC-1M",
-  },
-  {
-    id: "harvest-discovery-kit",
-    name: "Harvest Discovery Kit",
-    price: "$45.00",
-    originalPrice: "$55.00",
-    desc: "A curated trio of our most popular varieties. Discover the spectrum of unrefined sweetness.",
-    badge: null,
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDu5jyU8emnCJI5FkbP_gDhOQbA3byyYLCiTV6fLeqqYdG0QXPC2UTA68QAeGXiCUDWglJYUu6lB4F3l7PtJkeJBcH9-50NMpqMat-XdNJI4KrwvJAXX2_cN3y11bam27Y1mBM3p5Jscn2MM227ynBV2p9mLxinZglqJAO_QYKM0FSemCNzCUD9TLr0xzZgrW19euS04o3NJCD8DBvgqNEjaPc0OvOEw3aYUl7NMCXWdhXgpiGDQiMxpD8d-x5LZjB5sVvluRqtaXg",
-  },
-];
-
-const weightOptions = ["500g", "1kg", "2.5kg", "Bulk 5kg"];
-
-const CATEGORIES = ["Solid Blocks", "Granular Powder", "Infused Spiced"];
-const HARVEST_TYPES = ["Organic", "Heritage", "Fair Trade"];
+type Product = ListingProduct;
 
 const sortOptions = [
   { label: "Featured", value: "featured" },
@@ -73,34 +27,166 @@ const sortOptions = [
 ];
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("Desi Jaggery");
-  const [checkedCategories, setCheckedCategories] = useState(["Solid Blocks"]);
-  const [activeHarvest, setActiveHarvest] = useState("Organic");
-  const [page, setPage] = useState(1);
-  const [activeWeight, setActiveWeight] = useState("1kg");
+  const { addItem, isVariantInCart } = useCart();
+  const { settings } = useSiteSettings();
+  const currencySymbol = settings.currencySymbol || "₹";
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [selectedWeights, setSelectedWeights] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState("featured");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PRODUCTS_PER_PAGE = 9;
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchBackendProducts();
+        const normalized: Product[] = (data as BackendProduct[]).map((p) => ({
+          id: p.id,
+          publicId: p.publicId,
+          name: p.name,
+          slug: p.slug || p.name.toLowerCase().replace(/\s+/g, '-'),
+          price: Number(p.price || 0),
+          originalPrice: p.originalPrice,
+          image: p.image || '',
+          category: p.category || 'shop',
+          collection: p.collection || 'SHOP',
+          description: p.description || '',
+          quantity: Number(p.quantity || 0),
+          variants: Array.isArray(p.variants) ? p.variants : [],
+        }));
+        setProducts(normalized);
+        if (normalized.length > 0) {
+          let minP = Infinity;
+          let maxP = -Infinity;
+          for (const p of normalized) {
+            const { min, max } = minMaxListingPrice(p);
+            minP = Math.min(minP, min);
+            maxP = Math.max(maxP, max);
+          }
+          if (Number.isFinite(maxP)) setMaxPrice(Math.ceil(maxP));
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  const CATEGORIES = useMemo(() => {
+    return [...new Set(products.map(p => p.category).filter(Boolean))];
+  }, [products]);
+
+  // Calculate dynamic price range from products
+  const priceRange = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 1000 };
+    let minP = Infinity;
+    let maxP = -Infinity;
+    for (const p of products) {
+      const { min, max } = minMaxListingPrice(p);
+      minP = Math.min(minP, min);
+      maxP = Math.max(maxP, max);
+    }
+    if (!Number.isFinite(minP)) return { min: 0, max: 1000 };
+    return { min: Math.floor(minP), max: Math.ceil(maxP) };
+  }, [products]);
+
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
+
+  const AVAILABLE_WEIGHTS = useMemo(() => collectWeightOptions(products), [products]);
+
+  const filteredProducts = useMemo(() => {
+    let results = products;
+
+    if (query.trim()) {
+      const searchQuery = query.toLowerCase();
+      results = results.filter(
+        (p) =>
+          p.name.toLowerCase().includes(searchQuery) ||
+          p.description.toLowerCase().includes(searchQuery) ||
+          p.category.toLowerCase().includes(searchQuery)
+      );
+    }
+
+    if (checkedCategories.length > 0) {
+      results = results.filter((p) => checkedCategories.includes(p.category));
+    }
+
+    results = results.filter((p) => minMaxListingPrice(p).min <= maxPrice);
+
+    if (selectedWeights.length > 0) {
+      results = results.filter((p) => productMatchesWeightFilters(p, selectedWeights));
+    }
+
+    return results;
+  }, [products, query, checkedCategories, maxPrice, selectedWeights]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, checkedCategories, maxPrice, selectedWeights, sortOption]);
+
+  const sortedProducts = useMemo(() => {
+    const list = [...filteredProducts];
+    switch (sortOption) {
+      case "price-asc":
+        return list.sort(
+          (a, b) => sortPriceForProduct(a, selectedWeights) - sortPriceForProduct(b, selectedWeights)
+        );
+      case "price-desc":
+        return list.sort(
+          (a, b) => sortPriceForProduct(b, selectedWeights) - sortPriceForProduct(a, selectedWeights)
+        );
+      case "name-asc":
+        return list.sort((a, b) => a.name.localeCompare(b.name));
+      case "name-desc":
+        return list.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return list;
+    }
+  }, [filteredProducts, sortOption, selectedWeights]);
+
+  const handleAddToCart = (product: Product) => {
+    const rv = resolveListingVariant(product, selectedWeights);
+    if (rv.stock <= 0) return;
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: rv.price,
+      color: "",
+      size: rv.label,
+      image: rv.image,
+      collection: product.collection || "SEARCH RESULTS",
+    });
+  };
 
   const toggleCat = (c: string) =>
     setCheckedCategories((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const getSortedResults = () => {
-    const sorted = [...SEARCH_RESULTS];
-    switch (sortOption) {
-      case "price-asc":
-        return sorted.sort((a, b) => parseFloat(a.price.replace("$", "")) - parseFloat(b.price.replace("$", "")));
-      case "price-desc":
-        return sorted.sort((a, b) => parseFloat(b.price.replace("$", "")) - parseFloat(a.price.replace("$", "")));
-      case "name-asc":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      case "name-desc":
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return sorted;
-    }
-  }; return (
+  const toggleWeight = (w: string) => {
+    setSelectedWeights((prev) =>
+      prev.includes(w) ? prev.filter((x) => x !== w) : [...prev, w]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setQuery("");
+    setCheckedCategories([]);
+    setMaxPrice(priceRange.max);
+    setSelectedWeights([]);
+  };
+
+  return (
     <main className="pt-28 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
       {/* Header */}
       <header className="mb-12">
@@ -111,10 +197,10 @@ export default function SearchPage() {
         </nav>
         <h1 className="font-headline text-5xl md:text-6xl font-bold text-primary tracking-tight">
           Search results for{" "}
-          <span className="italic text-secondary">&ldquo;{query}&rdquo;</span>
+          <span className="italic text-secondary">&ldquo;{query || 'All Products'}&rdquo;</span>
         </h1>
         <p className="mt-4 text-on-surface-variant font-body text-lg">
-          Found {SEARCH_RESULTS.length * 2} treasures from our latest harvest.
+          Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}.
         </p>
         {/* Search Bar */}
         <div className="mt-6 flex items-center gap-4 max-w-lg">
@@ -188,7 +274,7 @@ export default function SearchPage() {
           className={`fixed top-0 right-0 h-full w-80 max-w-full bg-surface-container-low shadow-2xl z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${showMobileFilter ? "translate-x-0" : "translate-x-full"
             }`}
         >
-          <div className="p-6 h-full overflow-y-auto">
+          <div className="p-6 h-full overflow-y-auto" data-lenis-prevent="true">
             <div className="flex justify-between items-center mb-8">
               <h3 className="font-headline text-2xl font-bold text-primary">Filters</h3>
               <button
@@ -208,7 +294,7 @@ export default function SearchPage() {
                       <div className="w-5 h-5 rounded border border-outline-variant group-hover:border-secondary flex items-center justify-center transition-colors">
                         {checkedCategories.includes(cat) && <div className="w-2.5 h-2.5 bg-secondary rounded-sm" />}
                       </div>
-                      <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} readOnly />
+                      <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} />
                       <span className="font-body text-on-surface group-hover:text-secondary transition-colors">{cat}</span>
                     </label>
                   ))}
@@ -218,10 +304,17 @@ export default function SearchPage() {
               <div>
                 <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Price Range</h4>
                 <div className="space-y-4">
-                  <input type="range" className="w-full accent-secondary" min={5} max={45} defaultValue={45} />
+                  <input
+                    type="range"
+                    className="w-full accent-secondary"
+                    min={priceRange.min}
+                    max={priceRange.max}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  />
                   <div className="flex justify-between text-sm font-body text-on-surface-variant">
-                    <span>$5.00</span>
-                    <span>$45.00</span>
+                    <span>{currencySymbol}{priceRange.min}</span>
+                    <span>{currencySymbol}{maxPrice}</span>
                   </div>
                 </div>
               </div>
@@ -229,11 +322,11 @@ export default function SearchPage() {
               <div>
                 <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Weight</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  {weightOptions.map((w) => (
+                  {AVAILABLE_WEIGHTS.map((w) => (
                     <button
                       key={w}
-                      onClick={() => setActiveWeight(w)}
-                      className={`px-4 py-2 text-sm border-b text-left transition-all ${activeWeight === w
+                      onClick={() => toggleWeight(w)}
+                      className={`px-4 py-2 text-sm border-b text-left transition-all ${selectedWeights.includes(w)
                         ? "border-secondary text-secondary font-bold bg-surface-container-low"
                         : "border-outline-variant/20 hover:border-secondary"
                         }`}
@@ -245,10 +338,10 @@ export default function SearchPage() {
               </div>
 
               <button
-                onClick={() => setShowMobileFilter(false)}
-                className="w-full py-3 rounded-full bg-secondary text-on-secondary font-label text-sm uppercase tracking-widest hover:bg-secondary/90 transition-colors"
+                onClick={clearAllFilters}
+                className="w-full py-3 rounded-full border-2 border-outline-variant text-on-surface font-label text-sm uppercase tracking-widest hover:border-secondary hover:text-secondary transition-colors"
               >
-                Apply Filters
+                Clear All Filters
               </button>
             </div>
           </div>
@@ -270,7 +363,7 @@ export default function SearchPage() {
                         <div className="w-5 h-5 rounded border border-outline-variant group-hover:border-secondary flex items-center justify-center transition-colors">
                           {checkedCategories.includes(cat) && <div className="w-2.5 h-2.5 bg-secondary rounded-sm" />}
                         </div>
-                        <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} readOnly />
+                        <input type="checkbox" className="hidden" checked={checkedCategories.includes(cat)} onChange={() => toggleCat(cat)} />
                         <span className="font-body text-on-surface group-hover:text-secondary transition-colors">{cat}</span>
                       </label>
                     ))}
@@ -280,10 +373,17 @@ export default function SearchPage() {
                 <div>
                   <h4 className="font-label text-xs uppercase tracking-widest text-on-surface-variant font-bold mb-4">Price Range</h4>
                   <div className="space-y-4">
-                    <input type="range" className="w-full accent-secondary" min={5} max={45} defaultValue={45} />
+                    <input
+                      type="range"
+                      className="w-full accent-secondary"
+                      min={priceRange.min}
+                      max={priceRange.max}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    />
                     <div className="flex justify-between text-sm font-body text-on-surface-variant">
-                      <span>$5.00</span>
-                      <span>$45.00</span>
+                      <span>{currencySymbol}{priceRange.min}</span>
+                      <span>{currencySymbol}{maxPrice}</span>
                     </div>
                   </div>
                 </div>
@@ -291,11 +391,11 @@ export default function SearchPage() {
                 <section>
                   <h3 className="font-headline text-xl text-primary mb-6">Weight Variation</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {weightOptions.map((w) => (
+                    {AVAILABLE_WEIGHTS.map((w) => (
                       <button
                         key={w}
-                        onClick={() => setActiveWeight(w)}
-                        className={`px-4 py-2 text-sm border-b text-left transition-all ${activeWeight === w
+                        onClick={() => toggleWeight(w)}
+                        className={`px-4 py-2 text-sm border-b text-left transition-all ${selectedWeights.includes(w)
                           ? "border-secondary text-secondary font-bold bg-surface-container-low"
                           : "border-outline-variant/20 hover:border-secondary"
                           }`}
@@ -324,8 +424,6 @@ export default function SearchPage() {
           </div>
         </aside>
 
-
-
         {/* Results Grid */}
         <div className="flex-1">
           {/* Desktop Sort Bar */}
@@ -344,70 +442,120 @@ export default function SearchPage() {
               </button>
             ))}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {getSortedResults().map((p) => (
-              <Link href={`/product/${p.id}/${p.name.toLowerCase().replace(/\s+/g, '-')}`} key={p.id}>
-                <div className="group">
-                  <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface-container-high">
-                    <img
-                      src={p.img}
-                      alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    {p.badge && (
-                      <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-label font-bold uppercase tracking-widest ${p.badge.variant === "secondary" ? "bg-secondary text-on-secondary italic font-headline" : "bg-primary text-on-primary"
-                        }`}>
-                        {p.badge.text}
-                      </div>
-                    )}
-                    <button className="absolute bottom-4 right-4 w-12 h-12 bg-surface/90 backdrop-blur shadow-lg rounded-full flex items-center justify-center text-primary hover:bg-primary hover:text-on-primary transition-all">
-                      <span className="material-symbols-outlined">add_shopping_cart</span>
-                    </button>
-                  </div>
-                  <div className="mt-6 space-y-2">
-                    <div className="flex flex-col lg:flex-row justify-between items-start">
-                      <h3 className="font-headline text-xl lg:text-2xl font-bold text-primary">{p.name}</h3>
-                      <div className="flex items-center gap-2">
-                        <span className="font-headline text-xl text-secondary">{p.price}</span>
-                        {p.originalPrice && (
-                          <span className="font-body text-sm text-on-surface-variant line-through">{p.originalPrice}</span>
-                        )}
-                      </div>
-                    </div>
-                    {/* <p className="text-on-surface-variant font-body text-sm line-clamp-2">{p.desc}</p> */}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
 
-          {/* Pagination */}
-          <div className="mt-16 flex items-center justify-center gap-4">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-            <div className="flex gap-2">
-              {[1, 2, 3].map((n) => (
+          {isLoading ? (
+            <ProductGridSkeleton count={9} />
+          ) : filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24">
+              <span className="material-symbols-outlined text-8xl text-on-surface-variant/30 mb-4">search_off</span>
+              <h3 className="font-headline text-3xl text-primary mb-2">No products found</h3>
+              <p className="text-on-surface-variant text-lg text-center max-w-md">
+                {query
+                  ? `No results match "${query}". Try a different search term or clear filters.`
+                  : 'No products available. Please check back later.'}
+              </p>
+              {(query || checkedCategories.length > 0 || maxPrice < priceRange.max || selectedWeights.length > 0) && (
                 <button
-                  key={n}
-                  onClick={() => setPage(n)}
-                  className={`w-12 h-12 rounded-full font-bold transition-colors ${page === n ? "bg-primary text-on-primary" : "border border-transparent text-on-surface hover:bg-surface-container-high"
-                    }`}
+                  onClick={clearAllFilters}
+                  className="mt-6 px-6 py-3 rounded-full bg-secondary text-on-secondary font-label text-sm uppercase tracking-widest hover:bg-secondary/90 transition-colors"
                 >
-                  {n}
+                  Clear All Filters
                 </button>
-              ))}
+              )}
             </div>
-            <button
-              onClick={() => setPage((p) => Math.min(3, p + 1))}
-              className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors"
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+                {sortedProducts.slice(
+                  (currentPage - 1) * PRODUCTS_PER_PAGE,
+                  currentPage * PRODUCTS_PER_PAGE
+                ).map((p) => (
+                  <Link href={createProductHref(p)} key={p.id}>
+                    <div className="group">
+                      {(() => {
+                        const rv = resolveListingVariant(p, selectedWeights);
+                        const inCart = isVariantInCart(p.id, rv.label, "");
+                        const outOfStock = rv.stock <= 0;
+                        return (
+                          <>
+                      <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface-container-high">
+                        {rv.image ? (
+                          <Image
+                            src={rv.image}
+                            alt={p.name}
+                            fill
+                            unoptimized
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddToCart(p);
+                          }}
+                          disabled={inCart || outOfStock}
+                          className={`absolute bottom-4 right-4 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all disabled:opacity-70 ${inCart || outOfStock ? "bg-primary text-white" : "bg-surface/90 backdrop-blur text-primary hover:bg-primary hover:text-on-primary"
+                            }`}
+                        >
+                          <span className="material-symbols-outlined">
+                            {outOfStock ? "block" : inCart ? "done" : "add_shopping_cart"}
+                          </span>
+                        </button>
+                      </div>
+                      <div className="mt-6 space-y-2">
+                        <div className="flex flex-col lg:flex-row justify-between items-start">
+                          <h3 className="font-headline text-xl lg:text-2xl font-bold text-primary">{p.name}</h3>
+                          <div className="flex items-center gap-2">
+                            <span className="font-headline text-xl text-secondary">{currencySymbol}{rv.price}</span>
+                            {rv.originalPrice ? (
+                              <span className="font-body text-sm text-on-surface-variant line-through">{currencySymbol}{rv.originalPrice}</span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-16 flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <div className="flex gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setCurrentPage(n)}
+                        className={`w-12 h-12 rounded-full font-bold transition-colors ${currentPage === n ? "bg-primary text-on-primary" : "border border-transparent text-on-surface hover:bg-surface-container-high"
+                          }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center text-on-surface hover:border-secondary hover:text-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </main>

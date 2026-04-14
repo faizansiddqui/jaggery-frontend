@@ -1,35 +1,44 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-
-const WISHLIST_ITEMS = [
-  {
-    id: "golden-cubes",
-    name: "Golden Cubes",
-    badge: "Limited Reserve",
-    price: "$34.00",
-    category: "Signature Harvest",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBY7bWNz9SaWwwXyLh_tUXdIM-d4oumYt8CvWZ3TrmIg6p5i3gIpPu2nAaTpWGGEK147FCEmydNREEvXz4Jm-Y38nb_QqwKat8yqG43bmnhoixVp2aB76b8qZGOwGymst8jkopZ5x9tbDMqPdnUR50k9jkFRl0lM867LozP-ZiszwgCvi9kpTwcZv_FvGkTNZX-gfCxMeDhCVoUPAgWY_HDAK7lrYc3bqZBkTrI3qh5BpdHqejjGnlsTGnCwwSX5GSUen4R9V2apbQ",
-  },
-  {
-    id: "fine-grain-powder",
-    name: "Fine Grain Powder",
-    badge: null,
-    price: "$28.00",
-    category: "Culinary Grade",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRGJBT_rbsCbk9QP-tsczsj9eIfthSLaVrjEYg0xRrIuOyFPrnv5b6ZI47Jiro6873XAJKwAqDTYfW60FuGFrfSYoMi7g1i-Fc1KVtuV53ptyc06qQ9oshMbfJYJPMP9Yv-W4OWUwlJeg_EyBMH95dIGzNYiEFgwkg1q85ml20WNzdvQhJqPIITFI5mGZ6HeP8U22XQs819exBKjUrwFzd3k5w32VnGlP4xSiGl2EBfr7TLuDuRW-pRrgi74Rgj05EnR5GVFb2v8w",
-  },
-  {
-    id: "liquid-gold-syrup",
-    name: "Liquid Gold Syrup",
-    badge: null,
-    price: "$42.00",
-    category: "Hand-Pressed",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-3si5Uwbn2uveRzj5TqBWCEpesaYSsXTLUKiQG-HS8ZJrHmGJsOT65_wM8es_0DtTE5j-Inv_7pWoz3qHyczxb3TZpxVGBL9Sml2yfPx38TeQ0fOj1icYAN7defVlUTp6y2-iYUoLKGXKvOWwKnNXpTMQWhnBXcB-S1OtSnGOEuZuix2g3KBpBs0noBp-YnYXJyMKF3FXmQKRUTqUTgsy2yz9qd6i7bWJ4fIbEZP7ADBHlTTSpgz9JmNAOm-CpOIg7wtUM0M7HeQ",
-  },
-];
+import { useCart } from "@/app/context/CartContext";
+import { useRequireAuth } from "@/app/context/AuthContext";
+import { useWishlist } from "@/app/context/WishlistContext";
+import { createProductHref } from "@/app/data/products";
+import { ProductGridSkeleton } from "@/app/components/Skeletons";
 
 export default function WishlistPage() {
+  const { addItem, isVariantInCart } = useCart();
+  const { items, removeItem } = useWishlist();
+  const { isLoading, isAuthenticated } = useRequireAuth('/user/auth');
+
+  if (isLoading) {
+    return (
+      <div className="space-y-12">
+        <header className="animate-pulse">
+          <div className="h-12 w-64 bg-surface-container-high rounded-lg mb-4" />
+          <div className="h-4 w-full bg-surface-container-high rounded mb-2" />
+          <div className="h-4 w-2/3 bg-surface-container-high rounded" />
+        </header>
+        <ProductGridSkeleton count={6} />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
+
+  const handleAddToCart = (item: { id: number; name: string; price: number; image: string; collection: string }) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: Number(item.price || 0),
+      color: "",
+      size: "Default",
+      image: item.image,
+      collection: item.collection || "WISHLIST",
+    });
+  };
+
   return (
     <div className="space-y-12">
       <header>
@@ -41,22 +50,26 @@ export default function WishlistPage() {
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-12">
-        {WISHLIST_ITEMS.map((item) => (
+        {items.map((item) => (
           <div key={item.id} className="group">
             <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-surface-container-high mb-4">
               <img
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                src={item.img}
+                src={item.image}
                 alt={item.name}
               />
-              <button className="absolute top-4 right-4 bg-surface/80 backdrop-blur-md p-2 rounded-full text-secondary transition-all hover:bg-surface hover:text-primary active:scale-90 shadow-sm z-10">
+              <button
+                type="button"
+                onClick={() => removeItem(item.id)}
+                className="absolute top-4 right-4 bg-surface/80 backdrop-blur-md p-2 rounded-full text-secondary transition-all hover:bg-surface hover:text-primary active:scale-90 shadow-sm z-10"
+              >
                 <span className="material-symbols-outlined text-[20px] icon-filled">favorite</span>
               </button>
-              
-              {item.badge ? (
+
+              {item.collection ? (
                 <div className="absolute bottom-4 left-4 z-10">
                   <span className="bg-primary text-on-primary px-3 py-1.5 rounded-full text-[9px] uppercase tracking-widest font-bold">
-                    {item.badge}
+                    {item.collection}
                   </span>
                 </div>
               ) : (
@@ -70,28 +83,45 @@ export default function WishlistPage() {
 
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="font-headline text-2xl font-bold text-primary mb-1">{item.name}</h3>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">{item.category}</p>
+                <Link href={createProductHref(item)} className="font-headline text-2xl font-bold text-primary mb-1 block hover:underline">
+                  {item.name}
+                </Link>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">{item.collection || "Wishlist"}</p>
               </div>
-              <p className="font-headline text-xl font-bold text-secondary">{item.price}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="font-headline text-xl font-bold text-secondary">₹{Number(item.price || 0)}</p>
+              </div>
             </div>
-            
-            <button className="w-full py-3.5 rounded-full bg-primary text-on-primary font-label text-xs tracking-widest font-bold uppercase flex items-center justify-center gap-2 transition-all hover:bg-primary-container active:scale-95 shadow-lg shadow-primary/20">
-              <span className="material-symbols-outlined text-[18px]">shopping_cart</span>
-              Add to Cart
+
+            <button
+              type="button"
+              onClick={() => handleAddToCart(item)}
+              disabled={isVariantInCart(item.id, "Default", "")}
+              className={`w-full py-3.5 rounded-full font-label text-xs tracking-widest font-bold uppercase flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg ${isVariantInCart(item.id, "Default", "") ? "bg-secondary text-white shadow-secondary/20 disabled:opacity-75" : "bg-primary text-on-primary hover:bg-primary-container shadow-primary/20"
+                }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {isVariantInCart(item.id, "Default", "") ? "done" : "shopping_cart"}
+              </span>
+              {isVariantInCart(item.id, "Default", "") ? "Added to Cart" : "Add to Cart"}
             </button>
           </div>
         ))}
       </div>
+      {items.length === 0 && (
+        <div className="rounded-2xl border border-outline-variant/30 p-10 text-center text-on-surface-variant">
+          Your wishlist is empty.
+        </div>
+      )}
 
       {/* Empty State / Suggestions */}
       <div className="mt-20 p-8 lg:p-12 rounded-3xl bg-primary-container text-on-primary relative overflow-hidden">
         {/* Pattern Background Overlay */}
-        <div 
-          className="absolute inset-0 opacity-10 pointer-events-none" 
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #ffffff 1px, transparent 1px)", backgroundSize: "24px 24px" }}
         />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 lg:gap-16">
           <div className="flex-1">
             <h2 className="text-3xl lg:text-4xl font-headline italic mb-4 font-bold">The Artisan's Selection</h2>
@@ -103,8 +133,8 @@ export default function WishlistPage() {
             </Link>
           </div>
           <div className="w-40 h-40 lg:w-48 lg:h-48 rounded-full overflow-hidden border-4 border-secondary/30 shrink-0 shadow-2xl">
-            <img 
-              className="w-full h-full object-cover mix-blend-overlay opacity-80" 
+            <img
+              className="w-full h-full object-cover mix-blend-overlay opacity-80"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuChldJanv9HUYcc86nCudTMxqBrQhJ6PxLFngBXQkpX5CQlN0WVPvbzlPtGsDahtWYLuHf1vT2c-cg-ILTeN_-UQ9Ah99_Ks3SpediiIK5JGW3VMunWU5eTUXGEaB1olH7s8u0T-2jU6p-QS4fI7qlveCji_kpzNswayAF-O4FH8a_FB__UVTeP6SZ7swIKY6gsFpUHuKaqzLhymmQ14t2Qu2IUVKbnJ-lFDhrmaxIGOZKN60L8NHHa1fHsPMbVSPRNQszo-rV5R7o"
               alt="Organic soil and gold dust"
             />

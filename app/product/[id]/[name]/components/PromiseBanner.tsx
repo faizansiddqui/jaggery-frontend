@@ -3,7 +3,7 @@ import React from "react";
 
 export default function PromiseBanner() {
   return (
-    <section className="mt-32 text-center py-20 bg-primary rounded-[3rem] text-on-primary overflow-hidden relative shadow-2xl mb-12">
+    <section className="mt-20 lg:mt-32 text-center py-5 lg:py-20 bg-primary rounded-[3rem] text-on-primary overflow-hidden relative shadow-2xl mb-12">
       <div className="absolute inset-0 opacity-15">
         <img
           className="w-full h-full object-cover mix-blend-overlay"

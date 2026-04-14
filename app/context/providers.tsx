@@ -3,16 +3,19 @@
 import { CartProvider } from './CartContext';
 import { WishlistProvider } from './WishlistContext';
 import { SiteSettingsProvider } from './SiteSettingsContext';
+import { AuthProvider } from './AuthContext';
 import { ReactNode } from 'react';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <SiteSettingsProvider>
-      <CartProvider>
-        <WishlistProvider>
-          {children}
-        </WishlistProvider>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            {children}
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
     </SiteSettingsProvider>
   );
 }

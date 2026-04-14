@@ -1,44 +1,83 @@
 "use client";
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRequireAuth } from "@/app/context/AuthContext";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
+import { fetchOrders } from "@/app/lib/apiClient";
+import { createProductHref } from "@/app/data/products";
+type UserOrder = {
+  order_id?: string;
+  order_code?: string;
+  status?: string;
+  amount?: number;
+  createdAt?: string;
+  items?: Array<{ product_id?: number; quantity?: number; price?: number; product_image?: string; product?: { product_code?: string; title?: string; name?: string; product_image?: string[] } }>;
+};
 
-const ORDERS = [
-  {
-    id: "#AG-2024-8841",
-    date: "Oct 14, 2024",
-    status: "In Transit",
-    statusColor: "text-secondary",
-    statusBg: "bg-secondary",
-    icon: null,
-    total: "$124.50",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDb_zITIg8SyrMgppVFcWtjSEL08xFuSgKiF26Wi5FZfzcahg9_CiOq2bc0NeDQ-GXovw4uSLyCPylP4Qf1E_4XTA_I0e7_WKO1UWOXE6brDFlkIgzBItKXdS9WoVLsKn5iqncX6xzW4r8bzZZqTO-mJC4BIM6REUfzrO1ImKw5gRAoUIqnC6uxL08kz7fOTVj3JI5GuVq4Z5UBa7iQtgczKhhvLQy26zH5UxRRY2RlBT9KlbCOFx9gciIX7DKsjFbtAdfnHwje_cI",
-    opacityClass: "",
-  },
-  {
-    id: "#AG-2024-9102",
-    date: "Oct 18, 2024",
-    status: "Harvesting",
-    statusColor: "text-primary",
-    statusBg: null,
-    icon: "eco",
-    total: "$89.00",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuACFH53JRsK-2c45bjnYPOqCdxcND36BlyqkouCYIMnKstzhfScaQau1PF5E3_Or8cYnYHtJ7ScJnLy8aAiQHXvVrClrk-eIYpDytVkYIywbYdKsIaQazrFmwfODjcQwzjRuCRIpLS3r9LqNw5s_AZh3AcozfTUEqdIzkHHWceo_mvGrJl74LOKcwxckvPvsnvqwCt4NFK5JHjysmpLj0kAqyz99DO39k0wuhyNlwXgy0-IvGju5D9wE2MaHzz2cDQW8rASfPfuCVk",
-    opacityClass: "",
-  },
-  {
-    id: "#AG-2024-7622",
-    date: "Sep 12, 2024",
-    status: "Delivered",
-    statusColor: "text-on-surface-variant",
-    statusBg: null,
-    icon: "check_circle",
-    total: "$210.15",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBsULFmkhwdQubwSh1sGKrRlL2AD_XhapX4-6vIEfPuzMHCGFjU9X0niXo5tLcGuaGs-jHUudZpqxfTY3DeQ-8_ETu2AzKACcIeTbjjq63sfoFAJ-_kSPsTPOJeUM39hoHZkZFX4rFj6w2NXRDu5GXPd1GTmH28mzviTMJynfnu2EsHJIX36I81cnRYOFr8F3yFzORp-5D2aCV19Su60aCd4r-bwiWQrZTJy7peOq1EMUTxEu7FQDIVFWGOFAuIFwEra5EvK3yO_Y0",
-    opacityClass: "opacity-80 grayscale-[10%]",
-  },
-];
+import { OrderListSkeleton } from "@/app/components/Skeletons";
 
 export default function OrdersPage() {
+  const { isLoading: authLoading, isAuthenticated } = useRequireAuth('/user/auth');
+  const { settings } = useSiteSettings();
+  const currencySymbol = settings.currencySymbol || "₹";
+  const [orders, setOrders] = useState<UserOrder[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    setIsDataLoading(true);
+    fetchOrders()
+      .then((rows) => setOrders(Array.isArray(rows) ? (rows as UserOrder[]) : []))
+      .catch(() => setOrders([]))
+      .finally(() => setIsDataLoading(false));
+  }, [isAuthenticated]);
+
+  const mappedOrders = useMemo(() => orders.map((order) => {
+    const status = String(order.status || 'pending');
+    const lower = status.toLowerCase();
+    const statusBg = lower.includes('transit') || lower.includes('ship') ? "bg-secondary" : null;
+    const icon = lower.includes('deliver') ? "check_circle" : lower.includes('harvest') ? "eco" : null;
+    const firstImage = Array.isArray(order.items)
+      ? (order.items[0]?.product?.product_image?.[0] || order.items[0]?.product_image || "")
+      : "";
+    const firstProduct = Array.isArray(order.items) ? order.items[0] : undefined;
+    const firstName = String(firstProduct?.product?.title || firstProduct?.product?.name || "");
+    const firstId = Number(firstProduct?.product_id || 0);
+    const firstPublicId = String(firstProduct?.product?.product_code || "");
+    const safeAmount = Number(order.amount || 0);
+    const itemsTotal = Array.isArray(order.items)
+      ? order.items.reduce((sum, item) => {
+        const price = Number(item.price || 0);
+        const qty = Number(item.quantity || 0);
+        return sum + (Number.isFinite(price) ? price : 0) * (Number.isFinite(qty) ? qty : 0);
+      }, 0)
+      : 0;
+    const normalizedAmount = safeAmount > 0
+      ? (itemsTotal > 0 && safeAmount > itemsTotal * 5 ? safeAmount / 100 : safeAmount)
+      : itemsTotal;
+    return {
+      id: String(order.order_code || order.order_id || ""),
+      date: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-",
+      status,
+      statusColor: lower.includes('transit') || lower.includes('ship') ? "text-secondary" : lower.includes('deliver') ? "text-on-surface-variant" : "text-primary",
+      statusBg,
+      icon,
+      total: `${currencySymbol}${normalizedAmount.toFixed(2)}`,
+      img: firstImage,
+      productHref: firstId > 0 && firstName
+        ? createProductHref({ id: firstId, publicId: firstPublicId || undefined, name: firstName })
+        : "",
+      opacityClass: lower.includes('deliver') ? "opacity-80 grayscale-[10%]" : "",
+    };
+  }), [currencySymbol, orders]);
+
+  if (authLoading || (isAuthenticated && isDataLoading)) {
+    return <OrderListSkeleton />;
+  }
+
+
+  if (!isAuthenticated) return null;
+
   return (
     <div className="flex-grow">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
@@ -54,12 +93,30 @@ export default function OrdersPage() {
 
       {/* Orders Grid/List */}
       <div className="space-y-8">
-        {ORDERS.map((order) => (
+        {mappedOrders.map((order) => (
           <div key={order.id} className={`bg-surface-container-low rounded-xl p-6 md:p-8 transition-all hover:bg-surface-container group border border-transparent hover:border-outline-variant/30 ${order.opacityClass}`}>
             <div className="flex flex-col xl:flex-row gap-8 items-start xl:items-center">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-sm">
-                <img alt="Order Item" className="w-full h-full object-cover" src={order.img} />
-              </div>
+              {order.productHref ? (
+                <Link href={order.productHref} className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-sm block">
+                  {order.img ? (
+                    <img alt="Order Item" className="w-full h-full object-cover" src={order.img} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-on-surface-variant/50">
+                      <span className="material-symbols-outlined">image</span>
+                    </div>
+                  )}
+                </Link>
+              ) : (
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-sm">
+                  {order.img ? (
+                    <img alt="Order Item" className="w-full h-full object-cover" src={order.img} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-on-surface-variant/50">
+                      <span className="material-symbols-outlined">image</span>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="flex-grow grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4 w-full">
                 <div>
@@ -96,6 +153,11 @@ export default function OrdersPage() {
           </div>
         ))}
       </div>
+      {mappedOrders.length === 0 && (
+        <div className="rounded-xl border border-outline-variant/30 p-8 text-center text-on-surface-variant">
+          No orders yet.
+        </div>
+      )}
 
       {/* Empty State Message */}
       <div className="mt-20 py-16 border-t border-outline-variant/20 flex flex-col items-center text-center">

@@ -160,6 +160,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsSyncing(true);
     setSyncError('');
 
+    // Add to local state immediately
+    setItems((prev) => [...prev, { ...safeItem, qty: 1 }]);
+
+    // Try to sync with backend, but don't fail if it doesn't work
     addCartItem({
       product_id: safeItem.id,
       color: safeItem.color,
@@ -176,7 +180,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {
-        setSyncError('Could not save cart changes. Please try again.');
+        // Keep local cart even if backend fails - don't show error
+        setSyncError('');
       })
       .finally(() => {
         setIsSyncing(false);

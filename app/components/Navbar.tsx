@@ -3,19 +3,29 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/app/context/CartContext";
+import { useAuth } from "@/app/context/AuthContext";
+import { useSiteSettings } from "@/app/context/SiteSettingsContext";
+import { getWholesaleWhatsAppUrl } from "@/app/lib/whatsapp";
+
+const WHOLESALE_WHATSAPP_URL = getWholesaleWhatsAppUrl();
 
 const NAV_LINKS = [
-  { href: "/", label: "Home", icon: "home" },
-  { href: "/shop", label: "Shop", icon: "storefront" },
-  { href: "/search", label: "Our Story", icon: "auto_stories" },
-  { href: "/search", label: "Wholesale", icon: "local_shipping" },
+  { href: "/", label: "Home", icon: "home", external: false as const },
+  { href: "/shop", label: "Shop", icon: "storefront", external: false as const },
+  { href: "/user/orders", label: "My Orders", icon: "auto_stories", external: false as const },
+  { href: "/user/wishlist", label: "My Wishlist", icon: "auto_stories", external: false as const },
+  { href: WHOLESALE_WHATSAPP_URL, label: "Wholesale", icon: "local_shipping", external: true as const },
 ];
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { itemCount, isHydrating } = useCart();
+  const { isAuthenticated, user, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const { settings } = useSiteSettings();
   const stableCartCount = isHydrating ? 0 : itemCount;
+  const brandName = settings.navbarTitle || settings.siteName || "Amila Gold";
+  const brandLogo = settings.logoUrl || "/logo.png";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -33,10 +43,10 @@ export default function Navbar() {
       {/* ── Top Bar ── */}
       <nav
         id="navbar"
-        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? "glass-nav shadow-sm text-green-900 hover:text-secondary" : "bg-transparent text-green-900 hover:text-secondary"
+        className={`fixed inset-x-0 top-0 z-50 will-change-transform transition-all duration-300 ${scrolled ? "bg-surface/90 backdrop-blur-lg border-b border-outline-variant/20 shadow-sm text-green-900" : "bg-transparent text-green-900"
           }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10 md:h-20">
+        <div className="mx-auto flex h-16 sm:h-16 md:h-20 min-h-16 md:min-h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10 flex-shrink-0">
           {/* Left: Hamburger */}
           <button
             aria-label="Open menu"
@@ -54,8 +64,8 @@ export default function Navbar() {
             className={`flex items-center gap-1.5 sm:gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
           >
             {/* Logo Image */}
-            <Image src="/logo.png" alt="Amila Gold Logo" width={28} height={28} className="h-7 w-7 sm:h-8 sm:w-8" />
-            <span className="hidden sm:inline font-headline text-xl md:text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+            <Image src={brandLogo} alt={`${brandName} Logo`} width={28} height={28} className="h-7 w-7 sm:h-8 sm:w-8 object-contain" unoptimized />
+            <span className="sm:inline font-headline text-xl md:text-2xl font-black italic tracking-tight hover:text-secondary">{brandName}</span>
           </Link>
 
           {/* Right: Search + Cart */}
@@ -67,10 +77,10 @@ export default function Navbar() {
               <span className="material-symbols-outlined text-[20px] sm:text-[22px]">search</span>
             </Link>
             <Link
-              href="/user/profile"
+              href={isAuthenticated ? "/user/profile" : "/user/auth"}
               className={`transition-colors ${scrolled ? "text-green-900 hover:text-secondary" : "text-green-900 hover:text-secondary"}`}
             >
-              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">person</span>
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">{isAuthenticated ? 'person' : 'login'}</span>
             </Link>
             <Link
               href="/cart"
@@ -111,8 +121,8 @@ export default function Navbar() {
               className={`flex items-center gap-2 transition-colors ${scrolled ? "text-green-900" : "text-green-900"}`}
             >
               {/* Logo Image */}
-              <Image src="/logo.png" alt="Amila Gold Logo" width={32} height={32} />
-              <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">Amila Gold</span>
+              <Image src={brandLogo} alt={`${brandName} Logo`} width={32} height={32} className="object-contain" unoptimized />
+              <span className="font-headline text-2xl font-black italic tracking-tight hover:text-secondary">{brandName}</span>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -124,36 +134,76 @@ export default function Navbar() {
           </div>
 
           {/* Nav Links */}
-          <nav className="flex-1 flex flex-col px-6 py-8 gap-1 overflow-y-auto">
-            {NAV_LINKS.map((link, i) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                  }`}
-                style={{ transitionDelay: sidebarOpen ? `${i * 55 + 100}ms` : "0ms" }}
-              >
-                <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">
-                  {link.icon}
-                </span>
-                <span className="font-headline text-lg font-bold tracking-tight">{link.label}</span>
-              </Link>
-            ))}
+          <nav className="flex-1 flex flex-col px-6 py-8 gap-1 overflow-y-auto" data-lenis-prevent="true">
+            {NAV_LINKS.map((link, i) => {
+              const className = `flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                }`;
+              const style = { transitionDelay: sidebarOpen ? `${i * 55 + 100}ms` : "0ms" };
+              const inner = (
+                <>
+                  <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">
+                    {link.icon}
+                  </span>
+                  <span className="font-headline text-lg font-bold tracking-tight">{link.label}</span>
+                </>
+              );
+              if (link.external) {
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setSidebarOpen(false)}
+                    className={className}
+                    style={style}
+                  >
+                    {inner}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={className}
+                  style={style}
+                >
+                  {inner}
+                </Link>
+              );
+            })}
 
             <div className="my-4 border-t border-outline-variant/20" />
 
             {/* Profile Link */}
             <Link
-              href="/user/profile"
+              href={isAuthenticated ? "/user/profile" : "/user/auth"}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                 }`}
               style={{ transitionDelay: sidebarOpen ? `${NAV_LINKS.length * 55 + 100}ms` : "0ms" }}
             >
-              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">person</span>
-              <span className="font-headline text-lg font-bold tracking-tight">My Profile</span>
+              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">{isAuthenticated ? 'person' : 'login'}</span>
+              <span className="font-headline text-lg font-bold tracking-tight">{isAuthenticated ? 'My Profile' : 'Sign In'}</span>
             </Link>
+
+            {/* Logout link (only when authenticated) */}
+            {isAuthenticated && (
+              <button
+                onClick={() => {
+                  logout();
+                  setSidebarOpen(false);
+                }}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group w-full text-left ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                  }`}
+                style={{ transitionDelay: sidebarOpen ? `${(NAV_LINKS.length + 1) * 55 + 100}ms` : "0ms" }}
+              >
+                <span className="material-symbols-outlined text-[20px] text-error group-hover:text-error transition-colors">logout</span>
+                <span className="font-headline text-lg font-bold tracking-tight">Sign Out</span>
+              </button>
+            )}
 
             <Link
               href="/cart"
@@ -172,7 +222,7 @@ export default function Navbar() {
           {/* Sidebar Footer */}
           <div className="px-8 py-6 border-t border-outline-variant/20 bg-primary/5">
             <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant opacity-70 leading-relaxed">
-              Pure • Unrefined • Ethical <br />© 2024 Amila Gold
+              Pure • Unrefined • Ethical <br />© 2026 {brandName}
             </p>
           </div>
         </aside>

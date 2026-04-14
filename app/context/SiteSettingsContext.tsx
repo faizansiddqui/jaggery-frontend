@@ -29,6 +29,7 @@ const defaultSettings: SiteSettings = {
         'Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.',
     companyAddress: process.env.NEXT_PUBLIC_COMPANY_ADDRESS || '',
     companyEmail: process.env.NEXT_PUBLIC_COMPANY_EMAIL || '',
+    companyPhone: process.env.NEXT_PUBLIC_COMPANY_PHONE || '',
     emailFooterDescription:
         process.env.NEXT_PUBLIC_EMAIL_FOOTER_DESCRIPTION ||
         'This is an automated message from StreetRiot commerce engine.',
@@ -38,6 +39,7 @@ const defaultSettings: SiteSettings = {
     instagramHandle: process.env.NEXT_PUBLIC_INSTAGRAM_HANDLE || 'kinetic_riot',
     instagramGallery: defaultInstagramGallery,
     twitterUrl: process.env.NEXT_PUBLIC_TWITTER_URL || '',
+    youtubeUrl: process.env.NEXT_PUBLIC_YOUTUBE_URL || '',
     facebookUrl: process.env.NEXT_PUBLIC_FACEBOOK_URL || '',
     updatedAt: null,
 };
@@ -73,6 +75,7 @@ const hasSameSettings = (a: SiteSettings, b: SiteSettings) => {
         a.footerDescription === b.footerDescription &&
         a.companyAddress === b.companyAddress &&
         a.companyEmail === b.companyEmail &&
+        a.companyPhone === b.companyPhone &&
         a.emailFooterDescription === b.emailFooterDescription &&
         a.logoUrl === b.logoUrl &&
         (a.logoPublicId || '') === (b.logoPublicId || '') &&
@@ -81,6 +84,7 @@ const hasSameSettings = (a: SiteSettings, b: SiteSettings) => {
         a.instagramHandle === b.instagramHandle &&
         hasSameGallery &&
         a.twitterUrl === b.twitterUrl &&
+        a.youtubeUrl === b.youtubeUrl &&
         a.facebookUrl === b.facebookUrl &&
         (a.updatedAt || null) === (b.updatedAt || null)
     );

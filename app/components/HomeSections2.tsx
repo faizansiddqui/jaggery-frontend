@@ -1,6 +1,29 @@
 "use client";
-import React, { useRef } from "react";
-import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import { fetchPublicTestimonials, subscribeNewsletter } from "@/app/lib/apiClient";
+
+type TestimonialItem = { quote: string; name: string; role: string; id?: string };
+
+const FALLBACK_TESTIMONIALS: TestimonialItem[] = [
+  {
+    quote:
+      "Switching to Amila Gold was a revelation. The depth of flavor is something you simply cannot find in commercially refined sugar. It feels like a luxury in my morning tea.",
+    name: "Elena Vance",
+    role: "Wellness Coach",
+  },
+  {
+    quote:
+      "The texture is incredible. As a chef, I value the authenticity of the product. Amila Gold's consistency and ethical sourcing make it a permanent fixture in my kitchen.",
+    name: "Marcus Thorne",
+    role: "Executive Pastry Chef",
+  },
+  {
+    quote:
+      "I grew up with fresh jaggery from my grandfather's farm. Amila Gold is the only brand that has successfully captured that nostalgia and purity for the modern world.",
+    name: "Siddharth Rao",
+    role: "Heritage Archivist",
+  },
+];
 
 // The Slow Craft Section
 function SlowCraftSection() {
@@ -23,7 +46,7 @@ function SlowCraftSection() {
   ];
 
   return (
-    <section className="py-32 bg-primary text-white overflow-hidden">
+    <section className="py-15 lg:py-20 bg-primary text-white overflow-hidden">
       <div className="container mx-auto px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
           {/* Image Grid */}
@@ -89,23 +112,25 @@ function SlowCraftSection() {
 
 // Testimonials Section
 function TestimonialsSection() {
-  const testimonials = [
-    {
-      quote: "Switching to Amila Gold was a revelation. The depth of flavor is something you simply cannot find in commercially refined sugar. It feels like a luxury in my morning tea.",
-      name: "Elena Vance",
-      role: "Wellness Coach",
-    },
-    {
-      quote: "The texture is incredible. As a chef, I value the authenticity of the product. Amila Gold's consistency and ethical sourcing make it a permanent fixture in my kitchen.",
-      name: "Marcus Thorne",
-      role: "Executive Pastry Chef",
-    },
-    {
-      quote: "I grew up with fresh jaggery from my grandfather's farm. Amila Gold is the only brand that has successfully captured that nostalgia and purity for the modern world.",
-      name: "Siddharth Rao",
-      role: "Heritage Archivist",
-    },
-  ];
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(FALLBACK_TESTIMONIALS);
+
+  useEffect(() => {
+    fetchPublicTestimonials()
+      .then((rows) => {
+        if (!rows.length) return;
+        setTestimonials(
+          rows.map((row) => ({
+            id: row.id,
+            quote: row.quote,
+            name: row.name,
+            role: row.role || "",
+          }))
+        );
+      })
+      .catch(() => {
+        /* keep fallback */
+      });
+  }, []);
 
   const testimonialsRef = useRef<HTMLDivElement>(null);
 
@@ -124,7 +149,7 @@ function TestimonialsSection() {
   };
 
   return (
-    <section className="py-32 bg-surface">
+    <section className="py-15 lg:py-20 bg-surface">
       <div className="container mx-auto px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
           <h2 className="font-headline text-5xl text-primary max-w-lg leading-tight">
@@ -153,9 +178,9 @@ function TestimonialsSection() {
           ref={testimonialsRef}
           className="flex gap-12 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mx-8 px-8"
         >
-          {testimonials.map((t) => (
+          {testimonials.map((t, index) => (
             <div
-              key={t.name}
+              key={t.id || `${t.name}-${index}`}
               className="testimonial-card min-w-[90vw] md:min-w-[45vw] lg:min-w-[32vw] snap-start p-10 bg-surface-container-low rounded-xl relative"
             >
               <span className="material-symbols-outlined text-secondary absolute top-6 right-6 text-4xl opacity-20">
@@ -165,7 +190,12 @@ function TestimonialsSection() {
                 &ldquo;{t.quote}&rdquo;
               </p>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-surface-container-highest" />
+                <div
+                  className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center font-headline text-lg font-bold text-primary shrink-0"
+                  aria-hidden
+                >
+                  {t.name.trim().charAt(0).toLocaleUpperCase() || "?"}
+                </div>
                 <div>
                   <h5 className="font-bold text-sm">{t.name}</h5>
                   <span className="text-xs text-on-surface-variant uppercase tracking-widest">{t.role}</span>
@@ -181,10 +211,39 @@ function TestimonialsSection() {
 
 // Newsletter CTA Section
 function NewsletterSection() {
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState<"success" | "error" | "">("");
+
+  const handleSubscribe = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setStatusType("error");
+      setStatusMessage("Please enter your email.");
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      setStatusMessage("");
+      setStatusType("");
+      await subscribeNewsletter(normalizedEmail, "homepage");
+      setStatusType("success");
+      setStatusMessage("Subscribed successfully.");
+      setEmail("");
+    } catch (subscribeError) {
+      setStatusType("error");
+      setStatusMessage(subscribeError instanceof Error ? subscribeError.message : "Could not subscribe right now.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <section className="py-24">
-      <div className="container mx-auto px-8">
-        <div className="bg-secondary-container rounded-3xl p-16 md:p-24 text-center relative overflow-hidden">
+    <section className="py-10 lg:py-15">
+      <div className="container mx-auto px-2 lg:px-8">
+        <div className="bg-secondary-container rounded-3xl px-5 py-8 md:p-24 text-center relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="font-headline text-5xl md:text-6xl text-on-secondary-container mb-8">
               Join the Harvest Circle
@@ -192,19 +251,27 @@ function NewsletterSection() {
             <p className="text-on-secondary-container/80 text-xl max-w-2xl mx-auto mb-12">
               Receive seasonal updates on our harvest schedules, exclusive early-batch releases, and stories from the soil.
             </p>
-            <form className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto" onSubmit={handleSubscribe}>
               <input
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="Your email address"
                 className="flex-1 bg-surface-container-lowest border-none rounded-full px-8 py-5 focus:ring-2 focus:ring-primary text-primary outline-none"
               />
               <button
                 type="submit"
-                className="bg-primary text-on-primary px-10 py-5 rounded-full font-label uppercase tracking-widest text-sm hover:opacity-90 transition-all"
+                disabled={isSubmitting}
+                className="bg-primary text-on-primary px-10 py-5 rounded-full font-label uppercase tracking-widest text-sm hover:opacity-90 transition-all disabled:opacity-60"
               >
-                Subscribe
+                {isSubmitting ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
+            {statusMessage ? (
+              <p className={`mt-4 text-xs uppercase tracking-widest font-bold ${statusType === "error" ? "text-error" : "text-primary"}`}>
+                {statusMessage}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>

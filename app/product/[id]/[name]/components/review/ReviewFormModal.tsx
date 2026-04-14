@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { createPortal } from 'react-dom';
-import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import type { ReviewFormState } from '../types';
 
 interface ReviewFormModalProps {
@@ -12,8 +12,6 @@ interface ReviewFormModalProps {
     setReviewForm: Dispatch<SetStateAction<ReviewFormState>>;
     onClose: () => void;
     onSubmit: () => void;
-    onImageUpload: (event: ChangeEvent<HTMLInputElement>) => void;
-    onRemoveImage: (index: number) => void;
 }
 
 export default function ReviewFormModal({
@@ -23,18 +21,33 @@ export default function ReviewFormModal({
     setReviewForm,
     onClose,
     onSubmit,
-    onImageUpload,
-    onRemoveImage,
 }: ReviewFormModalProps) {
-    if (!show) return null;
+    const [render, setRender] = useState(show);
+    const [animate, setAnimate] = useState(false);
+
+    useEffect(() => {
+        if (show) {
+            setRender(true);
+            const timer = requestAnimationFrame(() => {
+                setAnimate(true);
+            });
+            return () => cancelAnimationFrame(timer);
+        } else {
+            setAnimate(false);
+            const timer = setTimeout(() => setRender(false), 400); // 400ms matching transition duration
+            return () => clearTimeout(timer);
+        }
+    }, [show]);
+
+    if (!render) return null;
     if (typeof document === 'undefined') return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] overflow-hidden animate-in fade-in duration-300">
+        <div className={`fixed inset-0 z-[110] overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${animate ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
             <button
                 type="button"
                 aria-label="Close review modal"
-                className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={() => {
                     if (isSubmittingReview) return;
                     onClose();
@@ -44,78 +57,64 @@ export default function ReviewFormModal({
                 className="relative h-full overflow-y-auto overscroll-contain touch-pan-y x-rail"
                 onWheel={(event) => event.stopPropagation()}
                 onTouchMove={(event) => event.stopPropagation()}
+                data-lenis-prevent="true"
             >
-                <div className="min-h-full flex items-start md:items-center justify-center pb-12 md:px-4 md:py-6">
-                    <div className="relative w-full max-w-3xl bg-[#f6f3f2] p-6 md:p-10 border-l-8 border-[#b90c1b] shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+                <div className="min-h-full flex items-start md:items-center justify-center pb-12 sm:px-4 md:py-6">
+                    <div className={`relative w-full max-w-2xl bg-surface sm:rounded-xl p-8 md:p-12 shadow-2xl transition-all duration-400 ease-[cubic-bezier(0.2,0.8,0.2,1)] transform ${animate ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-12 scale-95 opacity-0'}`}>
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <div>
-                                <h3 className="font-brand text-3xl md:text-4xl uppercase">Your Review</h3>
-                                <p className="font-headline text-[10px] uppercase tracking-widest opacity-60 mt-1">Share rating, experience and optional photos</p>
+                                <h3 className="font-headline text-3xl md:text-4xl text-primary font-medium">Write a Review</h3>
+                                <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant mt-2">Share your experience with Amila Gold</p>
                             </div>
                             <button
                                 type="button"
-                                className="h-10 w-10 border-2 border-[#1c1b1b]/20 bg-white hover:bg-[#1c1b1b] hover:text-white transition-all disabled:opacity-50"
+                                className="h-10 w-10 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-50"
                                 onClick={onClose}
                                 disabled={isSubmittingReview}
                             >
                                 <span className="material-symbols-outlined text-lg">close</span>
                             </button>
                         </div>
-                        <div className="flex flex-col gap-6">
-                            <input
-                                value={reviewForm.author}
-                                onChange={(e) => setReviewForm((p) => ({ ...p, author: e.target.value }))}
-                                className="bg-white border-2 border-[#1c1b1b]/20 px-6 py-4 font-headline text-sm uppercase tracking-widest focus:outline-none focus:border-[#b90c1b] transition-colors"
-                                placeholder="YOUR NAME"
-                            />
-                            <div className="flex items-center gap-3">
-                                <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Rating:</span>
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))}
-                                        className={`material-symbols-outlined text-2xl transition-colors ${star <= reviewForm.rating ? 'text-[#b90c1b]' : 'text-[#1c1b1b]/20'}`}
-                                        style={{ fontVariationSettings: star <= reviewForm.rating ? "'FILL' 1" : "'FILL' 0" }}>grade</button>
-                                ))}
-                            </div>
-                            <textarea
-                                value={reviewForm.text}
-                                onChange={(e) => setReviewForm((p) => ({ ...p, text: e.target.value }))}
-                                rows={5}
-                                className="bg-white border-2 border-[#1c1b1b]/20 px-6 py-4 font-headline text-sm normal-case tracking-wide leading-relaxed focus:outline-none focus:border-[#b90c1b] transition-colors resize-none break-words whitespace-pre-wrap"
-                                placeholder="SHARE YOUR EXPERIENCE..."
-                            />
 
-                            <div className="flex flex-col gap-3">
-                                <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">Upload Photos (Optional, max 2)</p>
-                                <label className="w-fit border-2 border-[#1c1b1b]/20 bg-white px-5 py-3 font-headline text-[11px] uppercase tracking-widest cursor-pointer hover:border-[#b90c1b] transition-colors">
-                                    <span className="material-symbols-outlined text-base align-middle mr-2">add_photo_alternate</span>
-                                    Add Images
-                                    <input type="file" accept="image/*" multiple className="hidden" onChange={onImageUpload} />
-                                </label>
-                                {reviewForm.images.length > 0 && (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {reviewForm.images.map((src, index) => (
-                                            <div key={`${src}-${index}`} className="relative border-2 border-[#1c1b1b]/15 bg-white overflow-hidden">
-                                                <Image src={src} alt={`Review Upload ${index + 1}`} width={400} height={300} unoptimized className="w-full aspect-[4/3] object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onRemoveImage(index)}
-                                                    className="absolute top-2 right-2 h-8 w-8 bg-black/75 text-white flex items-center justify-center"
-                                                    aria-label="Remove uploaded image"
-                                                >
-                                                    <span className="material-symbols-outlined text-base">close</span>
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                        <div className="flex flex-col gap-8">
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Full Name</label>
+                                <input
+                                    value={reviewForm.author}
+                                    onChange={(e) => setReviewForm((p) => ({ ...p, author: e.target.value }))}
+                                    className="bg-surface border border-outline px-6 py-4 rounded-lg font-body text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                    placeholder="Enter your name"
+                                />
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Rating</label>
+                                <div className="flex items-center gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button key={star} type="button" onClick={() => setReviewForm((p) => ({ ...p, rating: star }))}
+                                            className={`material-symbols-outlined text-3xl transition-colors hover:scale-110 ${star <= reviewForm.rating ? 'text-secondary' : 'text-outline-variant'}`}
+                                            style={{ fontVariationSettings: star <= reviewForm.rating ? "'FILL' 1" : "'FILL' 0" }}>grade</button>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label text-xs uppercase tracking-widest text-on-surface-variant">Your Experience</label>
+                                <textarea
+                                    value={reviewForm.text}
+                                    onChange={(e) => setReviewForm((p) => ({ ...p, text: e.target.value }))}
+                                    rows={5}
+                                    className="bg-surface border border-outline px-6 py-4 rounded-lg font-body text-base leading-relaxed focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none break-words whitespace-pre-wrap"
+                                    placeholder="Tell us what you liked..."
+                                />
                             </div>
 
                             <button
                                 onClick={onSubmit}
-                                disabled={isSubmittingReview}
-                                className="self-start bg-[#b90c1b] text-white px-10 py-4 font-brand text-xl uppercase hover:scale-[1.02] transition-transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                disabled={isSubmittingReview || !reviewForm.author.trim() || !reviewForm.text.trim()}
+                                className="w-full sm:w-auto mt-4 self-end bg-primary text-on-primary px-10 py-4 rounded-full font-label text-sm uppercase tracking-widest font-bold hover:shadow-lg hover:bg-primary-container hover:text-on-primary-container transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:hover:text-on-primary disabled:hover:shadow-none"
                             >
-                                {isSubmittingReview ? 'Submitting Review...' : 'Submit Review'}
+                                {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
                             </button>
                         </div>
                     </div>

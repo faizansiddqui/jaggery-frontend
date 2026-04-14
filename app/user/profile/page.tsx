@@ -1,7 +1,165 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
+import {
+  fetchUserProfile,
+  updateUserProfile,
+  fetchUserAddresses,
+  createUserAddress,
+  updateUserAddress,
+} from "@/app/lib/apiClient";
+import type { UserAddress, UserAddressInput } from "@/app/lib/apiClient";
+import AddressForm from "@/app/components/address/AddressForm";
+import AddressModal from "@/app/components/address/AddressModal";
+import AddressCard from "@/app/components/address/AddressCard";
+
+import { ProfileSkeleton } from "@/app/components/Skeletons";
 
 export default function ProfilePage() {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState({ name: "", email: user?.email || "", phone: "", gender: "" });
+  const [addresses, setAddresses] = useState<UserAddress[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
+  const [isAddressSaving, setIsAddressSaving] = useState(false);
+  const [addressError, setAddressError] = useState("");
+  const [addressForm, setAddressForm] = useState<UserAddressInput>({
+    FullName: "",
+    phone1: "",
+    phone2: "",
+    country: "India",
+    state: "",
+    city: "",
+    district: "",
+    pinCode: "",
+    address: "",
+    address_line2: "",
+    addressType: "Home",
+  });
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [profileData, addressesData] = await Promise.all([
+          fetchUserProfile(),
+          fetchUserAddresses(),
+        ]);
+        const raw = profileData as Record<string, unknown>;
+        const profileRecord = ((raw.profile as Record<string, unknown>) || raw) as { name?: string; email?: string; phone?: string; gender?: string };
+        console.log('Loaded profile data:', profileRecord);
+        setProfile({
+          name: profileRecord.name || "",
+          email: profileRecord.email || user?.email || "",
+          phone: profileRecord.phone || "",
+          gender: profileRecord.gender || "",
+        });
+        setAddresses(addressesData);
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [user?.email]);
+
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const openCreateAddress = () => {
+    setEditingAddressId(null);
+    setAddressError("");
+    setAddressForm({
+      FullName: profile.name || "",
+      phone1: profile.phone || "",
+      phone2: "",
+      country: "India",
+      state: "",
+      city: "",
+      district: "",
+      pinCode: "",
+      address: "",
+      address_line2: "",
+      addressType: "Home",
+    });
+    setShowAddressForm(true);
+  };
+
+  const openEditAddress = (addr: UserAddress) => {
+    setEditingAddressId(addr.address_id);
+    setAddressError("");
+    setAddressForm({
+      FullName: addr.FullName || profile.name || "",
+      phone1: addr.phone1 || profile.phone || "",
+      phone2: addr.phone2 || "",
+      country: addr.country || "India",
+      state: addr.state || "",
+      city: addr.city || "",
+      district: addr.district || "",
+      pinCode: addr.pinCode || "",
+      address: addr.address || "",
+      address_line2: addr.address_line2 || "",
+      addressType: addr.addressType || "Home",
+    });
+    setShowAddressForm(true);
+  };
+
+  const handleAddressSubmit = async () => {
+    if (!addressForm.FullName || !addressForm.phone1 || !addressForm.address || !addressForm.city || !addressForm.pinCode) {
+      setAddressError("Please fill required address fields.");
+      return;
+    }
+    try {
+      setIsAddressSaving(true);
+      setAddressError("");
+      if (editingAddressId) {
+        const updated = await updateUserAddress(editingAddressId, addressForm);
+        setAddresses((prev) => prev.map((addr) => (addr.address_id === editingAddressId ? updated : addr)));
+      } else {
+        const created = await createUserAddress(addressForm);
+        setAddresses((prev) => [created, ...prev]);
+      }
+      setShowAddressForm(false);
+      setEditingAddressId(null);
+    } catch {
+      setAddressError("Failed to save address.");
+    } finally {
+      setIsAddressSaving(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    try {
+      await updateUserProfile({
+        name: profile.name,
+        phone: profile.phone,
+        gender: profile.gender,
+      });
+      setSaveSuccess(true);
+      // Refresh profile data
+      const raw = await fetchUserProfile() as Record<string, unknown>;
+      const profileRecord = ((raw.profile as Record<string, unknown>) || raw) as { name?: string; email?: string; phone?: string; gender?: string };
+      setProfile({
+        name: profileRecord.name || "",
+        email: profileRecord.email || user?.email || "",
+        phone: profileRecord.phone || "",
+        gender: profileRecord.gender || "",
+      });
+      // Hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) return <ProfileSkeleton />;
+
+
   return (
     <div className="space-y-16">
       {/* Personal Information Section */}
@@ -12,9 +170,21 @@ export default function ProfilePage() {
               <h2 className="font-headline text-3xl font-bold text-primary italic leading-tight">Account Details</h2>
               <p className="text-on-surface-variant text-sm mt-2">Manage your core identity and contact information.</p>
             </div>
-            <button className="bg-primary text-on-primary px-8 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all">
-              Save Changes
-            </button>
+            <div className="flex items-center gap-4">
+              {saveSuccess && (
+                <span className="text-secondary text-sm font-medium flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm">check_circle</span>
+                  Saved!
+                </span>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-primary text-on-primary px-8 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
@@ -24,7 +194,9 @@ export default function ProfilePage() {
                 <input
                   className="w-full bg-transparent border-none p-0 font-headline italic text-xl text-primary focus:ring-0 outline-none"
                   type="text"
-                  defaultValue="Elena Vance"
+                  value={profile.name}
+                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                  placeholder="Your name"
                 />
               </div>
             </div>
@@ -34,7 +206,8 @@ export default function ProfilePage() {
                 <input
                   className="w-full bg-transparent border-none p-0 font-headline italic text-xl text-primary focus:ring-0 outline-none"
                   type="email"
-                  defaultValue="elena.vance@agrarian.com"
+                  value={user?.email || ""}
+                  readOnly
                 />
               </div>
             </div>
@@ -44,20 +217,28 @@ export default function ProfilePage() {
                 <input
                   className="w-full bg-transparent border-none p-0 font-headline italic text-xl text-primary focus:ring-0 outline-none"
                   type="tel"
-                  defaultValue="+1 (555) 234-8890"
+                  value={profile.phone}
+                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                  placeholder="+91 12345 67890"
                 />
               </div>
             </div>
             <div className="flex flex-col space-y-2">
-              <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">Preferred Language</label>
+              <label className="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">Gender</label>
               <div className="border-b border-outline-variant/40 focus-within:border-primary pb-2 transition-colors">
-                <select className="w-full bg-transparent border-none p-0 font-headline italic text-xl text-primary focus:ring-0 outline-none appearance-none cursor-pointer">
-                  <option>English (UK)</option>
-                  <option>French</option>
-                  <option>German</option>
+                <select
+                  className="w-full bg-transparent border-none p-0 font-headline italic text-xl text-primary focus:ring-0 outline-none appearance-none cursor-pointer"
+                  value={profile.gender}
+                  onChange={(e) => setProfile({ ...profile, gender: String(e.target.value) })}
+                >
+                  <option value="">Prefer not to say</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="others">Others</option>
                 </select>
               </div>
             </div>
+            {/* Age removed per request */}
           </div>
         </div>
       </section>
@@ -66,58 +247,59 @@ export default function ProfilePage() {
       <section>
         <div className="flex justify-between items-center mb-8">
           <h2 className="font-headline text-3xl font-bold text-primary italic">Saved Addresses</h2>
-          <button className="flex items-center gap-2 border-[1.5px] border-secondary text-secondary px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-secondary-container/10 transition-all">
+          <button
+            type="button"
+            onClick={openCreateAddress}
+            className="flex items-center gap-2 border-[1.5px] border-secondary text-secondary px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-secondary-container/10 transition-all"
+          >
             <span className="material-symbols-outlined text-[16px]">add</span> Add New
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Address 1 */}
-          <div className="bg-surface-container-highest rounded-xl p-8 border border-transparent hover:border-secondary/30 transition-all cursor-pointer relative group">
-            <div className="absolute top-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button aria-label="Edit" className="text-primary hover:text-secondary"><span className="material-symbols-outlined text-[20px]">edit_note</span></button>
-              <button aria-label="Delete" className="text-error hover:text-secondary"><span className="material-symbols-outlined text-[20px]">delete_outline</span></button>
+        <div className="space-y-4">
+          {addresses.length === 0 ? (
+            <div className="text-center py-12 bg-surface-container-low rounded-xl">
+              <span className="material-symbols-outlined text-4xl text-outline-variant mb-4">location_off</span>
+              <p className="text-on-surface-variant">No saved addresses yet.</p>
             </div>
-            <div className="flex items-start gap-4 mb-6">
-              <div className="bg-secondary/10 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-secondary icon-filled">home</span>
-              </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-widest text-secondary font-bold bg-secondary-container px-2 py-0.5 rounded">Primary</span>
-                <h3 className="font-headline text-xl font-bold text-primary mt-2">The Country Estate</h3>
-              </div>
-            </div>
-            <div className="space-y-1 font-body text-sm text-on-surface-variant leading-relaxed">
-              <p>Elena Vance</p>
-              <p>42 Heritage Way, Willowbrook</p>
-              <p>Kent, CT 06757</p>
-              <p>United States</p>
-            </div>
-          </div>
-
-          {/* Address 2 */}
-          <div className="bg-surface rounded-xl p-8 border border-outline-variant/30 hover:border-secondary/30 transition-all cursor-pointer relative group flex flex-col justify-between">
-            <div className="absolute top-6 right-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button aria-label="Edit" className="text-primary hover:text-secondary"><span className="material-symbols-outlined text-[20px]">edit_note</span></button>
-              <button aria-label="Delete" className="text-error hover:text-secondary"><span className="material-symbols-outlined text-[20px]">delete_outline</span></button>
-            </div>
-            <div className="flex items-start gap-4 mb-6">
-              <div className="bg-surface-variant p-2 rounded-lg">
-                <span className="material-symbols-outlined text-on-surface-variant">apartment</span>
-              </div>
-              <div>
-                <h3 className="font-headline text-xl font-bold text-primary mt-2">City Flat</h3>
-              </div>
-            </div>
-            <div className="space-y-1 font-body text-sm text-on-surface-variant leading-relaxed">
-              <p>Elena Vance</p>
-              <p>Flat 12B, The Gilded Tower</p>
-              <p>Manhattan, NY 10012</p>
-              <p>United States</p>
-            </div>
-          </div>
+          ) : (
+            addresses.map((addr) => (
+              <AddressCard
+                key={addr.address_id}
+                address={addr}
+                selected={false}
+                onSelect={() => {}}
+                onEdit={() => openEditAddress(addr)}
+              />
+            ))
+          )}
         </div>
       </section>
+
+      {showAddressForm && (
+        <AddressModal
+          title={editingAddressId ? "Edit Address" : "Add New Address"}
+          onClose={() => {
+            setShowAddressForm(false);
+            setEditingAddressId(null);
+            setAddressError("");
+          }}
+        >
+            <AddressForm
+              value={addressForm}
+              onChange={setAddressForm}
+              onSubmit={handleAddressSubmit}
+              onCancel={() => {
+                setShowAddressForm(false);
+                setEditingAddressId(null);
+                setAddressError("");
+              }}
+              submitLabel={editingAddressId ? "Update Address" : "Save Address"}
+              busy={isAddressSaving}
+              error={addressError}
+            />
+        </AddressModal>
+      )}
 
       {/* Heritage Callout */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-primary text-on-primary rounded-xl overflow-hidden relative">
