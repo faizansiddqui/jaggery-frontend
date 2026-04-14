@@ -10,11 +10,25 @@ const normalizeTarget = (value: string) => {
   return output.replace(/\/$/, "");
 };
 
-const defaultProxyTarget = process.env.NODE_ENV === "production"
-  ? "https://street-riot-backend-production.up.railway.app"
-  : "http://localhost:8080";
+/**
+ * Server-side proxy target for /api/backend/* (must be THIS app’s Node API, not another project).
+ * Prefer BACKEND_PROXY_TARGET; else same origin as NEXT_PUBLIC_BACKEND_URL (your Jaggery deploy URL).
+ * Never hardcode a foreign backend — that was causing production to read the ecommerce Mongo catalog.
+ */
+const resolvedProxy =
+  process.env.BACKEND_PROXY_TARGET?.trim() ||
+  (process.env.NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_BACKEND_URL?.trim() || ""
+    : "") ||
+  (process.env.NODE_ENV !== "production" ? "http://localhost:8080" : "");
 
-const backendProxyTarget = normalizeTarget(process.env.BACKEND_PROXY_TARGET || defaultProxyTarget);
+if (process.env.NODE_ENV === "production" && !resolvedProxy) {
+  console.warn(
+    "[next.config] Set BACKEND_PROXY_TARGET or NEXT_PUBLIC_BACKEND_URL to your Jaggery backend URL (e.g. Railway). Rewrites may not work until set."
+  );
+}
+
+const backendProxyTarget = normalizeTarget(resolvedProxy || "http://localhost:8080");
 
 const nextConfig: NextConfig = {
   images: {

@@ -8,7 +8,10 @@ const EMAIL_KEY = 'streetriot_user_email';
 const CART_ID_KEY = 'streetriot_cart_id';
 const CHECKOUT_PROMO_KEY = 'streetriot_checkout_promo';
 const BROWSER_PROXY_BASE = '/api/backend';
-const PROD_BACKEND_FALLBACK = 'https://street-riot-backend-production.up.railway.app';
+/** Optional extra API origin (e.g. staging). Do not point at another product’s backend. */
+const OPTIONAL_BACKEND_FALLBACK = String(
+    process.env.NEXT_PUBLIC_BACKEND_FALLBACK || ''
+).trim();
 
 function normalizeBackendUrl(input: string) {
     let value = String(input || '').trim();
@@ -51,16 +54,10 @@ export function getBackendBaseUrlCandidates() {
     if (configured) list.push(configured);
     if (typoFixedFromRaw && !list.includes(typoFixedFromRaw)) list.push(typoFixedFromRaw);
 
-    if (process.env.NODE_ENV === 'production') {
-        if (!list.includes(PROD_BACKEND_FALLBACK)) list.push(PROD_BACKEND_FALLBACK);
-    } else {
-        if (isBrowser()) {
-            const host = window.location.hostname;
-            const isLocalHost = host === 'localhost' || host === '127.0.0.1';
-            if (!isLocalHost && !list.includes(PROD_BACKEND_FALLBACK)) {
-                list.push(PROD_BACKEND_FALLBACK);
-            }
-        }
+    const optionalFb = normalizeBackendUrl(OPTIONAL_BACKEND_FALLBACK);
+    if (optionalFb && !list.includes(optionalFb)) list.push(optionalFb);
+
+    if (process.env.NODE_ENV !== 'production') {
         if (!list.includes('http://localhost:8080')) list.push('http://localhost:8080');
     }
 
