@@ -150,7 +150,7 @@ export default function AdminBannersPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-brand text-4xl uppercase tracking-tight">Banners</h1>
+        <h1 className="font-brand text-4xl tracking-tight">Banners</h1>
         <p className="mt-2 text-on-surface-variant text-sm">Manage homepage hero banners.</p>
       </div>
 
@@ -207,12 +207,12 @@ export default function AdminBannersPage() {
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 bg-primary text-on-primary text-xs uppercase tracking-widest disabled:opacity-60"
+            className="px-4 py-2 bg-primary text-on-primary text-xs tracking-widest disabled:opacity-60"
           >
             {saving ? 'Saving...' : editingId ? 'Update Banner' : 'Create Banner'}
           </button>
           {editingId ? (
-            <button type="button" onClick={resetForm} className="px-4 py-2 border border-outline/30 text-xs uppercase tracking-widest">
+            <button type="button" onClick={resetForm} className="px-4 py-2 border border-outline/30 text-xs tracking-widest">
               Cancel Edit
             </button>
           ) : null}
@@ -234,16 +234,16 @@ export default function AdminBannersPage() {
                 ) : null}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-headline text-sm uppercase tracking-widest">{item.title}</p>
+                <p className="font-headline text-sm tracking-widest">{item.title}</p>
                 <p className="text-xs text-on-surface-variant">{item.subtitle}</p>
                 <p className="text-[11px] text-on-surface-variant mt-1 truncate">{item.targetUrl}</p>
-                <p className="text-[10px] uppercase tracking-widest opacity-50 mt-1">Order: {item.order} • {item.isActive ? 'Active' : 'Inactive'}</p>
+                <p className="text-[10px] tracking-widest opacity-50 mt-1">Order: {item.order} • {item.isActive ? 'Active' : 'Inactive'}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => beginEdit(item)}
-                  className="px-3 py-2 border border-outline/30 text-xs uppercase tracking-widest"
+                  className="px-3 py-2 border border-outline/30 text-xs tracking-widest"
                 >
                   Edit
                 </button>
@@ -251,7 +251,7 @@ export default function AdminBannersPage() {
                   type="button"
                   onClick={() => onDelete(item.id)}
                   disabled={deletingId === item.id}
-                  className="px-3 py-2 border border-error text-error text-xs uppercase tracking-widest disabled:opacity-60"
+                  className="px-3 py-2 border border-error text-error text-xs tracking-widest disabled:opacity-60"
                 >
                   {deletingId === item.id ? 'Deleting...' : 'Delete'}
                 </button>

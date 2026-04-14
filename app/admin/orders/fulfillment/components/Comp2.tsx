@@ -6,7 +6,7 @@ export default function Comp2() {
           <span className="material-symbols-outlined text-primary cursor-pointer">
             arrow_back
           </span>
-          <h2 className="uppercase tracking-widest text-sm">
+          <h2 className="tracking-widest text-sm">
             Order / #SR-92841
           </h2>
         </div>

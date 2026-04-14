@@ -4,7 +4,7 @@ export default function Comp1() {
       <main className="ml-64 min-h-screen flex flex-col">
         <header className="flex justify-between items-center w-full px-8 h-16 sticky top-0 z-50 bg-[#fcf8f8] dark:bg-[#1c1b1b] border-b-0">
           <div className="flex items-center gap-8">
-            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk'] uppercase">
+            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk']">
               StreetRiot ADMIN
             </span>
             <div className="relative hidden lg:block">
@@ -12,7 +12,7 @@ export default function Comp1() {
                 search
               </span>
               <input
-                className="bg-[#f6f3f2] dark:bg-[#252424] border-none text-[10px] tracking-widest font-['Space_Grotesk'] pl-10 pr-4 py-2 w-64 focus:ring-1 focus:ring-primary uppercase text-[#1c1b1b] dark:text-[#fcf8f8]"
+                className="bg-[#f6f3f2] dark:bg-[#252424] border-none text-[10px] tracking-widest font-['Space_Grotesk'] pl-10 pr-4 py-2 w-64 focus:ring-1 focus:ring-primary text-[#1c1b1b] dark:text-[#fcf8f8]"
                 placeholder="SEARCH ORDERS, ID, CUSTOMERS..."
                 type="text"
               />
@@ -26,7 +26,7 @@ export default function Comp1() {
               <span className="material-symbols-outlined">mail</span>
             </button>
             <div className="h-4 w-[1px] bg-outline-variant opacity-30"></div>
-            <button className="text-[#b90c1b] font-bold border-b-2 border-[#b90c1b] font-['Space_Grotesk'] uppercase tracking-wider text-sm px-2 py-1">
+            <button className="text-[#b90c1b] font-bold border-b-2 border-[#b90c1b] font-['Space_Grotesk'] tracking-wider text-sm px-2 py-1">
               Profile
             </button>
           </div>
@@ -38,12 +38,12 @@ export default function Comp1() {
               <h2 className="text-display text-6xl leading-none text-on-surface mb-2">
                 ORDER MANAGEMENT
               </h2>
-              <p className="font-['Space_Grotesk'] text-sm uppercase tracking-[0.2em] opacity-60">
+              <p className="font-['Space_Grotesk'] text-sm tracking-[0.2em] opacity-60">
                 Fulfillment Pipeline &amp; History
               </p>
             </div>
             <div className="flex gap-4">
-              <button className="bg-on-surface text-white px-8 py-3 font-display text-xl uppercase tracking-widest hover:bg-primary transition-colors flex items-center gap-2">
+              <button className="bg-on-surface text-white px-8 py-3 font-display text-xl tracking-widest hover:bg-primary transition-colors flex items-center gap-2">
                 <span className="material-symbols-outlined text-base">
                   download
                 </span>
@@ -54,7 +54,7 @@ export default function Comp1() {
 
           <div className="grid grid-cols-4 gap-0 mb-12 bg-surface-container-low">
             <div className="p-6 border-r border-outline-variant/20">
-              <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
+              <p className="font-['Space_Grotesk'] text-[10px] tracking-[0.2em] opacity-50 mb-1">
                 TOTAL ORDERS
               </p>
               <p className="text-display text-4xl">1,284</p>
@@ -66,7 +66,7 @@ export default function Comp1() {
               </div>
             </div>
             <div className="p-6 border-r border-outline-variant/20">
-              <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
+              <p className="font-['Space_Grotesk'] text-[10px] tracking-[0.2em] opacity-50 mb-1">
                 PENDING SHIPMENT
               </p>
               <p className="text-display text-4xl text-primary">42</p>
@@ -75,16 +75,16 @@ export default function Comp1() {
               </div>
             </div>
             <div className="p-6 border-r border-outline-variant/20">
-              <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
+              <p className="font-['Space_Grotesk'] text-[10px] tracking-[0.2em] opacity-50 mb-1">
                 REVENUE (MTD)
               </p>
               <p className="text-display text-4xl">$84,200</p>
-              <p className="text-[10px] font-bold opacity-40 mt-2 uppercase tracking-tighter">
+              <p className="text-[10px] font-bold opacity-40 mt-2 tracking-tighter">
                 Updated 2m ago
               </p>
             </div>
             <div className="p-6">
-              <p className="font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
+              <p className="font-['Space_Grotesk'] text-[10px] tracking-[0.2em] opacity-50 mb-1">
                 RETURN RATE
               </p>
               <p className="text-display text-4xl">2.4%</p>
@@ -92,7 +92,7 @@ export default function Comp1() {
                 <span className="material-symbols-outlined text-xs">
                   check_circle
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-tighter">
+                <span className="text-[10px] font-bold tracking-tighter">
                   Within Target
                 </span>
               </div>
@@ -103,10 +103,10 @@ export default function Comp1() {
             <div className="h-1 bg-primary w-24 mb-6"></div>
             <div className="flex flex-wrap items-center gap-6 bg-surface p-4 border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
-                <span className="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-widest">
+                <span className="font-['Space_Grotesk'] text-[10px] font-bold tracking-widest">
                   STATUS:
                 </span>
-                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold uppercase focus:ring-1 focus:ring-primary py-1 px-4">
+                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold focus:ring-1 focus:ring-primary py-1 px-4">
                   <option>ALL ORDERS</option>
                   <option>PENDING</option>
                   <option>PROCESSING</option>
@@ -115,10 +115,10 @@ export default function Comp1() {
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-widest">
+                <span className="font-['Space_Grotesk'] text-[10px] font-bold tracking-widest">
                   PAYMENT:
                 </span>
-                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold uppercase focus:ring-1 focus:ring-primary py-1 px-4">
+                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold focus:ring-1 focus:ring-primary py-1 px-4">
                   <option>ANY STATUS</option>
                   <option>PAID</option>
                   <option>UNPAID</option>
@@ -126,16 +126,16 @@ export default function Comp1() {
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-['Space_Grotesk'] text-[10px] font-bold uppercase tracking-widest">
+                <span className="font-['Space_Grotesk'] text-[10px] font-bold tracking-widest">
                   DATE RANGE:
                 </span>
-                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold uppercase focus:ring-1 focus:ring-primary py-1 px-4">
+                <select className="border-none bg-surface-container-low text-[10px] tracking-widest font-bold focus:ring-1 focus:ring-primary py-1 px-4">
                   <option>LAST 30 DAYS</option>
                   <option>LAST 7 DAYS</option>
                   <option>CUSTOM RANGE</option>
                 </select>
               </div>
-              <button className="ml-auto flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">
+              <button className="ml-auto flex items-center gap-2 text-[10px] font-bold tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">
                 <span className="material-symbols-outlined text-sm">tune</span>
                 Advanced Filters
               </button>
@@ -146,22 +146,22 @@ export default function Comp1() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low">
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Order ID
                   </th>
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Customer
                   </th>
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Date
                   </th>
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Total
                   </th>
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Payment
                   </th>
-                  <th className="p-4 font-['Space_Grotesk'] text-[10px] uppercase tracking-[0.2em] font-bold opacity-60">
+                  <th className="p-4 font-['Space_Grotesk'] text-[10px] tracking-[0.2em] font-bold opacity-60">
                     Fulfillment
                   </th>
                   <th className="p-4"></th>
@@ -174,11 +174,11 @@ export default function Comp1() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk'] uppercase">
+                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk']">
                         JD
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">
+                        <p className="text-xs font-bold tracking-tight">
                           Julian Drach
                         </p>
                         <p className="text-[10px] opacity-40 lowercase">
@@ -194,14 +194,14 @@ export default function Comp1() {
                     $245.00
                   </td>
                   <td className="p-4">
-                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold tracking-widest">
                       PAID
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-primary"></span>
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-primary">
+                      <span className="text-[9px] font-bold tracking-widest text-primary">
                         PROCESSING
                       </span>
                     </div>
@@ -220,11 +220,11 @@ export default function Comp1() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk'] uppercase text-primary">
+                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk'] text-primary">
                         AM
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">
+                        <p className="text-xs font-bold tracking-tight">
                           Aki Morita
                         </p>
                         <p className="text-[10px] opacity-40 lowercase">
@@ -240,14 +240,14 @@ export default function Comp1() {
                     $1,120.00
                   </td>
                   <td className="p-4">
-                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold tracking-widest">
                       PAID
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-secondary"></span>
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-secondary">
+                      <span className="text-[9px] font-bold tracking-widest text-secondary">
                         SHIPPED
                       </span>
                     </div>
@@ -266,11 +266,11 @@ export default function Comp1() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk'] uppercase">
+                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk']">
                         SB
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">
+                        <p className="text-xs font-bold tracking-tight">
                           Sarah Blake
                         </p>
                         <p className="text-[10px] opacity-40 lowercase">
@@ -286,14 +286,14 @@ export default function Comp1() {
                     $89.00
                   </td>
                   <td className="p-4">
-                    <span className="px-3 py-1 bg-[#ffdad6] text-error text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-[#ffdad6] text-error text-[9px] font-bold tracking-widest">
                       AWAITING
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-surface-variant"></span>
-                      <span className="text-[9px] font-bold uppercase tracking-widest opacity-40">
+                      <span className="text-[9px] font-bold tracking-widest opacity-40">
                         ON HOLD
                       </span>
                     </div>
@@ -312,11 +312,11 @@ export default function Comp1() {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk'] uppercase">
+                      <div className="w-8 h-8 bg-surface-container-high flex items-center justify-center font-bold text-[10px] font-['Space_Grotesk']">
                         LX
                       </div>
                       <div>
-                        <p className="text-xs font-bold uppercase tracking-tight">
+                        <p className="text-xs font-bold tracking-tight">
                           Leo Xing
                         </p>
                         <p className="text-[10px] opacity-40 lowercase">
@@ -332,14 +332,14 @@ export default function Comp1() {
                     $455.50
                   </td>
                   <td className="p-4">
-                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-3 py-1 bg-[#f0edec] text-[#1c1b1b] text-[9px] font-bold tracking-widest">
                       PAID
                     </span>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 bg-secondary opacity-30"></span>
-                      <span className="text-[9px] font-bold uppercase tracking-widest opacity-30">
+                      <span className="text-[9px] font-bold tracking-widest opacity-30">
                         DELIVERED
                       </span>
                     </div>
@@ -357,7 +357,7 @@ export default function Comp1() {
           </div>
 
           <div className="mt-12 flex justify-between items-center border-t border-on-surface pt-8">
-            <div className="text-[10px] font-['Space_Grotesk'] uppercase tracking-[0.2em] opacity-40">
+            <div className="text-[10px] font-['Space_Grotesk'] tracking-[0.2em] opacity-40">
               Showing 1 to 10 of 1,284 entries
             </div>
             <div className="flex items-center gap-1">

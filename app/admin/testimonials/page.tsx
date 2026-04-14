@@ -123,8 +123,8 @@ export default function AdminTestimonialsPage() {
   return (
     <div className="flex flex-col gap-8 max-w-4xl">
       <header>
-        <p className="font-headline text-[10px] uppercase tracking-[0.3em] text-[#b90c1b]">Content</p>
-        <h1 className="font-brand text-4xl md:text-5xl uppercase tracking-tight mt-2">Testimonials</h1>
+        <p className="font-headline text-[10px] tracking-[0.3em] text-[#b90c1b]">Content</p>
+        <h1 className="font-brand text-4xl md:text-5xl tracking-tight mt-2">Testimonials</h1>
         <p className="text-on-surface-variant text-sm mt-2">
           Manage homepage testimonial carousel. Lower order numbers appear first. Only active items show on the site.
         </p>
@@ -138,9 +138,9 @@ export default function AdminTestimonialsPage() {
       ) : null}
 
       <form onSubmit={onSubmit} className="border border-outline/20 bg-surface p-6 space-y-4">
-        <h2 className="font-headline text-xs uppercase tracking-widest">{editingId ? 'Edit testimonial' : 'Add testimonial'}</h2>
+        <h2 className="font-headline text-xs tracking-widest">{editingId ? 'Edit testimonial' : 'Add testimonial'}</h2>
         <label className="flex flex-col gap-1">
-          <span className="text-[10px] uppercase tracking-widest opacity-60">Quote</span>
+          <span className="text-[10px] tracking-widest opacity-60">Quote</span>
           <textarea
             value={form.quote}
             onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
@@ -151,7 +151,7 @@ export default function AdminTestimonialsPage() {
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-[10px] uppercase tracking-widest opacity-60">Name</span>
+            <span className="text-[10px] tracking-widest opacity-60">Name</span>
             <input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -160,7 +160,7 @@ export default function AdminTestimonialsPage() {
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[10px] uppercase tracking-widest opacity-60">Role / Title</span>
+            <span className="text-[10px] tracking-widest opacity-60">Role / Title</span>
             <input
               value={form.role}
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
@@ -170,7 +170,7 @@ export default function AdminTestimonialsPage() {
         </div>
         <div className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-[10px] uppercase tracking-widest opacity-60">Sort order</span>
+            <span className="text-[10px] tracking-widest opacity-60">Sort order</span>
             <input
               type="number"
               value={form.order}
@@ -184,19 +184,19 @@ export default function AdminTestimonialsPage() {
               checked={form.isActive}
               onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
             />
-            <span className="text-xs uppercase tracking-widest">Active (visible on homepage)</span>
+            <span className="text-xs tracking-widest">Active (visible on homepage)</span>
           </label>
         </div>
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="bg-primary text-on-primary px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest disabled:opacity-60"
+            className="bg-primary text-on-primary px-6 py-2 rounded-full text-xs font-bold tracking-widest disabled:opacity-60"
           >
             {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
           </button>
           {editingId ? (
-            <button type="button" onClick={resetForm} className="border border-outline/30 px-6 py-2 rounded-full text-xs uppercase tracking-widest">
+            <button type="button" onClick={resetForm} className="border border-outline/30 px-6 py-2 rounded-full text-xs tracking-widest">
               Cancel edit
             </button>
           ) : null}
@@ -204,7 +204,7 @@ export default function AdminTestimonialsPage() {
       </form>
 
       <section className="border border-outline/20 bg-surface p-6">
-        <h2 className="font-headline text-xs uppercase tracking-widest mb-4">All testimonials</h2>
+        <h2 className="font-headline text-xs tracking-widest mb-4">All testimonials</h2>
         {loading ? (
           <p className="text-sm opacity-60">Loading...</p>
         ) : items.length === 0 ? (
@@ -220,8 +220,8 @@ export default function AdminTestimonialsPage() {
                 <div className="flex flex-wrap justify-between gap-2 items-start">
                   <div>
                     <p className="font-bold text-sm">{item.name}</p>
-                    <p className="text-xs uppercase tracking-widest opacity-60">{item.role || '—'}</p>
-                    <p className="text-[10px] uppercase tracking-widest mt-1">
+                    <p className="text-xs tracking-widest opacity-60">{item.role || '—'}</p>
+                    <p className="text-[10px] tracking-widest mt-1">
                       Order {item.order} · {item.isActive ? 'Active' : 'Hidden'}
                     </p>
                   </div>
@@ -229,7 +229,7 @@ export default function AdminTestimonialsPage() {
                     <button
                       type="button"
                       onClick={() => startEdit(item)}
-                      className="text-xs uppercase tracking-widest border border-outline/30 px-3 py-1 rounded-full hover:border-primary"
+                      className="text-xs tracking-widest border border-outline/30 px-3 py-1 rounded-full hover:border-primary"
                     >
                       Edit
                     </button>
@@ -237,7 +237,7 @@ export default function AdminTestimonialsPage() {
                       type="button"
                       onClick={() => onDelete(item.id)}
                       disabled={deletingId === item.id}
-                      className="text-xs uppercase tracking-widest border border-error/40 text-error px-3 py-1 rounded-full hover:bg-error/10 disabled:opacity-50"
+                      className="text-xs tracking-widest border border-error/40 text-error px-3 py-1 rounded-full hover:bg-error/10 disabled:opacity-50"
                     >
                       {deletingId === item.id ? '...' : 'Delete'}
                     </button>

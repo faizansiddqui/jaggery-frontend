@@ -6,48 +6,48 @@ export default function Comp1() {
           <h1 className="text-xl font-bold text-white tracking-widest bebas">
             STREETRIOT
           </h1>
-          <p className="text-[10px] text-white opacity-40 uppercase font-['Space_Grotesk'] tracking-[0.2em]">
+          <p className="text-[10px] text-white opacity-40 font-['Space_Grotesk'] tracking-[0.2em]">
             Management Portal
           </p>
         </div>
         <nav className="flex-1">
           <a
-            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">dashboard</span>
             Dashboard
           </a>
           <a
-            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">inventory_2</span>
             Products
           </a>
           <a
-            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">shopping_cart</span>
             Orders
           </a>
           <a
-            className="bg-[#b90c1b] text-white font-bold px-6 py-4 flex items-center gap-4 translate-x-1 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="bg-[#b90c1b] text-white font-bold px-6 py-4 flex items-center gap-4 translate-x-1 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">group</span>
             Customers
           </a>
           <a
-            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">analytics</span>
             Analytics
           </a>
           <a
-            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 uppercase text-sm tracking-widest font-['Space_Grotesk']"
+            className="text-[#ebe7e7] px-6 py-4 flex items-center gap-4 opacity-60 hover:bg-[#b90c1b] hover:opacity-100 transition-all duration-150 text-sm tracking-widest font-['Space_Grotesk']"
             href="/"
           >
             <span className="material-symbols-outlined">settings</span>
@@ -64,7 +64,7 @@ export default function Comp1() {
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-bold text-white truncate">Admin User</p>
-            <p className="text-[10px] text-white opacity-40 uppercase tracking-tighter">
+            <p className="text-[10px] text-white opacity-40 tracking-tighter">
               Senior Manager
             </p>
           </div>

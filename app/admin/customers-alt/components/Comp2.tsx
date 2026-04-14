@@ -3,7 +3,7 @@ export default function Comp2() {
     <>
       <header className="flex justify-between items-center w-full px-8 h-16 sticky top-0 z-50 bg-[#fcf8f8] dark:bg-[#1c1b1b] border-b-0 tonal-shift">
         <div className="flex items-center gap-8 flex-1">
-          <div className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk'] uppercase">
+          <div className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk']">
             StreetRiot{" "}
             <span className="text-[#b90c1b] dark:text-[#dd2e30]">ADMIN</span>
           </div>
@@ -12,7 +12,7 @@ export default function Comp2() {
               search
             </span>
             <input
-              className="w-full bg-[#f6f3f2] dark:bg-[#252424] border-none focus:ring-0 text-sm py-2 pl-10 placeholder:opacity-40 uppercase tracking-widest font-['Space_Grotesk']"
+              className="w-full bg-[#f6f3f2] dark:bg-[#252424] border-none focus:ring-0 text-sm py-2 pl-10 placeholder:opacity-40 tracking-widest font-['Space_Grotesk']"
               placeholder="SEARCH CUSTOMER ID, EMAIL, OR SEGMEN..."
               type="text"
             />
@@ -31,7 +31,7 @@ export default function Comp2() {
             </span>
           </button>
           <div className="h-6 w-[1px] bg-outline-variant opacity-20"></div>
-          <button className="text-sm font-bold text-[#b90c1b] dark:text-[#dd2e30] font-['Space_Grotesk'] uppercase tracking-wider hover:opacity-80 active:scale-95 transition-all">
+          <button className="text-sm font-bold text-[#b90c1b] dark:text-[#dd2e30] font-['Space_Grotesk'] tracking-wider hover:opacity-80 active:scale-95 transition-all">
             Profile
           </button>
         </div>

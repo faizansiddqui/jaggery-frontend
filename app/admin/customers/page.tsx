@@ -131,8 +131,8 @@ export default function CustomersManagement() {
     return (
         <div className="flex flex-col gap-12">
             <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#b90c1b] font-black">USER SEGMENTS</span>
-                <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">Customer Analytics</h2>
+                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">USER SEGMENTS</span>
+                <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Customer Analytics</h2>
             </header>
 
             <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
@@ -141,7 +141,7 @@ export default function CustomersManagement() {
                         <button
                             key={entry}
                             onClick={() => setSegment(entry)}
-                            className={`px-4 py-2 font-headline text-[10px] uppercase tracking-widest border transition-colors whitespace-nowrap ${segment === entry
+                            className={`px-4 py-2 font-headline text-[10px] tracking-widest border transition-colors whitespace-nowrap ${segment === entry
                                     ? 'border-primary text-primary'
                                     : 'border-primary/40 opacity-50 hover:opacity-100'
                                 }`}
@@ -156,26 +156,26 @@ export default function CustomersManagement() {
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         placeholder="Search customer name or email"
-                        className="w-full md:w-80 bg-[#ffffff] border border-primary/50 px-4 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                        className="w-full md:w-80 bg-[#ffffff] border border-primary/50 px-4 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                     />
-                    <button onClick={loadCustomers} className="px-5 bg-[#ffffff] border border-primary/50 font-headline text-[10px] uppercase tracking-widest border-secondary">Refresh</button>
+                    <button onClick={loadCustomers} className="px-5 bg-[#ffffff] border border-primary/50 font-headline text-[10px] tracking-widest border-secondary">Refresh</button>
                 </div>
             </div>
 
             {error && (
                 <div className="border border-primary/30 bg-primary/10 px-4 py-3 flex items-center justify-between gap-4">
-                    <p className="font-headline text-[10px] uppercase tracking-widest text-primary">{error}</p>
-                    <button onClick={loadCustomers} className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4">Retry</button>
+                    <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
+                    <button onClick={loadCustomers} className="font-headline text-[10px] tracking-widest underline underline-offset-4">Retry</button>
                 </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, idx) => (
                     <div key={idx} className="bg-[#ffffff] border border-primary p-8 flex flex-col justify-between group border-secondary transition-all">
-                        <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-40">{stat.label}</span>
+                        <span className="font-headline text-[10px] tracking-[0.2em] opacity-40">{stat.label}</span>
                         <div className="mt-8 flex justify-between items-end">
                             <span className="font-brand text-4xl block leading-none">{stat.value}</span>
-                            <span className="font-headline text-[8px] uppercase tracking-widest text-[#b90c1b]">{stat.trend}</span>
+                            <span className="font-headline text-[8px] tracking-widest text-[#b90c1b]">{stat.trend}</span>
                         </div>
                     </div>
                 ))}
@@ -184,12 +184,12 @@ export default function CustomersManagement() {
             {isLoading && (
                 <div className="bg-[#ffffff] border border-primary p-10 flex items-center gap-3">
                     <span className="material-symbols-outlined animate-spin text-[#b90c1b]">progress_activity</span>
-                    <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading customers...</span>
+                    <span className="font-headline text-[10px] tracking-widest opacity-60">Loading customers...</span>
                 </div>
             )}
 
             <div className="bg-[#ffffff] border border-primary overflow-hidden">
-                <div className="grid grid-cols-12 gap-8 p-6 bg-[#ffffff]/5 font-headline text-[10px] uppercase tracking-[0.3em] font-black opacity-40">
+                <div className="grid grid-cols-12 gap-8 p-6 bg-[#ffffff]/5 font-headline text-[10px] tracking-[0.3em] font-black opacity-40">
                     <div className="col-span-1">RANK</div>
                     <div className="col-span-4">CUSTOMER_PROFILE</div>
                     <div className="col-span-2">ORDERS</div>
@@ -201,7 +201,7 @@ export default function CustomersManagement() {
                 <div className="flex flex-col">
                     {!isLoading && filteredCustomers.length === 0 && (
                         <div className="p-12 text-center border-b border-[#ffffff]/5">
-                            <p className="font-brand text-3xl uppercase tracking-widest opacity-30">No customers found</p>
+                            <p className="font-brand text-3xl tracking-widest opacity-30">No customers found</p>
                         </div>
                     )}
 
@@ -225,10 +225,10 @@ export default function CustomersManagement() {
                     <div className="max-w-5xl mx-auto bg-[#ffffff] border border-[#ffffff]/15 p-6 md:p-8">
                         <div className="flex items-start justify-between gap-4 border-b border-primary pb-4 mb-6">
                             <div>
-                                <p className="font-headline text-[10px] uppercase tracking-[0.2em] text-[#b90c1b]">Customer Activity</p>
-                                <h3 className="font-brand text-4xl uppercase tracking-widest">{activity?.customer.name || activityEmail}</h3>
+                                <p className="font-headline text-[10px] tracking-[0.2em] text-[#b90c1b]">Customer Activity</p>
+                                <h3 className="font-brand text-4xl tracking-widest">{activity?.customer.name || activityEmail}</h3>
                                 {activity?.customer.isBlocked && (
-                                    <p className="font-headline text-[10px] uppercase tracking-widest text-red-300 mt-1">Blocked: {activity.customer.blockedReason || 'No reason'}</p>
+                                    <p className="font-headline text-[10px] tracking-widest text-red-300 mt-1">Blocked: {activity.customer.blockedReason || 'No reason'}</p>
                                 )}
                             </div>
                             <button onClick={closeActivity} className="material-symbols-outlined text-2xl opacity-60 hover:opacity-100">close</button>
@@ -237,7 +237,7 @@ export default function CustomersManagement() {
                         {loadingActivity && (
                             <div className="py-10 flex items-center gap-3">
                                 <span className="material-symbols-outlined animate-spin text-[#b90c1b]">progress_activity</span>
-                                <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading timeline...</span>
+                                <span className="font-headline text-[10px] tracking-widest opacity-60">Loading timeline...</span>
                             </div>
                         )}
 
@@ -245,36 +245,36 @@ export default function CustomersManagement() {
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                                 <div className="lg:col-span-4 space-y-4">
                                     <div className="border border-primary p-4">
-                                        <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Active Sessions</p>
+                                        <p className="font-headline text-[9px] tracking-widest opacity-50">Active Sessions</p>
                                         <p className="font-brand text-3xl mt-2">{activity.summary.activeSessions}</p>
                                     </div>
                                     <div className="border border-primary p-4">
-                                        <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Orders</p>
+                                        <p className="font-headline text-[9px] tracking-widest opacity-50">Orders</p>
                                         <p className="font-brand text-3xl mt-2">{activity.summary.ordersCount}</p>
                                     </div>
                                     <div className="border border-primary p-4">
-                                        <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Wishlist Items</p>
+                                        <p className="font-headline text-[9px] tracking-widest opacity-50">Wishlist Items</p>
                                         <p className="font-brand text-3xl mt-2">{activity.summary.wishlistCount}</p>
                                     </div>
                                     <div className="border border-primary p-4">
-                                        <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Lifetime Value</p>
+                                        <p className="font-headline text-[9px] tracking-widest opacity-50">Lifetime Value</p>
                                         <p className="font-brand text-3xl mt-2 text-[#b90c1b]">{formatMoney(activity.summary.totalSpent, currency)}</p>
                                     </div>
                                 </div>
 
                                 <div className="lg:col-span-8">
-                                    <h4 className="font-brand text-3xl uppercase tracking-widest border-b border-primary pb-3 mb-4">Timeline</h4>
+                                    <h4 className="font-brand text-3xl tracking-widest border-b border-primary pb-3 mb-4">Timeline</h4>
                                     <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-3">
                                         {activity.timeline.length === 0 && (
-                                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-40">No timeline events yet.</p>
+                                            <p className="font-headline text-[10px] tracking-widest opacity-40">No timeline events yet.</p>
                                         )}
                                         {activity.timeline.map((entry, index) => (
                                             <div key={`${entry.type}-${entry.occurredAt || index}`} className="border border-primary p-4">
                                                 <div className="flex justify-between gap-4">
-                                                    <p className="font-headline text-[10px] uppercase tracking-widest">{entry.title}</p>
-                                                    <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 whitespace-nowrap">{entry.occurredAt ? new Date(entry.occurredAt).toLocaleString() : 'N/A'}</p>
+                                                    <p className="font-headline text-[10px] tracking-widest">{entry.title}</p>
+                                                    <p className="font-headline text-[9px] tracking-widest opacity-40 whitespace-nowrap">{entry.occurredAt ? new Date(entry.occurredAt).toLocaleString() : 'N/A'}</p>
                                                 </div>
-                                                <p className="font-headline text-[9px] uppercase tracking-widest opacity-50 mt-2">TYPE: {entry.type}</p>
+                                                <p className="font-headline text-[9px] tracking-widest opacity-50 mt-2">TYPE: {entry.type}</p>
                                             </div>
                                         ))}
                                     </div>

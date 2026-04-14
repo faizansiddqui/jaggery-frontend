@@ -11,9 +11,10 @@ import {
   type ListingProduct,
   minMaxListingPrice,
   productMatchesWeightFilters,
-  sortPriceForProduct,
   resolveListingVariant,
   collectWeightOptions,
+  compareListingPriceAsc,
+  compareListingPriceDesc,
 } from "@/app/lib/shopListing";
 
 type Product = ListingProduct;
@@ -140,17 +141,19 @@ export default function SearchPage() {
     const list = [...filteredProducts];
     switch (sortOption) {
       case "price-asc":
-        return list.sort(
-          (a, b) => sortPriceForProduct(a, selectedWeights) - sortPriceForProduct(b, selectedWeights)
-        );
+        return list.sort((a, b) => compareListingPriceAsc(a, b, selectedWeights));
       case "price-desc":
-        return list.sort(
-          (a, b) => sortPriceForProduct(b, selectedWeights) - sortPriceForProduct(a, selectedWeights)
-        );
+        return list.sort((a, b) => compareListingPriceDesc(a, b, selectedWeights));
       case "name-asc":
-        return list.sort((a, b) => a.name.localeCompare(b.name));
+        return list.sort((a, b) => {
+          const c = a.name.localeCompare(b.name, "en");
+          return c !== 0 ? c : a.id - b.id;
+        });
       case "name-desc":
-        return list.sort((a, b) => b.name.localeCompare(a.name));
+        return list.sort((a, b) => {
+          const c = b.name.localeCompare(a.name, "en");
+          return c !== 0 ? c : a.id - b.id;
+        });
       default:
         return list;
     }

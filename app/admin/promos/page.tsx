@@ -210,39 +210,39 @@ export default function AdminPromosPage() {
   return (
     <section className="space-y-8">
       <header className="border-b border-[#ffffff]/10 pb-6">
-        <h1 className="font-brand text-5xl uppercase tracking-tight">Promo Codes</h1>
-        <p className="font-headline text-[10px] uppercase tracking-[0.25em] opacity-60 mt-2">
+        <h1 className="font-brand text-5xl tracking-tight">Promo Codes</h1>
+        <p className="font-headline text-[10px] tracking-[0.25em] opacity-60 mt-2">
           Cart and product-triggered discount campaigns
         </p>
       </header>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <form onSubmit={handleSubmit} className="bg-[#ffffff]/5 border border-[#ffffff]/10 p-6 space-y-4">
-          <h2 className="font-brand text-2xl uppercase tracking-widest">
+          <h2 className="font-brand text-2xl tracking-widest">
             {editingId ? 'Edit Promo' : 'Create Promo'}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Code</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Code</span>
               <input
                 value={form.code}
                 onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs uppercase tracking-widest"
+                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs tracking-widest"
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Scope</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Scope</span>
               <select
                 value={form.scope}
                 onChange={(e) => setForm((prev) => ({ ...prev, scope: e.target.value as PromoFormState['scope'] }))}
-                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs uppercase tracking-widest"
+                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs tracking-widest"
               >
                 <option value="CART">CART</option>
                 <option value="PRODUCT">PRODUCT</option>
               </select>
             </label>
             <label className="space-y-2 md:col-span-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">
+              <span className="font-headline text-[10px] tracking-widest opacity-70">
                 Description ({descriptionWords} words)
               </span>
               <textarea
@@ -253,20 +253,20 @@ export default function AdminPromosPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Discount Type</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Discount Type</span>
               <select
                 value={form.discountType}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, discountType: e.target.value as PromoFormState['discountType'] }))
                 }
-                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs uppercase tracking-widest"
+                className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs tracking-widest"
               >
                 <option value="FLAT">FLAT</option>
                 <option value="PERCENT">PERCENT</option>
               </select>
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Discount Value</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Discount Value</span>
               <input
                 type="number"
                 min={0}
@@ -276,7 +276,7 @@ export default function AdminPromosPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Min Cart Value</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Min Cart Value</span>
               <input
                 type="number"
                 min={0}
@@ -286,7 +286,7 @@ export default function AdminPromosPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Max Discount</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Max Discount</span>
               <input
                 type="number"
                 min={0}
@@ -298,14 +298,14 @@ export default function AdminPromosPage() {
             {form.scope === 'PRODUCT' && (
               <>
                 <label className="space-y-2 md:col-span-2">
-                  <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Product</span>
+                  <span className="font-headline text-[10px] tracking-widest opacity-70">Product</span>
                   <div className="space-y-2">
                     <select
                       value={form.requiredProductId}
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, requiredProductId: e.target.value }))
                       }
-                      className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs uppercase tracking-[0.4em]"
+                      className="w-full bg-[#1c1b1b] border border-[#ffffff]/20 px-3 py-2 font-headline text-xs tracking-[0.4em]"
                     >
                       <option value="">Select a product</option>
                       {products.map((product) => {
@@ -325,24 +325,24 @@ export default function AdminPromosPage() {
                       })}
                     </select>
                     {productsLoading && (
-                      <p className="font-headline text-[8px] uppercase tracking-widest opacity-50">
+                      <p className="font-headline text-[8px] tracking-widest opacity-50">
                         Loading products…
                       </p>
                     )}
                     {productsError && (
-                      <p className="font-headline text-[8px] uppercase tracking-widest text-[#ff7878]">
+                      <p className="font-headline text-[8px] tracking-widest text-[#ff7878]">
                         {productsError}
                       </p>
                     )}
                     {!productsLoading && !productsError && products.length === 0 && (
-                      <p className="font-headline text-[8px] uppercase tracking-widest opacity-40">
+                      <p className="font-headline text-[8px] tracking-widest opacity-40">
                         No products synced yet
                       </p>
                     )}
                   </div>
                 </label>
                 <label className="space-y-2">
-                  <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Required Qty</span>
+                  <span className="font-headline text-[10px] tracking-widest opacity-70">Required Qty</span>
                   <input
                     type="number"
                     min={1}
@@ -354,7 +354,7 @@ export default function AdminPromosPage() {
               </>
             )}
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Usage Limit</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Usage Limit</span>
               <input
                 type="number"
                 min={0}
@@ -364,7 +364,7 @@ export default function AdminPromosPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">Start At</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">Start At</span>
               <input
                 type="datetime-local"
                 value={form.startAt}
@@ -373,7 +373,7 @@ export default function AdminPromosPage() {
               />
             </label>
             <label className="space-y-2">
-              <span className="font-headline text-[10px] uppercase tracking-widest opacity-70">End At</span>
+              <span className="font-headline text-[10px] tracking-widest opacity-70">End At</span>
               <input
                 type="datetime-local"
                 value={form.endAt}
@@ -383,7 +383,7 @@ export default function AdminPromosPage() {
             </label>
           </div>
 
-          <label className="inline-flex items-center gap-2 font-headline text-[10px] uppercase tracking-widest">
+          <label className="inline-flex items-center gap-2 font-headline text-[10px] tracking-widest">
             <input
               type="checkbox"
               checked={form.isActive}
@@ -396,7 +396,7 @@ export default function AdminPromosPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-3 bg-[#b90c1b] text-white font-headline text-[10px] uppercase tracking-widest disabled:opacity-50"
+              className="px-5 py-3 bg-[#b90c1b] text-white font-headline text-[10px] tracking-widest disabled:opacity-50"
             >
               {saving ? 'Saving...' : editingId ? 'Update Promo' : 'Create Promo'}
             </button>
@@ -404,22 +404,22 @@ export default function AdminPromosPage() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-5 py-3 bg-[#ffffff]/10 font-headline text-[10px] uppercase tracking-widest"
+                className="px-5 py-3 bg-[#ffffff]/10 font-headline text-[10px] tracking-widest"
               >
                 Cancel Edit
               </button>
             )}
           </div>
-          {error && <p className="font-headline text-[10px] uppercase tracking-widest text-[#ff7878]">{error}</p>}
-          {message && <p className="font-headline text-[10px] uppercase tracking-widest text-[#7fffa0]">{message}</p>}
+          {error && <p className="font-headline text-[10px] tracking-widest text-[#ff7878]">{error}</p>}
+          {message && <p className="font-headline text-[10px] tracking-widest text-[#7fffa0]">{message}</p>}
         </form>
 
         <div className="bg-[#ffffff]/5 border border-[#ffffff]/10 p-6">
-          <h2 className="font-brand text-2xl uppercase tracking-widest mb-4">Existing Promos</h2>
+          <h2 className="font-brand text-2xl tracking-widest mb-4">Existing Promos</h2>
           {loading ? (
-            <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading promos...</p>
+            <p className="font-headline text-[10px] tracking-widest opacity-60">Loading promos...</p>
           ) : rows.length === 0 ? (
-            <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">No promos found.</p>
+            <p className="font-headline text-[10px] tracking-widest opacity-60">No promos found.</p>
           ) : (
             <div className="space-y-3">
               {rows.map((promo) => (
@@ -427,14 +427,14 @@ export default function AdminPromosPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-brand text-xl">{promo.code}</p>
-                      <p className="font-headline text-[10px] uppercase tracking-widest opacity-60 mt-1">
+                      <p className="font-headline text-[10px] tracking-widest opacity-60 mt-1">
                         {promo.scope} / {promo.discountType} / USED {promo.usedCount}
                         {promo.usageLimit > 0 ? ` OF ${promo.usageLimit}` : ''}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-headline text-[10px] uppercase tracking-widest px-2 py-1 ${
+                        className={`font-headline text-[10px] tracking-widest px-2 py-1 ${
                           promo.isActive ? 'bg-green-700/30 text-green-200' : 'bg-[#ffffff]/10 opacity-70'
                         }`}
                       >
@@ -442,20 +442,20 @@ export default function AdminPromosPage() {
                       </span>
                       <button
                         onClick={() => startEdit(promo)}
-                        className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4"
+                        className="font-headline text-[10px] tracking-widest underline underline-offset-4"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(promo.id)}
-                        className="font-headline text-[10px] uppercase tracking-widest text-[#ff7878]"
+                        className="font-headline text-[10px] tracking-widest text-[#ff7878]"
                       >
                         Delete
                       </button>
                     </div>
                   </div>
-                  <p className="font-headline text-[10px] uppercase tracking-widest opacity-80 mt-3">{promo.description}</p>
-                  <p className="font-headline text-[10px] uppercase tracking-widest opacity-50 mt-2">
+                  <p className="font-headline text-[10px] tracking-widest opacity-80 mt-3">{promo.description}</p>
+                  <p className="font-headline text-[10px] tracking-widest opacity-50 mt-2">
                     Discount: {promo.discountType === 'PERCENT' ? `${promo.discountValue}%` : promo.discountValue}
                     {' | '}
                     Min Cart: {promo.minCartValue}

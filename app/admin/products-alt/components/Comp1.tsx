@@ -4,7 +4,7 @@ export default function Comp1() {
       <main className="ml-64 min-h-screen flex flex-col">
         <header className="flex justify-between items-center w-full px-8 h-16 sticky top-0 z-50 bg-[#fcf8f8] dark:bg-[#1c1b1b] border-b-0">
           <div className="flex items-center gap-8 flex-1">
-            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk'] uppercase">
+            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-[0.05em] font-['Space_Grotesk']">
               StreetRiot ADMIN
             </span>
             <div className="relative flex-1 max-w-md ml-4">
@@ -12,7 +12,7 @@ export default function Comp1() {
                 search
               </span>
               <input
-                className="w-full bg-[#f6f3f2] dark:bg-[#252424] border-none focus:ring-1 focus:ring-[#b90c1b] h-10 pl-10 pr-4 text-xs font-['Space_Grotesk'] tracking-widest uppercase"
+                className="w-full bg-[#f6f3f2] dark:bg-[#252424] border-none focus:ring-1 focus:ring-[#b90c1b] h-10 pl-10 pr-4 text-xs font-['Space_Grotesk'] tracking-widest"
                 placeholder="SEARCH PRODUCTS, SKU, COLLECTIONS..."
                 type="text"
               />
@@ -29,7 +29,7 @@ export default function Comp1() {
               </button>
             </div>
             <div className="h-6 w-[1px] bg-outline-variant opacity-20"></div>
-            <button className="font-['Space_Grotesk'] uppercase text-sm tracking-wider font-bold text-[#b90c1b] dark:text-[#dd2e30] hover:bg-[#ebe7e7] dark:hover:bg-[#333131] px-3 py-1 transition-colors duration-200 active:opacity-80 active:scale-95">
+            <button className="font-['Space_Grotesk'] text-sm tracking-wider font-bold text-[#b90c1b] dark:text-[#dd2e30] hover:bg-[#ebe7e7] dark:hover:bg-[#333131] px-3 py-1 transition-colors duration-200 active:opacity-80 active:scale-95">
               Profile
             </button>
           </div>
@@ -38,10 +38,10 @@ export default function Comp1() {
         <div className="p-8 space-y-8 max-w-[1400px]">
           <section className="flex flex-col md:flex-row justify-between items-end gap-6 border-b-4 border-on-surface pb-6">
             <div className="space-y-1">
-              <h2 className="display-lg text-6xl font-black bebas uppercase tracking-tighter leading-none">
+              <h2 className="display-lg text-6xl font-black bebas tracking-tighter leading-none">
                 Inventory Control
               </h2>
-              <p className="text-sm tracking-[0.3em] uppercase font-['Space_Grotesk'] font-medium text-secondary">
+              <p className="text-sm tracking-[0.3em] font-['Space_Grotesk'] font-medium text-secondary">
                 Global Product Manifest v2.4
               </p>
             </div>
@@ -59,7 +59,7 @@ export default function Comp1() {
 
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-4 bg-surface-container-low p-6 flex flex-col justify-between">
-              <span className="text-xs uppercase tracking-widest font-bold opacity-60">
+              <span className="text-xs tracking-widest font-bold opacity-60">
                 Total Active Stock
               </span>
               <div className="flex items-baseline gap-4 mt-4">
@@ -73,10 +73,10 @@ export default function Comp1() {
             </div>
             <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest p-6 flex flex-wrap items-center gap-4">
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-[10px] uppercase font-bold tracking-widest mb-1 opacity-50">
+                <label className="block text-[10px] font-bold tracking-widest mb-1 opacity-50">
                   Filter by Category
                 </label>
-                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold uppercase tracking-widest h-10 px-4">
+                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold tracking-widest h-10 px-4">
                   <option>All Categories</option>
                   <option>Outerwear</option>
                   <option>Graphic Tees</option>
@@ -85,10 +85,10 @@ export default function Comp1() {
                 </select>
               </div>
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-[10px] uppercase font-bold tracking-widest mb-1 opacity-50">
+                <label className="block text-[10px] font-bold tracking-widest mb-1 opacity-50">
                   Status
                 </label>
-                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold uppercase tracking-widest h-10 px-4">
+                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold tracking-widest h-10 px-4">
                   <option>All Statuses</option>
                   <option>Published</option>
                   <option>Draft</option>
@@ -96,10 +96,10 @@ export default function Comp1() {
                 </select>
               </div>
               <div className="flex-1 min-w-[200px]">
-                <label className="block text-[10px] uppercase font-bold tracking-widest mb-1 opacity-50">
+                <label className="block text-[10px] font-bold tracking-widest mb-1 opacity-50">
                   Availability
                 </label>
-                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold uppercase tracking-widest h-10 px-4">
+                <select className="w-full bg-surface-container-low border-none focus:ring-0 text-sm font-bold tracking-widest h-10 px-4">
                   <option>In Stock Only</option>
                   <option>Low Stock</option>
                   <option>Out of Stock</option>
@@ -117,22 +117,22 @@ export default function Comp1() {
                 className="w-4 h-4 bg-transparent border-white/40 text-primary focus:ring-0"
                 type="checkbox"
               />
-              <span className="text-xs font-bold uppercase tracking-widest">
+              <span className="text-xs font-bold tracking-widest">
                 3 Products Selected
               </span>
             </div>
             <div className="flex items-center gap-6">
-              <button className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2">
+              <button className="text-xs font-bold tracking-widest hover:text-primary transition-colors flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">edit</span>
                 Edit Bulk
               </button>
-              <button className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2">
+              <button className="text-xs font-bold tracking-widest hover:text-primary transition-colors flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">
                   visibility_off
                 </span>
                 Unpublish
               </button>
-              <button className="text-xs font-bold uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2">
+              <button className="text-xs font-bold tracking-widest hover:text-primary transition-colors flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">
                   delete
                 </span>
@@ -144,7 +144,7 @@ export default function Comp1() {
           <div className="bg-surface-container-lowest overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container text-[10px] uppercase font-black tracking-[0.2em] border-b border-on-surface/10">
+                <tr className="bg-surface-container text-[10px] font-black tracking-[0.2em] border-b border-on-surface/10">
                   <th className="px-6 py-4 w-12">
                     <input
                       className="w-4 h-4 border-on-surface/20 text-primary focus:ring-0"
@@ -177,7 +177,7 @@ export default function Comp1() {
                     />
                   </td>
                   <td className="px-6 py-5">
-                    <div className="font-black uppercase tracking-tight text-lg">
+                    <div className="font-black tracking-tight text-lg">
                       AX-12 Urban Shell
                     </div>
                     <div className="text-[10px] text-secondary font-medium tracking-widest">
@@ -185,7 +185,7 @@ export default function Comp1() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-xs font-bold uppercase bg-surface-container-high px-2 py-1 tracking-widest">
+                    <span className="text-xs font-bold bg-surface-container-high px-2 py-1 tracking-widest">
                       Outerwear
                     </span>
                   </td>
@@ -199,7 +199,7 @@ export default function Comp1() {
                     $289.00
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                    <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-emerald-600">
                       <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
                       Published
                     </div>
@@ -228,7 +228,7 @@ export default function Comp1() {
                     />
                   </td>
                   <td className="px-6 py-5">
-                    <div className="font-black uppercase tracking-tight text-lg">
+                    <div className="font-black tracking-tight text-lg">
                       Core Logotype Tee
                     </div>
                     <div className="text-[10px] text-secondary font-medium tracking-widest">
@@ -236,7 +236,7 @@ export default function Comp1() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-xs font-bold uppercase bg-surface-container-high px-2 py-1 tracking-widest">
+                    <span className="text-xs font-bold bg-surface-container-high px-2 py-1 tracking-widest">
                       Graphic Tees
                     </span>
                   </td>
@@ -250,7 +250,7 @@ export default function Comp1() {
                     $65.00
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                    <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-emerald-600">
                       <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
                       Published
                     </div>
@@ -280,7 +280,7 @@ export default function Comp1() {
                     />
                   </td>
                   <td className="px-6 py-5">
-                    <div className="font-black uppercase tracking-tight text-lg">
+                    <div className="font-black tracking-tight text-lg">
                       Velocity Runner X
                     </div>
                     <div className="text-[10px] text-secondary font-medium tracking-widest">
@@ -288,7 +288,7 @@ export default function Comp1() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-xs font-bold uppercase bg-surface-container-high px-2 py-1 tracking-widest">
+                    <span className="text-xs font-bold bg-surface-container-high px-2 py-1 tracking-widest">
                       Footwear
                     </span>
                   </td>
@@ -302,7 +302,7 @@ export default function Comp1() {
                     $210.00
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-secondary opacity-50">
+                    <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-secondary opacity-50">
                       <span className="w-2 h-2 rounded-full bg-secondary"></span>
                       Draft
                     </div>
@@ -332,7 +332,7 @@ export default function Comp1() {
                     />
                   </td>
                   <td className="px-6 py-5">
-                    <div className="font-black uppercase tracking-tight text-lg">
+                    <div className="font-black tracking-tight text-lg">
                       Modular Utility Belt
                     </div>
                     <div className="text-[10px] text-secondary font-medium tracking-widest">
@@ -340,7 +340,7 @@ export default function Comp1() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className="text-xs font-bold uppercase bg-surface-container-high px-2 py-1 tracking-widest">
+                    <span className="text-xs font-bold bg-surface-container-high px-2 py-1 tracking-widest">
                       Accessories
                     </span>
                   </td>
@@ -354,7 +354,7 @@ export default function Comp1() {
                     $45.00
                   </td>
                   <td className="px-6 py-5">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                    <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-emerald-600">
                       <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
                       Published
                     </div>
@@ -372,7 +372,7 @@ export default function Comp1() {
           </div>
 
           <div className="flex justify-between items-center py-10">
-            <div className="text-[10px] uppercase font-black tracking-widest opacity-40">
+            <div className="text-[10px] font-black tracking-widest opacity-40">
               Showing 1-25 of 1,208 entries
             </div>
             <div className="flex gap-1">

@@ -7,26 +7,26 @@ export default function Comp1() {
             SYSTEM CONFIG
           </h2>
           <div className="flex items-center gap-4">
-            <span className="px-3 py-1 bg-primary text-white text-[10px] font-headline font-bold uppercase tracking-widest">
+            <span className="px-3 py-1 bg-primary text-white text-[10px] font-headline font-bold tracking-widest">
               LIVE SERVER
             </span>
-            <span className="text-xs font-headline text-on-surface/40 uppercase tracking-widest">
+            <span className="text-xs font-headline text-on-surface/40 tracking-widest">
               V 2.0.4 - KINETIC EDITORIAL ENGINE
             </span>
           </div>
         </div>
 
         <div className="flex gap-12 border-b border-outline-variant/20 mb-12 overflow-x-auto whitespace-nowrap">
-          <button className="pb-4 border-b-2 border-primary text-on-surface font-headline font-bold uppercase tracking-widest text-sm transition-all">
+          <button className="pb-4 border-b-2 border-primary text-on-surface font-headline font-bold tracking-widest text-sm transition-all">
             General
           </button>
-          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold uppercase tracking-widest text-sm transition-all">
+          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold tracking-widest text-sm transition-all">
             Payments
           </button>
-          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold uppercase tracking-widest text-sm transition-all">
+          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold tracking-widest text-sm transition-all">
             Shipping
           </button>
-          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold uppercase tracking-widest text-sm transition-all">
+          <button className="pb-4 border-b-2 border-transparent text-on-surface/40 hover:text-on-surface font-headline font-bold tracking-widest text-sm transition-all">
             Team
           </button>
         </div>
@@ -35,7 +35,7 @@ export default function Comp1() {
           <div className="col-span-12 lg:col-span-7 space-y-12">
             <div className="bg-surface-container-lowest p-0 relative border-l-4 border-primary">
               <div className="p-8">
-                <h3 className="text-xl font-headline font-black uppercase mb-8 flex items-center gap-2">
+                <h3 className="text-xl font-headline font-black mb-8 flex items-center gap-2">
                   <span className="material-symbols-outlined" data-icon="info">
                     info
                   </span>
@@ -44,7 +44,7 @@ export default function Comp1() {
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-headline font-bold uppercase tracking-widest text-on-surface/50">
+                      <label className="text-[10px] font-headline font-bold tracking-widest text-on-surface/50">
                         Brand Name
                       </label>
                       <input
@@ -54,7 +54,7 @@ export default function Comp1() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-headline font-bold uppercase tracking-widest text-on-surface/50">
+                      <label className="text-[10px] font-headline font-bold tracking-widest text-on-surface/50">
                         Support Email
                       </label>
                       <input
@@ -65,7 +65,7 @@ export default function Comp1() {
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <label className="text-[10px] font-headline font-bold uppercase tracking-widest text-on-surface/50">
+                    <label className="text-[10px] font-headline font-bold tracking-widest text-on-surface/50">
                       Brand Assets
                     </label>
                     <div className="flex items-center gap-6 p-6 bg-surface-container-low border border-dashed border-outline-variant/40">
@@ -73,13 +73,13 @@ export default function Comp1() {
                         <h4 className="text-white font-impact text-xl">RIOT</h4>
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs font-bold uppercase mb-1">
+                        <p className="text-xs font-bold mb-1">
                           Primary Vector Logo
                         </p>
                         <p className="text-[10px] opacity-50 mb-4">
                           SVG, PNG or WEBP. MAX 2MB.
                         </p>
-                        <button className="px-4 py-2 bg-on-surface text-white text-[10px] font-headline font-bold uppercase hover:bg-primary transition-colors">
+                        <button className="px-4 py-2 bg-on-surface text-white text-[10px] font-headline font-bold hover:bg-primary transition-colors">
                           Replace Asset
                         </button>
                       </div>
@@ -90,7 +90,7 @@ export default function Comp1() {
             </div>
 
             <div className="bg-surface-container-lowest p-8 relative">
-              <h3 className="text-xl font-headline font-black uppercase mb-8 flex items-center gap-2">
+              <h3 className="text-xl font-headline font-black mb-8 flex items-center gap-2">
                 <span className="material-symbols-outlined" data-icon="groups">
                   groups
                 </span>
@@ -107,7 +107,7 @@ export default function Comp1() {
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-bold uppercase font-headline">
+                      <p className="text-sm font-bold font-headline">
                         Marcus Vane
                       </p>
                       <p className="text-[10px] font-body opacity-50">
@@ -116,7 +116,7 @@ export default function Comp1() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold uppercase">
+                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold">
                       Owner
                     </span>
                     <button className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -139,7 +139,7 @@ export default function Comp1() {
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-bold uppercase font-headline">
+                      <p className="text-sm font-bold font-headline">
                         Elena Rossi
                       </p>
                       <p className="text-[10px] font-body opacity-50">
@@ -148,7 +148,7 @@ export default function Comp1() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold uppercase">
+                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold">
                       Editor
                     </span>
                     <button className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -171,7 +171,7 @@ export default function Comp1() {
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-bold uppercase font-headline">
+                      <p className="text-sm font-bold font-headline">
                         Julian Cho
                       </p>
                       <p className="text-[10px] font-body opacity-50">
@@ -180,7 +180,7 @@ export default function Comp1() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold uppercase opacity-50">
+                    <span className="px-2 py-0.5 border border-on-surface/20 text-[9px] font-headline font-bold opacity-50">
                       Viewer
                     </span>
                     <button className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -194,7 +194,7 @@ export default function Comp1() {
                   </div>
                 </div>
               </div>
-              <button className="mt-8 w-full py-4 border border-on-surface text-[10px] font-headline font-black uppercase tracking-[0.2em] hover:bg-on-surface hover:text-white transition-all">
+              <button className="mt-8 w-full py-4 border border-on-surface text-[10px] font-headline font-black tracking-[0.2em] hover:bg-on-surface hover:text-white transition-all">
                 Invite New Member
               </button>
             </div>
@@ -203,7 +203,7 @@ export default function Comp1() {
           <div className="col-span-12 lg:col-span-5 space-y-8">
             <div className="bg-on-surface p-8 text-white relative overflow-hidden">
               <div className="relative z-10">
-                <h3 className="text-xl font-headline font-black uppercase mb-8 flex items-center gap-2 text-primary">
+                <h3 className="text-xl font-headline font-black mb-8 flex items-center gap-2 text-primary">
                   <span
                     className="material-symbols-outlined"
                     data-icon="payments"
@@ -214,7 +214,7 @@ export default function Comp1() {
                 </h3>
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-headline font-bold uppercase tracking-widest text-white/40">
+                    <label className="text-[10px] font-headline font-bold tracking-widest text-white/40">
                       Stripe Live Key
                     </label>
                     <div className="relative">
@@ -232,7 +232,7 @@ export default function Comp1() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-headline font-bold uppercase tracking-widest text-white/40">
+                    <label className="text-[10px] font-headline font-bold tracking-widest text-white/40">
                       PayPal Client ID
                     </label>
                     <input
@@ -242,10 +242,10 @@ export default function Comp1() {
                     />
                   </div>
                   <div className="pt-4 flex gap-4">
-                    <button className="px-6 py-2 bg-primary text-white text-[10px] font-headline font-bold uppercase tracking-widest">
+                    <button className="px-6 py-2 bg-primary text-white text-[10px] font-headline font-bold tracking-widest">
                       Connect
                     </button>
-                    <button className="px-6 py-2 border border-white/20 text-white text-[10px] font-headline font-bold uppercase tracking-widest hover:bg-white hover:text-on-surface transition-all">
+                    <button className="px-6 py-2 border border-white/20 text-white text-[10px] font-headline font-bold tracking-widest hover:bg-white hover:text-on-surface transition-all">
                       Test Mode
                     </button>
                   </div>
@@ -262,7 +262,7 @@ export default function Comp1() {
             </div>
 
             <div className="bg-surface-container-high p-8">
-              <h3 className="text-xl font-headline font-black uppercase mb-8 flex items-center gap-2">
+              <h3 className="text-xl font-headline font-black mb-8 flex items-center gap-2">
                 <span
                   className="material-symbols-outlined"
                   data-icon="local_shipping"
@@ -274,12 +274,12 @@ export default function Comp1() {
               <div className="space-y-6">
                 <div className="p-4 bg-surface-container-lowest border-l-2 border-primary flex justify-between items-center">
                   <div>
-                    <p className="text-[10px] font-headline font-bold uppercase tracking-widest">
+                    <p className="text-[10px] font-headline font-bold tracking-widest">
                       India (Domestic)
                     </p>
                     <p className="text-lg font-impact tracking-tight">
                       ₹0.00{" "}
-                      <span className="text-[10px] font-headline opacity-50 uppercase tracking-normal">
+                      <span className="text-[10px] font-headline opacity-50 tracking-normal">
                         Free Express
                       </span>
                     </p>
@@ -293,12 +293,12 @@ export default function Comp1() {
                 </div>
                 <div className="p-4 bg-surface-container-lowest border-l-2 border-on-surface/20 flex justify-between items-center">
                   <div>
-                    <p className="text-[10px] font-headline font-bold uppercase tracking-widest">
+                    <p className="text-[10px] font-headline font-bold tracking-widest">
                       International (Zone 1)
                     </p>
                     <p className="text-lg font-impact tracking-tight">
                       $45.00{" "}
-                      <span className="text-[10px] font-headline opacity-50 uppercase tracking-normal">
+                      <span className="text-[10px] font-headline opacity-50 tracking-normal">
                         Flat Rate
                       </span>
                     </p>
@@ -311,7 +311,7 @@ export default function Comp1() {
                   </button>
                 </div>
               </div>
-              <button className="mt-6 flex items-center gap-2 text-[10px] font-headline font-bold uppercase tracking-widest text-primary hover:gap-4 transition-all">
+              <button className="mt-6 flex items-center gap-2 text-[10px] font-headline font-bold tracking-widest text-primary hover:gap-4 transition-all">
                 Add New Zone
                 <span
                   className="material-symbols-outlined text-sm"
@@ -327,15 +327,15 @@ export default function Comp1() {
         <div className="fixed bottom-0 right-0 left-64 bg-surface/80 backdrop-blur-md border-t border-outline-variant/10 px-12 py-6 flex items-center justify-between z-40">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 bg-primary rounded-full"></span>
-            <span className="text-[10px] font-headline font-bold uppercase tracking-[0.2em] opacity-40">
+            <span className="text-[10px] font-headline font-bold tracking-[0.2em] opacity-40">
               Unsaved Changes detected in GATEWAYS
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="px-8 py-3 text-[10px] font-headline font-black uppercase tracking-[0.2em] text-on-surface/40 hover:text-on-surface transition-colors">
+            <button className="px-8 py-3 text-[10px] font-headline font-black tracking-[0.2em] text-on-surface/40 hover:text-on-surface transition-colors">
               Discard
             </button>
-            <button className="px-12 py-3 bg-on-surface text-white text-[10px] font-headline font-black uppercase tracking-[0.2em] hover:bg-primary transition-colors Active:scale-95 duration-100">
+            <button className="px-12 py-3 bg-on-surface text-white text-[10px] font-headline font-black tracking-[0.2em] hover:bg-primary transition-colors Active:scale-95 duration-100">
               Synchronize Core
             </button>
           </div>

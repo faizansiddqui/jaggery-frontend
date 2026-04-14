@@ -24,17 +24,23 @@ export function normWeightToken(s: string) {
     .replace(/\s+/g, "");
 }
 
+function finitePrice(n: unknown): number {
+  const x = Number(n);
+  return Number.isFinite(x) && x >= 0 ? x : 0;
+}
+
 /** Min/max selling price across variants (or product-level price). */
 export function minMaxListingPrice(p: ListingProduct): { min: number; max: number } {
   if (Array.isArray(p.variants) && p.variants.length > 0) {
-    const prices = p.variants
-      .map((v) => Number(v.price ?? 0))
-      .filter((n) => Number.isFinite(n) && n >= 0);
-    if (prices.length > 0) {
-      return { min: Math.min(...prices), max: Math.max(...prices) };
-    }
+    const valid = p.variants.map((v) =>
+      finitePrice(
+        (v as { price?: unknown; selling_price?: unknown }).price ??
+          (v as { selling_price?: unknown }).selling_price
+      )
+    );
+    return { min: Math.min(...valid), max: Math.max(...valid) };
   }
-  const base = Math.max(0, Number(p.price || 0));
+  const base = finitePrice(p.price);
   return { min: base, max: base };
 }
 
@@ -55,10 +61,26 @@ export function sortPriceForProduct(p: ListingProduct, selectedWeights: string[]
   if (selectedWeights.length > 0 && Array.isArray(p.variants) && p.variants.length > 0) {
     for (const w of selectedWeights) {
       const m = matchVariantByCartSize(p, w);
-      if (m) return Number(m.price ?? p.price ?? 0);
+      if (m) {
+        return finitePrice(
+          (m as { price?: unknown; selling_price?: unknown }).price ??
+            (m as { selling_price?: unknown }).selling_price ??
+            p.price
+        );
+      }
     }
   }
-  return minMaxListingPrice(p).min;
+  return finitePrice(minMaxListingPrice(p).min);
+}
+
+export function compareListingPriceAsc(a: ListingProduct, b: ListingProduct, selectedWeights: string[]) {
+  const d = sortPriceForProduct(a, selectedWeights) - sortPriceForProduct(b, selectedWeights);
+  return d !== 0 ? d : a.id - b.id;
+}
+
+export function compareListingPriceDesc(a: ListingProduct, b: ListingProduct, selectedWeights: string[]) {
+  const d = sortPriceForProduct(b, selectedWeights) - sortPriceForProduct(a, selectedWeights);
+  return d !== 0 ? d : a.id - b.id;
 }
 
 /**

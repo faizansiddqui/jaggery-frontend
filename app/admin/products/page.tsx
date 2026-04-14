@@ -684,11 +684,11 @@ export default function AdminProductsPage() {
     // Flat category dropdown
     const renderCategoryDropdown = () => (
         <div className="mb-6">
-            <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Category</label>
+            <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Category</label>
             <select
                 value={selectedCategoryId}
                 onChange={e => setSelectedCategoryId(e.target.value)}
-                className="w-full bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs uppercase tracking-widest outline-none focus:border-secondary"
+                className="w-full bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs tracking-widest outline-none focus:border-secondary"
             >
                 <option value="">Select category</option>
                 {categories.map(cat => (
@@ -702,24 +702,24 @@ export default function AdminProductsPage() {
         <main className="p-3 md:p-10 bg-surface text-on-surface" onKeyDown={handleEnterToProceed}>
             <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-outline/20 pb-6">
                 <div className='text-left'>
-                    <p className="font-headline text-[10px] tracking-[0.35em] uppercase text-secondary text-left">Admin Products</p>
-                    <h1 className="font-brand text-5xl md:text-7xl uppercase tracking-tight leading-none mt-2 text-left text-primary">Inventory Control</h1>
+                    <p className="font-headline text-[10px] tracking-[0.35em] text-secondary text-left">Admin Products</p>
+                    <h1 className="font-brand text-5xl md:text-7xl tracking-tight leading-none mt-2 text-left text-primary">Inventory Control</h1>
                 </div>
                 <div className="flex items-center flex-col gap-3 w-full md:w-auto">
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search product id, name, sku"
-                        className="flex-1 md:w-80 bg-surface-container border border-outline/20 px-4 py-3 font-headline text-xs uppercase tracking-widest outline-none focus:border-primary"
+                        className="flex-1 md:w-80 bg-surface-container border border-outline/20 px-4 py-3 font-headline text-xs tracking-widest outline-none focus:border-primary"
                     />
-                    <button onClick={openNew} className="px-6 py-3 bg-primary text-on-primary font-brand text-xl uppercase hover:opacity-90 transition-opacity rounded">New Product</button>
+                    <button onClick={openNew} className="px-6 py-3 bg-primary text-on-primary font-brand text-xl hover:opacity-90 transition-opacity rounded">New Product</button>
                 </div>
             </header>
 
-            {error && <p className="mt-4 text-[#ffb5bc] font-headline text-xs uppercase tracking-widest">{error}</p>}
+            {error && <p className="mt-4 text-[#ffb5bc] font-headline text-xs tracking-widest">{error}</p>}
 
             <section className="mt-8 border border-outline/20 overflow-hidden bg-surface-container rounded-xl">
-                <div className="grid grid-cols-12 gap-3 p-4 bg-surface-container-high font-headline text-[10px] uppercase tracking-widest opacity-60">
+                <div className="grid grid-cols-12 gap-3 p-4 bg-surface-container-high font-headline text-[10px] tracking-widest opacity-60">
                     <div className="col-span-2">Product ID</div>
                     <div className="col-span-3">Name</div>
                     <div className="col-span-2">Category</div>
@@ -730,23 +730,23 @@ export default function AdminProductsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="p-8 font-headline text-xs uppercase tracking-widest opacity-50">Loading...</div>
+                    <div className="p-8 font-headline text-xs tracking-widest opacity-50">Loading...</div>
                 ) : filteredProducts.length === 0 ? (
-                    <div className="p-8 font-headline text-xs uppercase tracking-widest opacity-50">No products found.</div>
+                    <div className="p-8 font-headline text-xs tracking-widest opacity-50">No products found.</div>
                 ) : (
                     filteredProducts.map((product) => {
                         const categoryName = typeof product.catagory_id === 'object' ? product.catagory_id?.name || '-' : '-';
                         return (
                             <div key={product.product_id} className="grid grid-cols-12 gap-3 p-4 border-t border-outline/10 items-center hover:bg-surface-container-high">
-                                <div className="col-span-2 font-headline text-xs uppercase">{product.product_code || product.product_id}</div>
-                                <div className="col-span-3 font-brand text-xl uppercase leading-none text-primary">{product.name}</div>
-                                <div className="col-span-2 font-headline text-[11px] uppercase opacity-70">{categoryName}</div>
+                                <div className="col-span-2 font-headline text-xs">{product.product_code || product.product_id}</div>
+                                <div className="col-span-3 font-brand text-xl leading-none text-primary">{product.name}</div>
+                                <div className="col-span-2 font-headline text-[11px] opacity-70">{categoryName}</div>
                                 <div className="col-span-1 font-headline text-xs">{product.quantity || 0}</div>
                                 <div className="col-span-1 font-headline text-xs text-secondary">{currency}{formatCurrency(product.selling_price ?? product.price)}</div>
-                                <div className="col-span-1 font-headline text-[10px] uppercase">{product.status || 'draft'}</div>
+                                <div className="col-span-1 font-headline text-[10px]">{product.status || 'draft'}</div>
                                 <div className="col-span-2 flex justify-end gap-2">
-                                    <button onClick={() => openEdit(product)} className="px-3 py-2 border border-outline/15 font-headline text-[10px] uppercase tracking-widest hover:border-primary">Edit</button>
-                                    <button onClick={() => deleteProduct(product.product_id)} className="px-3 py-2 border border-outline/15 font-headline text-[10px] uppercase tracking-widest hover:border-secondary">Delete</button>
+                                    <button onClick={() => openEdit(product)} className="px-3 py-2 border border-outline/15 font-headline text-[10px] tracking-widest hover:border-primary">Edit</button>
+                                    <button onClick={() => deleteProduct(product.product_id)} className="px-3 py-2 border border-outline/15 font-headline text-[10px] tracking-widest hover:border-secondary">Delete</button>
                                 </div>
                             </div>
                         );
@@ -760,62 +760,62 @@ export default function AdminProductsPage() {
                         <div className="bg-surface border border-primary p-6 md:p-8 h-full max-h-[96vh] overflow-y-auto overscroll-y-contain">
                             <div className="flex justify-between items-start gap-4 border-b border-primary/10 pb-4">
                                 <div>
-                                    <p className="font-headline text-[10px] uppercase tracking-[0.3em] text-[#b90c1b]">Step {step}/3</p>
-                                    <h2 className="font-brand text-4xl md:text-5xl uppercase tracking-tight mt-2">{editingProductId ? 'Edit Product' : 'Create Product'}</h2>
+                                    <p className="font-headline text-[10px] tracking-[0.3em] text-[#b90c1b]">Step {step}/3</p>
+                                    <h2 className="font-brand text-4xl md:text-5xl tracking-tight mt-2">{editingProductId ? 'Edit Product' : 'Create Product'}</h2>
                                 </div>
-                                <button onClick={closeEditor} className="font-headline text-xs uppercase tracking-widest border border-secondary px-3 py-2 hover:border-primary">Close</button>
+                                <button onClick={closeEditor} className="font-headline text-xs tracking-widest border border-secondary px-3 py-2 hover:border-primary">Close</button>
                             </div>
 
                             {step === 1 && (
                                 <div className="pt-6 space-y-6">
-                                    <h3 className="font-brand text-3xl uppercase">Select Category</h3>
+                                    <h3 className="font-brand text-3xl">Select Category</h3>
                                     {renderCategoryDropdown()}
                                     <div className="flex flex-col md:flex-row gap-3">
                                         <input
                                             value={newCategoryName}
                                             onChange={(e) => setNewCategoryName(e.target.value)}
                                             placeholder="Add new category"
-                                            className="flex-1 bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                            className="flex-1 bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs tracking-widest outline-none focus:border-[#b90c1b]"
                                         />
-                                        <button onClick={addChildCategory} className="px-5 py-3 border border-primary/80 font-headline text-xs uppercase tracking-widest hover:border-secondary">Create Category</button>
+                                        <button onClick={addChildCategory} className="px-5 py-3 border border-primary/80 font-headline text-xs tracking-widest hover:border-secondary">Create Category</button>
                                     </div>
                                 </div>
                             )}
 
                             {step === 2 && (
                                 <div className="pt-6 space-y-8">
-                                    <h3 className="font-brand text-3xl uppercase">Core Info + Specs</h3>
+                                    <h3 className="font-brand text-3xl">Core Info + Specs</h3>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
-                                            <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Product Name</label>
-                                            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#ffffff]/5 border border-primary/10 px-4 py-3 font-brand text-sm uppercase outline-none focus:border-[#b90c1b]" />
+                                            <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Product Name</label>
+                                            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#ffffff]/5 border border-primary/10 px-4 py-3 font-brand text-sm outline-none focus:border-[#b90c1b]" />
                                         </div>
                                         <div>
-                                            <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">SKU Code</label>
+                                            <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">SKU Code</label>
                                             <input
                                                 value={sku}
                                                 onChange={(e) => setSku(normalizeSkuInput(e.target.value))}
                                                 // placeholder="e.g. AB-001"
                                                 maxLength={6}
-                                                className="w-full bg-[#ffffff]/5 border border-primary/10 px-4 py-3 font-headline text-sm uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                className="w-full bg-[#ffffff]/5 border border-primary/10 px-4 py-3 font-headline text-sm tracking-widest outline-none focus:border-[#b90c1b]"
                                             />
-                                            <p className="mt-2 font-headline text-[10px] uppercase tracking-widest opacity-50">Format: AB-123</p>
+                                            <p className="mt-2 font-headline text-[10px] tracking-widest opacity-50">Format: AB-123</p>
                                         </div>
                                         <div className="md:col-span-2">
-                                            <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Description</label>
+                                            <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Description</label>
                                             <div className="border border-primary/10 bg-[#ffffff]/5">
                                                 <div className="flex flex-wrap items-center gap-2 border-b border-primary/10 p-2">
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('P')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">P</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H1')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">H1</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H2')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">H2</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H3')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">H3</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('bold')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">Bold</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('italic')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">Italic</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('underline')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">Underline</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('insertUnorderedList')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">UL</button>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('insertOrderedList')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">OL</button>
-                                                    <label className="flex items-center gap-2 px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest cursor-pointer hover:border-[#b90c1b]">
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('P')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">P</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H1')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">H1</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H2')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">H2</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => applyDescriptionHeading('H3')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">H3</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('bold')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">Bold</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('italic')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">Italic</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('underline')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">Underline</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('insertUnorderedList')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">UL</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('insertOrderedList')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">OL</button>
+                                                    <label className="flex items-center gap-2 px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest cursor-pointer hover:border-[#b90c1b]">
                                                         Color
                                                         <input
                                                             type="color"
@@ -825,7 +825,7 @@ export default function AdminProductsPage() {
                                                             className="h-4 w-6 bg-transparent border-0 p-0"
                                                         />
                                                     </label>
-                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('removeFormat')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]">Clear</button>
+                                                    <button type="button" onMouseDown={keepEditorSelectionOnToolbarMouseDown} onClick={() => runDescriptionCommand('removeFormat')} className="px-2 py-1 border border-[#ffffff]/20 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]">Clear</button>
                                                 </div>
                                                 <div
                                                     ref={descriptionEditorRef}
@@ -840,7 +840,7 @@ export default function AdminProductsPage() {
                                                     className="min-h-36 max-h-72 overflow-y-auto px-4 py-3 font-headline text-xs tracking-wide outline-none focus:border-[#b90c1b]"
                                                 />
                                                 <div className="flex justify-end px-3 py-2 border-t border-primary/10">
-                                                    <p className={`font-headline text-[10px] uppercase tracking-widest ${descriptionTextLength > DESCRIPTION_MAX_LENGTH ? 'text-[#ffb5bc]' : 'opacity-60'}`}>
+                                                    <p className={`font-headline text-[10px] tracking-widest ${descriptionTextLength > DESCRIPTION_MAX_LENGTH ? 'text-[#ffb5bc]' : 'opacity-60'}`}>
                                                         {descriptionTextLength}/{DESCRIPTION_MAX_LENGTH}
                                                     </p>
                                                 </div>
@@ -852,8 +852,8 @@ export default function AdminProductsPage() {
                                         {/* Ingredients Section */}
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <h4 className="font-brand text-2xl uppercase">Ingredients</h4>
-                                                <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">{INGREDIENTS_COUNT} points required</p>
+                                                <h4 className="font-brand text-2xl">Ingredients</h4>
+                                                <p className="font-headline text-[10px] tracking-widest opacity-60">{INGREDIENTS_COUNT} points required</p>
                                             </div>
                                             {ingredients.map((ingredient, index) => (
                                                 <div key={index} className="grid grid-cols-12 gap-3">
@@ -865,7 +865,7 @@ export default function AdminProductsPage() {
                                                             setIngredients(next);
                                                         }}
                                                         placeholder="Ingredient name"
-                                                        className="col-span-5 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="col-span-5 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] tracking-widest outline-none focus:border-[#b90c1b]"
                                                     />
                                                     <input
                                                         value={ingredient.value}
@@ -875,7 +875,7 @@ export default function AdminProductsPage() {
                                                             setIngredients(next);
                                                         }}
                                                         placeholder="Details"
-                                                        className="col-span-6 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="col-span-6 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] tracking-widest outline-none focus:border-[#b90c1b]"
                                                     />
                                                 </div>
                                             ))}
@@ -884,8 +884,8 @@ export default function AdminProductsPage() {
                                         {/* Nutritions Section */}
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
-                                                <h4 className="font-brand text-2xl uppercase">Nutrition Facts</h4>
-                                                <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">{NUTRITIONS_COUNT} points required</p>
+                                                <h4 className="font-brand text-2xl">Nutrition Facts</h4>
+                                                <p className="font-headline text-[10px] tracking-widest opacity-60">{NUTRITIONS_COUNT} points required</p>
                                             </div>
                                             {nutritions.map((nutrition, index) => (
                                                 <div key={index} className="grid grid-cols-12 gap-3">
@@ -897,7 +897,7 @@ export default function AdminProductsPage() {
                                                             setNutritions(next);
                                                         }}
                                                         placeholder="Nutrient"
-                                                        className="col-span-5 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="col-span-5 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] tracking-widest outline-none focus:border-[#b90c1b]"
                                                     />
                                                     <input
                                                         value={nutrition.value}
@@ -907,7 +907,7 @@ export default function AdminProductsPage() {
                                                             setNutritions(next);
                                                         }}
                                                         placeholder="Value"
-                                                        className="col-span-6 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="col-span-6 bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px] tracking-widest outline-none focus:border-[#b90c1b]"
                                                     />
                                                 </div>
                                             ))}
@@ -918,20 +918,20 @@ export default function AdminProductsPage() {
 
                             {step === 3 && (
                                 <div className="pt-6 space-y-8">
-                                    <h3 className="font-brand text-3xl uppercase">Weight Variants + Pricing + Stock</h3>
-                                    <p className="font-headline text-xs uppercase tracking-widest opacity-60">Add weight-based variants with pricing and stock. Multiple variants supported.</p>
+                                    <h3 className="font-brand text-3xl">Weight Variants + Pricing + Stock</h3>
+                                    <p className="font-headline text-xs tracking-widest opacity-60">Add weight-based variants with pricing and stock. Multiple variants supported.</p>
 
                                     {variants.map((variant, variantIndex) => (
                                         <div key={variantIndex} className="border border-primary/10 p-5 space-y-4">
                                             <div className="flex items-center justify-between">
-                                                <h4 className="font-brand text-2xl uppercase">Variant #{variantIndex + 1}</h4>
+                                                <h4 className="font-brand text-2xl">Variant #{variantIndex + 1}</h4>
                                                 <button
                                                     onClick={() => {
                                                         const confirmed = window.confirm('Remove this weight variant?');
                                                         if (!confirmed) return;
                                                         setVariants((prev) => (prev.length === 1 ? prev : prev.filter((_, i) => i !== variantIndex)));
                                                     }}
-                                                    className="px-3 py-2 border border-[#ffffff]/15 font-headline text-[10px] uppercase tracking-widest hover:border-[#b90c1b]"
+                                                    className="px-3 py-2 border border-[#ffffff]/15 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]"
                                                 >
                                                     Remove
                                                 </button>
@@ -940,7 +940,7 @@ export default function AdminProductsPage() {
                                             {/* Weight Input */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Weight Value</label>
+                                                    <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Weight Value</label>
                                                     <input
                                                         type="number"
                                                         value={variant.weight}
@@ -954,7 +954,7 @@ export default function AdminProductsPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Weight Unit</label>
+                                                    <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Weight Unit</label>
                                                     <select
                                                         value={variant.weightUnit}
                                                         onChange={(e) => {
@@ -962,7 +962,7 @@ export default function AdminProductsPage() {
                                                             next[variantIndex] = { ...next[variantIndex], weightUnit: e.target.value as WeightUnit };
                                                             setVariants(next);
                                                         }}
-                                                        className="w-full bg-[#2a2929] text-[#fcf8f8] border border-primary/10 px-3 py-2 font-headline text-xs uppercase tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="w-full bg-[#2a2929] text-[#fcf8f8] border border-primary/10 px-3 py-2 font-headline text-xs tracking-widest outline-none focus:border-[#b90c1b]"
                                                     >
                                                         {WEIGHT_UNIT_OPTIONS.map((unit) => (
                                                             <option key={unit} value={unit}>{unit}</option>
@@ -974,7 +974,7 @@ export default function AdminProductsPage() {
                                             {/* Pricing */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Price (₹)</label>
+                                                    <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Price (₹)</label>
                                                     <input
                                                         type="number"
                                                         value={variant.price}
@@ -988,7 +988,7 @@ export default function AdminProductsPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Discounted Price (₹)</label>
+                                                    <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Discounted Price (₹)</label>
                                                     <input
                                                         type="number"
                                                         value={variant.discountedPrice}
@@ -1005,7 +1005,7 @@ export default function AdminProductsPage() {
 
                                             {/* Stock */}
                                             <div>
-                                                <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60 mb-2">Stock Quantity</label>
+                                                <label className="block font-headline text-[10px] tracking-widest opacity-60 mb-2">Stock Quantity</label>
                                                 <input
                                                     type="number"
                                                     value={variant.stock}
@@ -1021,7 +1021,7 @@ export default function AdminProductsPage() {
 
                                             {/* Single Image Upload Per Variant */}
                                             <div className="space-y-2">
-                                                <label className="block font-headline text-[10px] uppercase tracking-widest opacity-60">Variant Image (One per variant)</label>
+                                                <label className="block font-headline text-[10px] tracking-widest opacity-60">Variant Image (One per variant)</label>
                                                 <input
                                                     type="file"
                                                     accept="image/*"
@@ -1035,7 +1035,7 @@ export default function AdminProductsPage() {
                                                 />
                                                 {(variant.existingImage || variant.image) && (
                                                     <div className="mt-2">
-                                                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-50 mb-2">Current Image:</p>
+                                                        <p className="font-headline text-[10px] tracking-widest opacity-50 mb-2">Current Image:</p>
                                                         {variant.image && (
                                                             <div className="relative inline-block border border-primary/10">
                                                                 <img src={URL.createObjectURL(variant.image)} alt="New" className="w-48 h-48 object-cover" />
@@ -1053,8 +1053,8 @@ export default function AdminProductsPage() {
                                             {/* Display Full Weight */}
                                             {variant.weight && (
                                                 <div className="bg-[#ffffff]/5 border border-primary/10 p-3">
-                                                    <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">Full Weight Label:</p>
-                                                    <p className="font-brand text-xl uppercase">{variant.weight}{variant.weightUnit}</p>
+                                                    <p className="font-headline text-[10px] tracking-widest opacity-60">Full Weight Label:</p>
+                                                    <p className="font-brand text-xl">{variant.weight}{variant.weightUnit}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -1062,14 +1062,14 @@ export default function AdminProductsPage() {
 
                                     <button
                                         onClick={() => setVariants((prev) => [...prev, createEmptyVariant()])}
-                                        className="px-4 py-2 border border-[#ffffff]/20 font-headline text-xs uppercase tracking-widest hover:border-[#b90c1b]"
+                                        className="px-4 py-2 border border-[#ffffff]/20 font-headline text-xs tracking-widest hover:border-[#b90c1b]"
                                     >
                                         Add Weight Variant
                                     </button>
 
                                     <div className="bg-[#ffffff]/5 border border-primary/10 p-4">
-                                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">Total Stock</p>
-                                        <p className="font-brand text-4xl uppercase">{totalStock}</p>
+                                        <p className="font-headline text-[10px] tracking-widest opacity-60">Total Stock</p>
+                                        <p className="font-brand text-4xl">{totalStock}</p>
                                     </div>
                                 </div>
                             )}
@@ -1079,19 +1079,19 @@ export default function AdminProductsPage() {
                                     <button
                                         onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
                                         disabled={step === 1}
-                                        className="px-4 py-2 border border-secondary font-headline text-xs uppercase tracking-widest disabled:opacity-30 hover:border-primary"
+                                        className="px-4 py-2 border border-secondary font-headline text-xs tracking-widest disabled:opacity-30 hover:border-primary"
                                     >
                                         Back
                                     </button>
                                     {step < 3 && (
-                                        <button onClick={handleNext} className="px-4 py-2 border border-secondary font-headline text-xs uppercase tracking-widest hover:border-primary">Next (Enter)</button>
+                                        <button onClick={handleNext} className="px-4 py-2 border border-secondary font-headline text-xs tracking-widest hover:border-primary">Next (Enter)</button>
                                     )}
                                 </div>
                                 {step === 3 && (
                                     <button
                                         onClick={saveProduct}
                                         disabled={isSubmitting}
-                                        className="px-8 py-3 bg-[#b90c1b] font-brand text-2xl uppercase disabled:opacity-60 hover:opacity-90"
+                                        className="px-8 py-3 bg-[#b90c1b] font-brand text-2xl disabled:opacity-60 hover:opacity-90"
                                     >
                                         {isSubmitting ? 'Publishing...' : editingProductId ? 'Update Product' : 'Publish Product'}
                                     </button>

@@ -4,11 +4,11 @@ export default function Comp1() {
       <div className="fixed inset-0 z-50 flex flex-col bg-surface-container-low/98 backdrop-blur-sm">
         <div className="flex justify-between items-center w-full px-8 h-20 bg-white dark:bg-[#1c1b1b]">
           <div className="flex items-center gap-4">
-            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-tighter font-headline uppercase">
+            <span className="text-2xl font-black text-[#1c1b1b] dark:text-[#fcf8f8] tracking-tighter font-headline">
               STREETRIOT
             </span>
             <span className="h-4 w-[1px] bg-outline-variant/30"></span>
-            <span className="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-[#1c1b1b] dark:text-[#fcf8f8]">
+            <span className="font-['Space_Grotesk'] tracking-[0.05em] text-[#1c1b1b] dark:text-[#fcf8f8]">
               Admin - Global Search &amp; Actions
             </span>
           </div>
@@ -29,7 +29,7 @@ export default function Comp1() {
                 </span>
               </div>
               <input
-                className="w-full bg-transparent border-none border-b-2 border-on-surface/10 focus:border-primary focus:ring-0 text-5xl font-impact tracking-wider placeholder:text-surface-dim pt-4 pb-6 pl-16 transition-all uppercase"
+                className="w-full bg-transparent border-none border-b-2 border-on-surface/10 focus:border-primary focus:ring-0 text-5xl font-impact tracking-wider placeholder:text-surface-dim pt-4 pb-6 pl-16 transition-all"
                 placeholder="SEARCH COMMANDS, ORDERS, OR PRODUCTS..."
                 type="text"
               />
@@ -45,7 +45,7 @@ export default function Comp1() {
             <div className="mb-16">
               <div className="flex items-center gap-4 mb-8">
                 <div className="h-[2px] w-8 bg-primary"></div>
-                <h2 className="font-headline font-black text-xl tracking-tighter uppercase italic">
+                <h2 className="font-headline font-black text-xl tracking-tighter italic">
                   Quick Actions
                 </h2>
               </div>
@@ -57,10 +57,10 @@ export default function Comp1() {
                   >
                     add_box
                   </span>
-                  <span className="font-headline font-bold text-sm tracking-widest uppercase mb-1">
+                  <span className="font-headline font-bold text-sm tracking-widest mb-1">
                     Create New Product
                   </span>
-                  <span className="text-xs text-secondary font-medium uppercase">
+                  <span className="text-xs text-secondary font-medium">
                     Catalog Management
                   </span>
                 </button>
@@ -71,10 +71,10 @@ export default function Comp1() {
                   >
                     local_shipping
                   </span>
-                  <span className="font-headline font-bold text-sm tracking-widest uppercase mb-1">
+                  <span className="font-headline font-bold text-sm tracking-widest mb-1">
                     Update Order Status
                   </span>
-                  <span className="text-xs text-secondary font-medium uppercase">
+                  <span className="text-xs text-secondary font-medium">
                     Fulfillment Flow
                   </span>
                 </button>
@@ -85,10 +85,10 @@ export default function Comp1() {
                   >
                     mail
                   </span>
-                  <span className="font-headline font-bold text-sm tracking-widest uppercase mb-1">
+                  <span className="font-headline font-bold text-sm tracking-widest mb-1">
                     Email Customer
                   </span>
-                  <span className="text-xs text-secondary font-medium uppercase">
+                  <span className="text-xs text-secondary font-medium">
                     CRM &amp; Support
                   </span>
                 </button>
@@ -99,10 +99,10 @@ export default function Comp1() {
                   >
                     monitoring
                   </span>
-                  <span className="font-headline font-bold text-sm tracking-widest uppercase mb-1">
+                  <span className="font-headline font-bold text-sm tracking-widest mb-1">
                     Run Sales Report
                   </span>
-                  <span className="text-xs text-secondary font-medium uppercase">
+                  <span className="text-xs text-secondary font-medium">
                     Analytics Portal
                   </span>
                 </button>
@@ -117,7 +117,7 @@ export default function Comp1() {
                   >
                     receipt_long
                   </span>
-                  <h3 className="font-headline font-bold text-sm tracking-widest uppercase text-secondary">
+                  <h3 className="font-headline font-bold text-sm tracking-widest text-secondary">
                     Orders
                   </h3>
                 </div>
@@ -127,10 +127,10 @@ export default function Comp1() {
                       #942
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">
+                      <p className="font-bold text-sm">
                         Marcus V. — $240.00
                       </p>
-                      <p className="text-[10px] tracking-widest uppercase text-secondary">
+                      <p className="text-[10px] tracking-widest text-secondary">
                         Processing • 2 mins ago
                       </p>
                     </div>
@@ -140,10 +140,10 @@ export default function Comp1() {
                       #941
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">
+                      <p className="font-bold text-sm">
                         Sarah L. — $115.00
                       </p>
-                      <p className="text-[10px] tracking-widest uppercase text-primary">
+                      <p className="text-[10px] tracking-widest text-primary">
                         High Priority • 14 mins ago
                       </p>
                     </div>
@@ -158,7 +158,7 @@ export default function Comp1() {
                   >
                     shopping_bag
                   </span>
-                  <h3 className="font-headline font-bold text-sm tracking-widest uppercase text-secondary">
+                  <h3 className="font-headline font-bold text-sm tracking-widest text-secondary">
                     Products
                   </h3>
                 </div>
@@ -172,10 +172,10 @@ export default function Comp1() {
                       />
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">
+                      <p className="font-bold text-sm">
                         RIOT Heavy Hoodie
                       </p>
-                      <p className="text-[10px] tracking-widest uppercase text-secondary">
+                      <p className="text-[10px] tracking-widest text-secondary">
                         42 in stock • SKU: RH-01
                       </p>
                     </div>
@@ -189,10 +189,10 @@ export default function Comp1() {
                       />
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">
+                      <p className="font-bold text-sm">
                         Velocity Runner X
                       </p>
-                      <p className="text-[10px] tracking-widest uppercase text-secondary">
+                      <p className="text-[10px] tracking-widest text-secondary">
                         12 in stock • SKU: VR-X
                       </p>
                     </div>
@@ -207,7 +207,7 @@ export default function Comp1() {
                   >
                     group
                   </span>
-                  <h3 className="font-headline font-bold text-sm tracking-widest uppercase text-secondary">
+                  <h3 className="font-headline font-bold text-sm tracking-widest text-secondary">
                     Customers
                   </h3>
                 </div>
@@ -222,10 +222,10 @@ export default function Comp1() {
                       </span>
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">
+                      <p className="font-bold text-sm">
                         Elena Rodriguez
                       </p>
-                      <p className="text-[10px] tracking-widest uppercase text-secondary">
+                      <p className="text-[10px] tracking-widest text-secondary">
                         elena.rod@riot.com • VIP
                       </p>
                     </div>
@@ -240,8 +240,8 @@ export default function Comp1() {
                       </span>
                     </div>
                     <div>
-                      <p className="font-bold text-sm uppercase">James Chen</p>
-                      <p className="text-[10px] tracking-widest uppercase text-secondary">
+                      <p className="font-bold text-sm">James Chen</p>
+                      <p className="text-[10px] tracking-widest text-secondary">
                         j.chen@web.com • New Member
                       </p>
                     </div>
@@ -249,7 +249,7 @@ export default function Comp1() {
                 </div>
               </div>
             </div>
-            <div className="mt-20 border-t border-outline-variant/30 pt-8 flex justify-between items-center text-[10px] font-bold tracking-[0.2em] text-secondary/60 uppercase">
+            <div className="mt-20 border-t border-outline-variant/30 pt-8 flex justify-between items-center text-[10px] font-bold tracking-[0.2em] text-secondary/60">
               <div className="flex gap-8">
                 <span>Navigate: ↑ ↓</span>
                 <span>Select: Enter</span>

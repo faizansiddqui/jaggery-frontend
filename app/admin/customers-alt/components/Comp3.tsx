@@ -6,18 +6,18 @@ export default function Comp3() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
+            <span className="text-xs font-bold tracking-[0.3em] text-primary">
               Intelligence Hub
             </span>
-            <h2 className="text-6xl font-black tracking-tighter uppercase leading-none bebas">
+            <h2 className="text-6xl font-black tracking-tighter leading-none bebas">
               Customer Analytics
             </h2>
           </div>
           <div className="flex gap-4">
-            <button className="px-8 py-3 bg-on-surface text-white text-xs font-bold uppercase tracking-widest hover:bg-primary transition-colors">
+            <button className="px-8 py-3 bg-on-surface text-white text-xs font-bold tracking-widest hover:bg-primary transition-colors">
               Export Report
             </button>
-            <button className="px-8 py-3 border border-outline-variant/20 text-on-surface text-xs font-bold uppercase tracking-widest hover:bg-surface-container-high transition-colors">
+            <button className="px-8 py-3 border border-outline-variant/20 text-on-surface text-xs font-bold tracking-widest hover:bg-surface-container-high transition-colors">
               Filters
             </button>
           </div>
@@ -26,7 +26,7 @@ export default function Comp3() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-auto md:h-64">
           <div className="md:col-span-2 bg-surface-container-low p-6 flex flex-col justify-between group overflow-hidden relative">
             <div className="relative z-10">
-              <span className="text-xs font-bold uppercase tracking-widest opacity-60">
+              <span className="text-xs font-bold tracking-widest opacity-60">
                 High-Value Segment
               </span>
               <div className="text-5xl font-black bebas mt-2">
@@ -38,10 +38,10 @@ export default function Comp3() {
             </div>
             <div className="flex justify-between items-end relative z-10">
               <div>
-                <p className="text-xs uppercase font-bold tracking-widest text-primary">
+                <p className="text-xs font-bold tracking-widest text-primary">
                   +12.4% Increase
                 </p>
-                <p className="text-[10px] opacity-40 uppercase tracking-tighter">
+                <p className="text-[10px] opacity-40 tracking-tighter">
                   Month over Month
                 </p>
               </div>
@@ -61,7 +61,7 @@ export default function Comp3() {
 
           <div className="bg-surface-container-highest p-6 flex flex-col justify-between">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest opacity-60">
+              <span className="text-xs font-bold tracking-widest opacity-60">
                 Average LTV
               </span>
               <div className="text-4xl font-black bebas mt-2">$842.50</div>
@@ -69,21 +69,21 @@ export default function Comp3() {
             <div className="w-full h-1 bg-on-surface/10 mt-4">
               <div className="w-3/4 h-full bg-on-surface"></div>
             </div>
-            <p className="text-[10px] opacity-40 uppercase tracking-widest mt-2">
+            <p className="text-[10px] opacity-40 tracking-widest mt-2">
               Target: $1,000
             </p>
           </div>
 
           <div className="bg-primary p-6 text-white flex flex-col justify-between">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest opacity-80">
+              <span className="text-xs font-bold tracking-widest opacity-80">
                 Churn Risk
               </span>
               <div className="text-4xl font-black bebas mt-2">4.2%</div>
             </div>
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">warning</span>
-              <p className="text-[10px] uppercase font-bold tracking-widest">
+              <p className="text-[10px] font-bold tracking-widest">
                 Action Required
               </p>
             </div>
@@ -92,10 +92,10 @@ export default function Comp3() {
 
         <div className="space-y-6">
           <div className="flex items-center justify-between border-b border-outline-variant/10 pb-4">
-            <h3 className="text-xl font-bold uppercase tracking-wider">
+            <h3 className="text-xl font-bold tracking-wider">
               Top Tier Customers
             </h3>
-            <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest opacity-40">
+            <div className="flex gap-8 text-[10px] font-bold tracking-widest opacity-40">
               <span>All Users (14.2k)</span>
               <span className="text-on-surface opacity-100 border-b-2 border-primary">
                 Loyalists (3.1k)
@@ -108,7 +108,7 @@ export default function Comp3() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-surface-container-low text-[10px] uppercase tracking-[0.2em] font-bold">
+                <tr className="bg-surface-container-low text-[10px] tracking-[0.2em] font-bold">
                   <th className="p-4">Customer Identity</th>
                   <th className="p-4">Segment</th>
                   <th className="p-4">Engagement Score</th>
@@ -129,7 +129,7 @@ export default function Comp3() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-bold uppercase tracking-tight">
+                        <p className="text-sm font-bold tracking-tight">
                           Marcus Sterling
                         </p>
                         <p className="text-xs opacity-40">
@@ -139,7 +139,7 @@ export default function Comp3() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="px-2 py-1 bg-on-surface text-white text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-2 py-1 bg-on-surface text-white text-[9px] font-bold tracking-widest">
                       Iconic Loyalist
                     </span>
                   </td>
@@ -159,7 +159,7 @@ export default function Comp3() {
                     <p className="text-sm font-black bebas">$4,120.00</p>
                   </td>
                   <td className="p-4">
-                    <p className="text-xs uppercase font-medium">2 Hours ago</p>
+                    <p className="text-xs font-medium">2 Hours ago</p>
                     <p className="text-[10px] opacity-40">RIOT-77421-JKT</p>
                   </td>
                   <td className="p-4 text-right">
@@ -180,7 +180,7 @@ export default function Comp3() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-bold uppercase tracking-tight">
+                        <p className="text-sm font-bold tracking-tight">
                           Elena Vance
                         </p>
                         <p className="text-xs opacity-40">vance.e@cyber.net</p>
@@ -188,7 +188,7 @@ export default function Comp3() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="px-2 py-1 bg-surface-container-highest text-on-surface text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-2 py-1 bg-surface-container-highest text-on-surface text-[9px] font-bold tracking-widest">
                       Whale Buyer
                     </span>
                   </td>
@@ -208,7 +208,7 @@ export default function Comp3() {
                     <p className="text-sm font-black bebas">$8,940.22</p>
                   </td>
                   <td className="p-4">
-                    <p className="text-xs uppercase font-medium">1 Day ago</p>
+                    <p className="text-xs font-medium">1 Day ago</p>
                     <p className="text-[10px] opacity-40">RIOT-11209-ACC</p>
                   </td>
                   <td className="p-4 text-right">
@@ -229,7 +229,7 @@ export default function Comp3() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-bold uppercase tracking-tight">
+                        <p className="text-sm font-bold tracking-tight">
                           Koji Tanaka
                         </p>
                         <p className="text-xs opacity-40">tanaka.k@street.jp</p>
@@ -237,7 +237,7 @@ export default function Comp3() {
                     </div>
                   </td>
                   <td className="p-4">
-                    <span className="px-2 py-1 border border-primary text-primary text-[9px] font-bold uppercase tracking-widest">
+                    <span className="px-2 py-1 border border-primary text-primary text-[9px] font-bold tracking-widest">
                       Early Adopter
                     </span>
                   </td>
@@ -257,7 +257,7 @@ export default function Comp3() {
                     <p className="text-sm font-black bebas">$1,250.00</p>
                   </td>
                   <td className="p-4">
-                    <p className="text-xs uppercase font-medium">3 Days ago</p>
+                    <p className="text-xs font-medium">3 Days ago</p>
                     <p className="text-[10px] opacity-40">RIOT-99301-TEE</p>
                   </td>
                   <td className="p-4 text-right">
@@ -283,7 +283,7 @@ export default function Comp3() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-12">
           <div className="space-y-4 border-l-4 border-primary pl-6">
-            <h4 className="font-bold uppercase tracking-widest text-xs">
+            <h4 className="font-bold tracking-widest text-xs">
               Retention Rate
             </h4>
             <p className="text-5xl font-black bebas">78.4%</p>
@@ -294,7 +294,7 @@ export default function Comp3() {
             </p>
           </div>
           <div className="space-y-4 border-l-4 border-on-surface pl-6">
-            <h4 className="font-bold uppercase tracking-widest text-xs">
+            <h4 className="font-bold tracking-widest text-xs">
               AOV Growth
             </h4>
             <p className="text-5xl font-black bebas">+$42.10</p>
@@ -304,7 +304,7 @@ export default function Comp3() {
             </p>
           </div>
           <div className="space-y-4 border-l-4 border-outline-variant pl-6">
-            <h4 className="font-bold uppercase tracking-widest text-xs">
+            <h4 className="font-bold tracking-widest text-xs">
               Social Signal
             </h4>
             <p className="text-5xl font-black bebas">High</p>

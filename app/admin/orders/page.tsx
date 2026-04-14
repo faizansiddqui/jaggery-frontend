@@ -55,21 +55,21 @@ const formatDate = (input?: string) => {
       month: 'short',
       day: '2-digit',
       year: 'numeric',
-   }).format(date).toUpperCase();
+   }).format(date);
 };
 
 const getCustomerName = (order: AdminOrder) => {
    const name = String(order.FullName || '').trim();
-   if (name) return name.toUpperCase();
+   if (name) return name;
 
    const email = String(order.user_email || '').trim();
-   if (!email) return 'GUEST USER';
+   if (!email) return 'Guest user';
 
-   return email
+   const fromEmail = email
       .split('@')[0]
       .replace(/[^a-zA-Z0-9]+/g, ' ')
-      .trim()
-      .toUpperCase() || 'GUEST USER';
+      .trim();
+   return fromEmail || 'Guest user';
 };
 
 const getOrderTotal = (order: AdminOrder) => {
@@ -348,15 +348,15 @@ export default function OrdersManagement() {
       <div className="flex flex-col gap-12">
          <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
             <div className="flex flex-col gap-2">
-               <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-primary font-black">LOGISTICS HUB</span>
-               <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">Editorial Fulfillment</h2>
+               <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">LOGISTICS HUB</span>
+               <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Editorial Fulfillment</h2>
             </div>
             <div className='flex flex-col'>
                <div className="flex flex-col md:items-end gap-4 w-full md:w-auto">
                   <div className="flex bg-surface border border-outline/10 p-2 gap-2 w-full md:w-auto overflow-x-auto">
                      <button
                         onClick={() => setActiveTab('all')}
-                        className={`px-6 py-3 font-headline text-[10px] uppercase font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'all'
+                        className={`px-6 py-3 font-headline text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'all'
                            ? 'bg-on-primary text-primary'
                            : 'opacity-40 hover:opacity-100'
                            }`}
@@ -365,7 +365,7 @@ export default function OrdersManagement() {
                      </button>
                      <button
                         onClick={() => setActiveTab('active')}
-                        className={`px-6 py-3 font-headline text-[10px] uppercase font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'active'
+                        className={`px-6 py-3 font-headline text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'active'
                            ? 'bg-on-primary text-primary'
                            : 'opacity-40 hover:opacity-100'
                            }`}
@@ -374,7 +374,7 @@ export default function OrdersManagement() {
                      </button>
                      <button
                         onClick={() => setActiveTab('resolved')}
-                        className={`px-6 py-3 font-headline text-[10px] uppercase font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'resolved'
+                        className={`px-6 py-3 font-headline text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeTab === 'resolved'
                            ? 'bg-on-primary text-primary'
                            : 'opacity-40 hover:opacity-100'
                            }`}
@@ -388,11 +388,11 @@ export default function OrdersManagement() {
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         placeholder="Search order ID / customer / email"
-                        className="w-full md:w-80 bg-surface border border-outline/10 px-4 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-primary"
+                        className="w-full md:w-80 bg-surface border border-outline/10 px-4 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                      />
                      <button
                         onClick={loadOrders}
-                        className="px-5 bg-surface border border-outline/10 font-headline text-[10px] uppercase tracking-widest hover:border-primary"
+                        className="px-5 bg-surface border border-outline/10 font-headline text-[10px] tracking-widest hover:border-primary"
                      >
                         Refresh
                      </button>
@@ -405,20 +405,20 @@ export default function OrdersManagement() {
                type="date"
                value={startDate}
                onChange={(event) => setStartDate(event.target.value)}
-               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-primary"
+               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                aria-label="Start date filter"
             />
             <input
                type="date"
                value={endDate}
                onChange={(event) => setEndDate(event.target.value)}
-               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-primary"
+               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                aria-label="End date filter"
             />
             <select
                value={sortBy}
                onChange={(event) => setSortBy(event.target.value as OrderSortKey)}
-               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-primary"
+               className="w-full bg-surface border border-outline/10 px-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                aria-label="Sort orders"
             >
                <option value="time-desc">Sort: Time (Newest)</option>
@@ -430,53 +430,53 @@ export default function OrdersManagement() {
 
          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">TOTAL SALES</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">TOTAL SALES</p>
                <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalSales.toFixed(2)}</p>
-               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{salesStats.paidCount} paid orders</p>
+               <p className="font-headline text-[9px] tracking-widest opacity-40 mt-2">{salesStats.paidCount} paid orders</p>
             </div>
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">PROCESSING AMOUNT</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">PROCESSING AMOUNT</p>
                <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalProcessing.toFixed(2)}</p>
-               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{counts.active} active shipments</p>
+               <p className="font-headline text-[9px] tracking-widest opacity-40 mt-2">{counts.active} active shipments</p>
             </div>
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">REFUND AMOUNT</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">REFUND AMOUNT</p>
                <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalRefund.toFixed(2)}</p>
-               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">{salesStats.refundCount} refund orders</p>
+               <p className="font-headline text-[9px] tracking-widest opacity-40 mt-2">{salesStats.refundCount} refund orders</p>
             </div>
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">PENDING AMOUNT</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">PENDING AMOUNT</p>
                <p className="font-brand text-3xl mt-3">{currency}{salesStats.totalPending.toFixed(2)}</p>
-               <p className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">awaiting payment</p>
+               <p className="font-headline text-[9px] tracking-widest opacity-40 mt-2">awaiting payment</p>
             </div>
          </div>
 
          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">AVERAGE ORDER VALUE</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">AVERAGE ORDER VALUE</p>
                <p className="font-brand text-3xl mt-3">{currency}{salesStats.avgOrderValue.toFixed(2)}</p>
             </div>
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">TOTAL ORDERS</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">TOTAL ORDERS</p>
                <p className="font-brand text-3xl mt-3">{counts.all}</p>
             </div>
             <div className="bg-surface border border-outline/10 p-6">
-               <p className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">RESOLVED ORDERS</p>
+               <p className="font-headline text-[10px] tracking-[0.2em] opacity-60">RESOLVED ORDERS</p>
                <p className="font-brand text-3xl mt-3">{counts.resolved}</p>
             </div>
          </div>
 
          <div className="bg-surface border border-outline/10 p-6">
-            <h3 className="font-brand text-2xl uppercase tracking-widest border-b border-primary pb-4 mb-4">Top Product Orders</h3>
+            <h3 className="font-brand text-2xl tracking-widest border-b border-primary pb-4 mb-4">Top Product Orders</h3>
             {salesStats.topProducts.length === 0 ? (
-               <p className="font-headline text-[10px] uppercase tracking-widest opacity-40">No product order data available.</p>
+               <p className="font-headline text-[10px] tracking-widest opacity-40">No product order data available.</p>
             ) : (
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {salesStats.topProducts.map((prod) => (
                      <div key={prod.productId} className="border border-outline/10 p-4">
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-60">PRODUCT {prod.productId}</p>
-                        <p className="font-headline text-xs uppercase tracking-widest mt-2">{prod.name}</p>
-                        <div className="flex justify-between mt-3 font-headline text-[10px] uppercase tracking-widest opacity-60">
+                        <p className="font-headline text-[10px] tracking-widest opacity-60">PRODUCT {prod.productId}</p>
+                        <p className="font-headline text-xs tracking-widest mt-2">{prod.name}</p>
+                        <div className="flex justify-between mt-3 font-headline text-[10px] tracking-widest opacity-60">
                            <span>Qty {prod.qty}</span>
                            <span>{currency}{prod.revenue.toFixed(2)}</span>
                         </div>
@@ -488,15 +488,15 @@ export default function OrdersManagement() {
 
          {error && (
             <div className="border border-primary/30 bg-primary/10 px-4 py-3 flex items-center justify-between gap-4">
-               <p className="font-headline text-[10px] uppercase tracking-widest text-primary">{error}</p>
-               <button onClick={loadOrders} className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4">Retry</button>
+               <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
+               <button onClick={loadOrders} className="font-headline text-[10px] tracking-widest underline underline-offset-4">Retry</button>
             </div>
          )}
 
          {isLoading && (
             <div className="bg-surface border border-outline/10 p-10 flex items-center gap-3">
                <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-               <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading orders...</span>
+               <span className="font-headline text-[10px] tracking-widest opacity-60">Loading orders...</span>
             </div>
          )}
 
@@ -504,7 +504,7 @@ export default function OrdersManagement() {
          <div className="flex flex-col gap-4">
             {!isLoading && filteredAndSortedOrders.length === 0 && (
                <div className="bg-surface border border-outline/10 p-12 text-center">
-                  <p className="font-brand text-4xl uppercase tracking-widest opacity-30">No orders found</p>
+                  <p className="font-brand text-4xl tracking-widest opacity-30">No orders found</p>
                </div>
             )}
 
@@ -529,32 +529,32 @@ export default function OrdersManagement() {
                   >
                      <div className="flex flex-col md:flex-row items-start justify-between gap-8 z-10">
                         <div className="flex flex-col gap-1">
-                           <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">
-                              {order.order_id || order.order_code || 'N/A'} / {String(order.payment_method || 'ONLINE').toUpperCase()}
+                           <span className="font-headline text-[9px] tracking-widest opacity-40">
+                              {order.order_id || order.order_code || 'N/A'} / {String(order.payment_method || 'Online')}
                            </span>
-                           <h3 className="font-brand text-3xl uppercase tracking-widest">{getCustomerName(order)}</h3>
-                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-40 mt-1">PLACED ON: {formatDate(order.createdAt)}</p>
-                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-40 mt-1">EMAIL: {String(order.user_email || 'N/A')}</p>
-                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-40 mt-1">PHONE: {String(order.address?.phone1 || order.phone1 || 'N/A')}</p>
+                           <h3 className="font-brand text-3xl tracking-widest">{getCustomerName(order)}</h3>
+                           <p className="font-headline text-[10px] tracking-widest opacity-40 mt-1">PLACED ON: {formatDate(order.createdAt)}</p>
+                           <p className="font-headline text-[10px] tracking-widest opacity-40 mt-1">EMAIL: {String(order.user_email || 'N/A')}</p>
+                           <p className="font-headline text-[10px] tracking-widest opacity-40 mt-1">PHONE: {String(order.address?.phone1 || order.phone1 || 'N/A')}</p>
                         </div>
 
                         <div className="flex flex-col items-start md:items-end gap-3">
-                           <span className="font-headline text-[10px] font-black tracking-[0.2em] opacity-40 uppercase">Total</span>
+                           <span className="font-headline text-[10px] font-black tracking-[0.2em] opacity-40">Total</span>
                            <span className="font-brand text-3xl mt-1">
                               {currency}
                               {total.toFixed(2)}
                            </span>
-                           <span className="font-headline text-[9px] uppercase tracking-widest opacity-40 mt-2">
+                           <span className="font-headline text-[9px] tracking-widest opacity-40 mt-2">
                               {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                            </span>
                         </div>
                      </div>
 
                      <div className="flex flex-col min-w-[220px] z-10">
-                        <span className="font-headline text-[10px] font-black tracking-[0.2em] text-primary uppercase">Status</span>
+                        <span className="font-headline text-[10px] font-black tracking-[0.2em] text-primary">Status</span>
                         <div className="flex items-center gap-2 mt-2">
                            <span className="material-symbols-outlined text-[12px]">{getStatusIcon(status)}</span>
-                           <span className="font-headline text-xs font-bold uppercase tracking-widest">{formatStatusLabel(status)}</span>
+                           <span className="font-headline text-xs font-bold tracking-widest">{formatStatusLabel(status)}</span>
                         </div>
                      </div>
                   </div>
@@ -574,10 +574,10 @@ export default function OrdersManagement() {
                <div className="relative z-10 w-full max-w-5xl max-h-[92vh] bg-surface border border-outline/15 overflow-hidden flex flex-col text-on-surface">
                   <div className="px-4 md:px-6 py-4 border-b border-outline/10 flex items-start justify-between gap-4">
                      <div className="min-w-0">
-                        <p className="font-headline text-[9px] uppercase tracking-widest opacity-70">
+                        <p className="font-headline text-[9px] tracking-widest opacity-70">
                            {activeOrder.order_id || activeOrder.order_code || 'N/A'}
                         </p>
-                        <h3 className="font-brand text-2xl md:text-4xl uppercase tracking-widest mt-1 break-words">{getCustomerName(activeOrder)}</h3>
+                        <h3 className="font-brand text-2xl md:text-4xl tracking-widest mt-1 break-words">{getCustomerName(activeOrder)}</h3>
                      </div>
                      <button
                         type="button"
@@ -591,12 +591,12 @@ export default function OrdersManagement() {
 
                   <div className="flex-1 overflow-y-auto overscroll-contain p-4 md:p-6 space-y-5 text-[#fcf8f8]" onWheel={(event) => event.stopPropagation()}>
                      <div className="border border-primary p-4 bg-[#ffffff]">
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-primary">Order Controls</p>
+                        <p className="font-headline text-[10px] tracking-widest text-primary">Order Controls</p>
                         <div className="mt-3 grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
                            <select
                               value={statusUpdate}
                               onChange={(event) => setStatusUpdate(event.target.value)}
-                              className="w-full bg-[#ffffff] text-primary border border-primary px-3 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                              className="w-full bg-[#ffffff] text-primary border border-primary px-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                               aria-label="Update order status"
                            >
                               {['confirmed', 'processed', 'in_transit', 'delivered', 'rto', 'return', 'refund', 'cancelled'].map((status) => (
@@ -624,72 +624,72 @@ export default function OrdersManagement() {
                                  }
                               }}
                               disabled={statusBusy}
-                              className="px-5 bg-[#ffffff] border border-primary font-headline text-[10px] text-primary uppercase tracking-widest hover:border-[#b90c1b] disabled:opacity-50"
+                              className="px-5 bg-[#ffffff] border border-primary font-headline text-[10px] text-primary tracking-widest hover:border-[#b90c1b] disabled:opacity-50"
                            >
                               {statusBusy ? 'Updating...' : 'Update Status'}
                            </button>
                         </div>
                         {statusMessage && (
-                           <p className="font-headline text-[10px] uppercase tracking-widest opacity-70 mt-3">{statusMessage}</p>
+                           <p className="font-headline text-[10px] tracking-widest opacity-70 mt-3">{statusMessage}</p>
                         )}
                      </div>
 
                      <div className="border border-primary p-4 bg-[#ffffff]">
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-primary">Shipping Address</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-90 mt-2 break-words">{formatAddress(activeOrder)}</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-80 mt-2">
+                        <p className="font-headline text-[10px] tracking-widest text-primary">Shipping Address</p>
+                        <p className="font-headline text-[10px] tracking-widest text-secondary opacity-90 mt-2 break-words">{formatAddress(activeOrder)}</p>
+                        <p className="font-headline text-[10px] tracking-widest text-secondary opacity-80 mt-2">
                            Type: {String(activeOrder.address?.addressType || activeOrder.addressType || 'N/A')}
                         </p>
                      </div>
 
                      <div className="border border-primary p-4 bg-[#ffffff]">
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-primary">Payment Details</p>
+                        <p className="font-headline text-[10px] tracking-widest text-primary">Payment Details</p>
                         <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                           <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-90 break-words">Method: {String(activeOrder.payment_method || 'N/A')}</p>
-                           <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-90 break-words">Payment Status: {formatStatusLabel(String(activeOrder.payment_status || 'pending'))}</p>
-                           <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-90 break-words">Order ID: {String(activeOrder.order_id || activeOrder.order_code || 'N/A')}</p>
-                           <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-90 break-words">Transaction ID: {String(activeOrder.razorpay_payment_id || 'N/A')}</p>
+                           <p className="font-headline text-[10px] tracking-widest text-secondary opacity-90 break-words">Method: {String(activeOrder.payment_method || 'N/A')}</p>
+                           <p className="font-headline text-[10px] tracking-widest text-secondary opacity-90 break-words">Payment Status: {formatStatusLabel(String(activeOrder.payment_status || 'pending'))}</p>
+                           <p className="font-headline text-[10px] tracking-widest text-secondary opacity-90 break-words">Order ID: {String(activeOrder.order_id || activeOrder.order_code || 'N/A')}</p>
+                           <p className="font-headline text-[10px] tracking-widest text-secondary opacity-90 break-words">Transaction ID: {String(activeOrder.razorpay_payment_id || 'N/A')}</p>
                         </div>
                      </div>
 
                      <div className="border border-primary p-4 bg-[#ffffff]">
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-primary">Order Items</p>
+                        <p className="font-headline text-[10px] tracking-widest text-primary">Order Items</p>
                         <div className="mt-3 flex flex-col gap-3">
                            {activeOrder.items.map((item, index) => (
                               <div
                                  key={`${activeOrderKey}-${item.product_id}-${item.size || 'na'}-${item.color || 'na'}-${index}`}
                                  className="border border-primary text-secondary p-3 grid grid-cols-1 md:grid-cols-5 gap-2"
                               >
-                                 <p className="font-headline text-[10px] text-secondary uppercase tracking-widest opacity-70 md:col-span-2 break-words">
+                                 <p className="font-headline text-[10px] text-secondary tracking-widest opacity-70 md:col-span-2 break-words">
                                     {String(item.product_name || `Product ${item.product_id || ''}`)}
                                  </p>
-                                 <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-80">ID: {item.product_id}</p>
-                                 <p className="font-headline text-[10px] uppercase tracking-widest text-secondary  opacity-80">Qty: {item.quantity}</p>
-                                 <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-80">Price: {currency}{Number(item.price || 0).toFixed(2)}</p>
-                                 <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-80 break-words">Color: {String(item.color || 'N/A')}</p>
-                                 <p className="font-headline text-[10px] uppercase tracking-widest text-secondary opacity-80 break-words">Size: {String(item.size || 'N/A')}</p>
+                                 <p className="font-headline text-[10px] tracking-widest text-secondary opacity-80">ID: {item.product_id}</p>
+                                 <p className="font-headline text-[10px] tracking-widest text-secondary  opacity-80">Qty: {item.quantity}</p>
+                                 <p className="font-headline text-[10px] tracking-widest text-secondary opacity-80">Price: {currency}{Number(item.price || 0).toFixed(2)}</p>
+                                 <p className="font-headline text-[10px] tracking-widest text-secondary opacity-80 break-words">Color: {String(item.color || 'N/A')}</p>
+                                 <p className="font-headline text-[10px] tracking-widest text-secondary opacity-80 break-words">Size: {String(item.size || 'N/A')}</p>
                               </div>
                            ))}
                         </div>
                      </div>
 
                      <div className="border border-primary p-4 bg-[#ffffff]">
-                        <p className="font-headline text-[10px] uppercase tracking-widest text-primary">Status Update History</p>
+                        <p className="font-headline text-[10px] tracking-widest text-primary">Status Update History</p>
                         {(activeOrder.status_history || []).length === 0 ? (
-                           <p className="font-headline text-[10px] uppercase tracking-widest text-primary opacity-80 mt-2">No status updates yet.</p>
+                           <p className="font-headline text-[10px] tracking-widest text-primary opacity-80 mt-2">No status updates yet.</p>
                         ) : (
                            <div className="mt-3 flex flex-col gap-2 max-h-72 overflow-y-auto pr-1 overscroll-contain">
                               {(activeOrder.status_history || []).map((entry, index) => (
                                  <div key={`${activeOrderKey}-track-${index}`} className="border border-primary px-3 py-2">
-                                    <p className="font-headline text-[10px] text-secondary uppercase tracking-widest opacity-95">{formatStatusLabel(entry.status)}</p>
-                                    <p className="font-headline text-[9px] text-secondary uppercase tracking-widest opacity-80 mt-1 break-words">
+                                    <p className="font-headline text-[10px] text-secondary tracking-widest opacity-95">{formatStatusLabel(entry.status)}</p>
+                                    <p className="font-headline text-[9px] text-secondary tracking-widest opacity-80 mt-1 break-words">
                                        {String(entry.timestamp || 'N/A')}
                                     </p>
                                     {entry.activity ? (
-                                       <p className="font-headline text-[9px] text-secondary uppercase tracking-widest opacity-80 mt-1 break-words">By: {entry.activity}</p>
+                                       <p className="font-headline text-[9px] text-secondary tracking-widest opacity-80 mt-1 break-words">By: {entry.activity}</p>
                                     ) : null}
                                     {entry.location ? (
-                                       <p className="font-headline text-[9px] text-secondary uppercase tracking-widest opacity-80 mt-1 break-words">Note: {entry.location}</p>
+                                       <p className="font-headline text-[9px] text-secondary tracking-widest opacity-80 mt-1 break-words">Note: {entry.location}</p>
                                     ) : null}
                                  </div>
                               ))}
@@ -703,7 +703,7 @@ export default function OrdersManagement() {
          )}
 
          {/* Pagination / Footer Info */}
-         <div className="mt-12 flex justify-center items-center gap-8 border-t border-primary pt-10 font-headline text-[10px] font-bold uppercase tracking-widest opacity-40">
+         <div className="mt-12 flex justify-center items-center gap-8 border-t border-primary pt-10 font-headline text-[10px] font-bold tracking-widest opacity-40">
             <button className="hover:text-white transition-colors" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Top</button>
             <div className="flex gap-4">
                <span className="text-primary">LIVE</span>

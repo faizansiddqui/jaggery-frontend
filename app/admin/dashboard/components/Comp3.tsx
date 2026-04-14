@@ -9,18 +9,18 @@ export default function Comp3() {
             <h2 className="text-6xl bebas tracking-tighter leading-none text-on-surface">
               SYSTEM OVERVIEW
             </h2>
-            <p className="text-primary font-bold tracking-[0.3em] text-xs uppercase">
+            <p className="text-primary font-bold tracking-[0.3em] text-xs">
               Precision Performance Tracking / Q4 PHASE
             </p>
           </div>
           <div className="flex gap-4">
-            <button className="bg-on-surface text-white px-8 py-4 font-bold uppercase text-xs tracking-widest hover:bg-primary transition-colors flex items-center gap-2">
+            <button className="bg-on-surface text-white px-8 py-4 font-bold text-xs tracking-widest hover:bg-primary transition-colors flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">
                 download
               </span>
               Export Report
             </button>
-            <button className="border border-outline-variant/30 px-8 py-4 font-bold uppercase text-xs tracking-widest hover:bg-surface-container-high transition-colors">
+            <button className="border border-outline-variant/30 px-8 py-4 font-bold text-xs tracking-widest hover:bg-surface-container-high transition-colors">
               Date Range
             </button>
           </div>
@@ -29,10 +29,10 @@ export default function Comp3() {
         <section className="grid grid-cols-1 md:grid-cols-4 gap-1">
           <div className="bg-surface-container-lowest p-8 space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40 uppercase">
+              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40">
                 Total Revenue
               </span>
-              <span className="text-primary text-[10px] font-bold uppercase">
+              <span className="text-primary text-[10px] font-bold">
                 +12.5%
               </span>
             </div>
@@ -42,10 +42,10 @@ export default function Comp3() {
 
           <div className="bg-surface-container-low p-8 space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40 uppercase">
+              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40">
                 Total Orders
               </span>
-              <span className="text-primary text-[10px] font-bold uppercase">
+              <span className="text-primary text-[10px] font-bold">
                 +4.2%
               </span>
             </div>
@@ -55,10 +55,10 @@ export default function Comp3() {
 
           <div className="bg-surface-container-high p-8 space-y-4">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40 uppercase">
+              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40">
                 New Customers
               </span>
-              <span className="text-primary text-[10px] font-bold uppercase">
+              <span className="text-primary text-[10px] font-bold">
                 +8.1%
               </span>
             </div>
@@ -68,10 +68,10 @@ export default function Comp3() {
 
           <div className="bg-on-surface p-8 space-y-4 text-white">
             <div className="flex justify-between items-start">
-              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40 uppercase">
+              <span className="text-[10px] tracking-[0.2em] font-bold opacity-40">
                 Conv. Rate
               </span>
-              <span className="text-primary text-[10px] font-bold uppercase">
+              <span className="text-primary text-[10px] font-bold">
                 +2.3%
               </span>
             </div>
@@ -83,14 +83,14 @@ export default function Comp3() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 bg-surface-container-low p-8 space-y-8">
             <div className="flex justify-between items-center">
-              <h3 className="text-xl font-black uppercase tracking-tight">
+              <h3 className="text-xl font-black tracking-tight">
                 Sales Performance
               </h3>
               <div className="flex gap-4">
-                <span className="text-[10px] font-bold uppercase flex items-center gap-1">
+                <span className="text-[10px] font-bold flex items-center gap-1">
                   <span className="w-2 h-2 bg-primary"></span> Revenue
                 </span>
-                <span className="text-[10px] font-bold uppercase flex items-center gap-1">
+                <span className="text-[10px] font-bold flex items-center gap-1">
                   <span className="w-2 h-2 bg-on-surface/30"></span> Last Year
                 </span>
               </div>
@@ -129,12 +129,12 @@ export default function Comp3() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-xl font-black uppercase tracking-tight">
+            <h3 className="text-xl font-black tracking-tight">
               System Actions
             </h3>
             <div className="grid grid-cols-1 gap-2">
               <button className="group bg-surface-container-lowest p-6 flex justify-between items-center hover:bg-on-surface hover:text-white transition-all">
-                <span className="text-xs font-bold tracking-widest uppercase">
+                <span className="text-xs font-bold tracking-widest">
                   Add New Product
                 </span>
                 <span className="material-symbols-outlined text-primary group-hover:text-white translate-x-0 group-hover:translate-x-2 transition-transform">
@@ -142,7 +142,7 @@ export default function Comp3() {
                 </span>
               </button>
               <button className="group bg-surface-container-lowest p-6 flex justify-between items-center hover:bg-on-surface hover:text-white transition-all">
-                <span className="text-xs font-bold tracking-widest uppercase">
+                <span className="text-xs font-bold tracking-widest">
                   Manage Inventory
                 </span>
                 <span className="material-symbols-outlined text-primary group-hover:text-white translate-x-0 group-hover:translate-x-2 transition-transform">
@@ -150,7 +150,7 @@ export default function Comp3() {
                 </span>
               </button>
               <button className="group bg-surface-container-lowest p-6 flex justify-between items-center hover:bg-on-surface hover:text-white transition-all">
-                <span className="text-xs font-bold tracking-widest uppercase">
+                <span className="text-xs font-bold tracking-widest">
                   Launch Campaign
                 </span>
                 <span className="material-symbols-outlined text-primary group-hover:text-white translate-x-0 group-hover:translate-x-2 transition-transform">
@@ -158,7 +158,7 @@ export default function Comp3() {
                 </span>
               </button>
               <button className="group bg-surface-container-lowest p-6 flex justify-between items-center hover:bg-on-surface hover:text-white transition-all">
-                <span className="text-xs font-bold tracking-widest uppercase">
+                <span className="text-xs font-bold tracking-widest">
                   Support Tickets
                 </span>
                 <span className="material-symbols-outlined text-primary group-hover:text-white translate-x-0 group-hover:translate-x-2 transition-transform">
@@ -181,11 +181,11 @@ export default function Comp3() {
 
         <section className="bg-surface-container-lowest">
           <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center">
-            <h3 className="text-xl font-black uppercase tracking-tight">
+            <h3 className="text-xl font-black tracking-tight">
               Recent Activity
             </h3>
             <a
-              className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline"
+              className="text-[10px] font-bold text-primary tracking-widest hover:underline"
               href="/"
             >
               View All Records
@@ -195,19 +195,19 @@ export default function Comp3() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="text-left bg-surface-container-low">
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">
+                  <th className="p-4 text-[10px] font-black tracking-widest opacity-40">
                     Order ID
                   </th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">
+                  <th className="p-4 text-[10px] font-black tracking-widest opacity-40">
                     Customer
                   </th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">
+                  <th className="p-4 text-[10px] font-black tracking-widest opacity-40">
                     Status
                   </th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">
+                  <th className="p-4 text-[10px] font-black tracking-widest opacity-40">
                     Items
                   </th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40 text-right">
+                  <th className="p-4 text-[10px] font-black tracking-widest opacity-40 text-right">
                     Total
                   </th>
                 </tr>
@@ -224,13 +224,13 @@ export default function Comp3() {
                           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSlYCCQ7xK39lf_Bg279Wp-P2a9mSjqc8ZV8DYTyKH1xNiyI8iJYgTHsxWpgn58-C6YuHKIcbml5eLgHVKJYMEATFHq2cQtz8Z0__PvXfPqme3wB8Skz31AwR4FN67AzWlELrwaJ-49MpLwDD3qOOjGgj4fiZp2_QBvxjiIjnXWEDRckV20SeKlr4RmZeeDpk3kZaHMUDx_OsJG9hB4ebFRmtIn7GPph9fTA0xcvSJbgqxNQdaeYR9ReVsAtC9Mf5Y72UzHt-PDPpp"
                         />
                       </div>
-                      <span className="text-xs font-bold uppercase">
+                      <span className="text-xs font-bold">
                         Marcus Thorne
                       </span>
                     </div>
                   </td>
                   <td className="p-6">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-[10px] font-bold uppercase tracking-tighter">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 text-[10px] font-bold tracking-tighter">
                       Processing
                     </span>
                   </td>
@@ -248,13 +248,13 @@ export default function Comp3() {
                           src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2rDH15MF4lxp4GJzENEM3mhy1sA3MU3NmBUduCjTKSPwAw3kuXqm48tLVec0r-jB5y7XdqNSgfRD--Y8y9kyISxHmnAmQ_WOdzuO8kzQQtlHliUFUR9KzrrbYYEaZUKjkqATG8r65Xb4sxZUj2Y-T-2ZyMumpfxTxjYFquRMEbYA-ERyHYlg_NTQDK6nGwc6KbM7crVwyVTpWQ27vzNAZgcY_dLx0XufqlBDo6Rtn8xSrD7rF9yXvWelDlF2LMHMQkV04H7FtoVgE"
                         />
                       </div>
-                      <span className="text-xs font-bold uppercase">
+                      <span className="text-xs font-bold">
                         Elena Vance
                       </span>
                     </div>
                   </td>
                   <td className="p-6">
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-[10px] font-bold uppercase tracking-tighter">
+                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-[10px] font-bold tracking-tighter">
                       Pending
                     </span>
                   </td>
@@ -272,13 +272,13 @@ export default function Comp3() {
                           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ17YWSCCx6UodS1yTutnIB-PnVSzl9_kOcs1hFXorddvvIOpcXVrsIdiBFFxZ0D-N3koz8UYaiOAA2D4mP-K7OWECbzMdl0ubGVZ3d9L_ngRwQ5z6cOEGWprfwJvKwbhD0UJ1SEWfqk4oYAEBcEQ4NcQJsOEKE7TqRLnltoKiavLdYWzFdKX63IsQHl7PWcq-heBkvCUyU2P-FlWUjz263Q0if75CkP2AxEcMAyjhQTNMbfWtKZi3IcgB8QUonzLQgqQ2nZEYIDAZ"
                         />
                       </div>
-                      <span className="text-xs font-bold uppercase">
+                      <span className="text-xs font-bold">
                         Jaxson Reed
                       </span>
                     </div>
                   </td>
                   <td className="p-6">
-                    <span className="px-2 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-tighter">
+                    <span className="px-2 py-1 bg-primary text-white text-[10px] font-bold tracking-tighter">
                       Shipped
                     </span>
                   </td>

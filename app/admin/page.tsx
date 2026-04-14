@@ -68,7 +68,7 @@ const buildChartPoints = (orders: AdminOrder[], range: TrendRange): ChartPoint[]
          d.setHours(0, 0, 0, 0);
          d.setDate(now.getDate() - i);
          const key = formatKeyDay(d);
-         const label = new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short' }).format(d).toUpperCase();
+         const label = new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short' }).format(d);
          points.push({ label, key, value: 0 });
          seed.set(key, 0);
       }
@@ -91,7 +91,7 @@ const buildChartPoints = (orders: AdminOrder[], range: TrendRange): ChartPoint[]
       for (let i = 11; i >= 0; i -= 1) {
          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
          const key = formatKeyMonth(d);
-         const label = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d).toUpperCase();
+         const label = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
          points.push({ label, key, value: 0 });
          seed.set(key, 0);
       }
@@ -174,16 +174,16 @@ export default function AdminDashboard() {
       }).length;
 
       return [
-         { label: 'GROSS PERFORMANCE', value: `${currency}${totalRevenue.toFixed(2)}`, change: 'LIVE', color: '#b90c1b' },
-         { label: 'ACTIVE SHIPMENTS', value: String(activeShipments), change: 'LIVE', color: '#ffffff' },
-         { label: 'NEW EDITORIALS', value: String(recentEditorials), change: 'LAST 30 DAYS', color: '#ffffff' },
-         { label: 'CONVERSION RATE', value: `${conversionRate.toFixed(2)}%`, change: 'CUSTOMER BASE', color: '#b90c1b' },
+         { label: 'Gross performance', value: `${currency}${totalRevenue.toFixed(2)}`, change: 'Live', color: '#b90c1b' },
+         { label: 'Active shipments', value: String(activeShipments), change: 'Live', color: '#ffffff' },
+         { label: 'New editorials', value: String(recentEditorials), change: 'Last 30 days', color: '#ffffff' },
+         { label: 'Conversion rate', value: `${conversionRate.toFixed(2)}%`, change: 'Customer base', color: '#b90c1b' },
       ];
    }, [orders, products, conversionRate, currency]);
 
    const activities = useMemo(() => {
       return orders.slice(0, 4).map((order) => {
-         const status = String(order.status || 'pending').toUpperCase();
+         const status = String(order.status || 'pending');
          const code = order.order_code || `ORDER-${order.order_id || 'N/A'}`;
          const timestamp = order.createdAt ? new Date(order.createdAt) : null;
          const timeText = timestamp && !Number.isNaN(timestamp.getTime())
@@ -213,21 +213,21 @@ export default function AdminDashboard() {
    return (
       <div className="flex flex-col gap-12">
          <header className="flex flex-col gap-2">
-            <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-primary font-black">SYSTEM OVERVIEW</span>
-            <h2 className="font-brand text-5xl md:text-7xl lg:text-8xl uppercase leading-none tracking-tighter">Dashboard</h2>
+            <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">SYSTEM OVERVIEW</span>
+            <h2 className="font-brand text-5xl md:text-7xl lg:text-8xl leading-none tracking-tighter">Dashboard</h2>
          </header>
 
          {error && (
             <div className="border border-primary/30 bg-primary/10 px-4 py-3 flex items-center justify-between gap-4">
-               <p className="font-headline text-[10px] uppercase tracking-widest text-primary">{error}</p>
-               <button onClick={loadDashboard} className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4">Retry</button>
+               <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
+               <button onClick={loadDashboard} className="font-headline text-[10px] tracking-widest underline underline-offset-4">Retry</button>
             </div>
          )}
 
          {isLoading && (
             <div className="bg-surface border border-outline/10 p-8 flex items-center gap-3">
                <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-               <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading dashboard metrics...</span>
+               <span className="font-headline text-[10px] tracking-widest opacity-60">Loading dashboard metrics...</span>
             </div>
          )}
 
@@ -235,12 +235,12 @@ export default function AdminDashboard() {
             {stats.map((stat, idx) => (
                <div key={idx} className="bg-surface border border-outline/10 p-8 flex flex-col justify-between group hover:border-primary transition-all">
                   <div className="flex justify-between items-start">
-                     <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-40">{stat.label}</span>
+                     <span className="font-headline text-[10px] tracking-[0.2em] opacity-40">{stat.label}</span>
                      <span className="material-symbols-outlined text-[10px]" style={{ color: stat.color }}>trending_up</span>
                   </div>
                   <div className="mt-8">
                      <span className="font-brand text-4xl block leading-none">{stat.value}</span>
-                     <span className="font-headline text-[9px] uppercase tracking-widest mt-2 block text-primary">{stat.change}</span>
+                     <span className="font-headline text-[9px] tracking-widest mt-2 block text-primary">{stat.change}</span>
                   </div>
                </div>
             ))}
@@ -249,8 +249,8 @@ export default function AdminDashboard() {
          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
             <div className="lg:col-span-8 bg-surface border border-outline/10 p-10 flex flex-col justify-between min-h-[450px] relative overflow-hidden">
                <div className="flex justify-between items-center mb-10 border-b border-outline/10 pb-6 relative z-10">
-                  <h3 className="font-brand text-3xl uppercase tracking-widest">Sales Performance</h3>
-                  <div className="flex gap-4 font-headline text-[9px] uppercase tracking-widest">
+                  <h3 className="font-brand text-3xl tracking-widest">Sales Performance</h3>
+                  <div className="flex gap-4 font-headline text-[9px] tracking-widest">
                      {(['weekly', 'monthly', 'yearly'] as TrendRange[]).map((option) => (
                         <button
                            key={option}
@@ -277,7 +277,7 @@ export default function AdminDashboard() {
                   })}
                </div>
 
-               <div className="flex justify-between items-center opacity-40 font-headline text-[8px] uppercase tracking-[0.4em] mt-auto z-10">
+               <div className="flex justify-between items-center opacity-40 font-headline text-[8px] tracking-[0.4em] mt-auto z-10">
                   {labelIndices.map((index) => (
                      <span key={chartPoints[index]?.key || index}>{chartPoints[index]?.label || '--'}</span>
                   ))}
@@ -290,8 +290,8 @@ export default function AdminDashboard() {
 
             <div className="lg:col-span-4 flex flex-col gap-8">
                <div className="bg-surface border border-outline/10 p-10 flex flex-col gap-6 flex-1">
-                  <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-[#ffffff]/10 pb-6">Recent Activity</h3>
-                  <div className="flex flex-col gap-4 font-headline text-[10px] uppercase tracking-widest opacity-60">
+                  <h3 className="font-brand text-3xl tracking-widest border-b border-[#ffffff]/10 pb-6">Recent Activity</h3>
+                  <div className="flex flex-col gap-4 font-headline text-[10px] tracking-widest opacity-60">
                      {activities.length ? activities.map((act, i) => (
                         <div key={i} className="flex gap-4 items-start border-b border-[#ffffff]/5 pb-4 last:border-none">
                            <span className="opacity-40 whitespace-nowrap">{act.time}</span>

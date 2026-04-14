@@ -134,37 +134,37 @@ export default function AdminCommunicationsPage() {
     return (
         <div className="flex flex-col gap-10">
             <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#b90c1b] font-black">COMMUNICATION CONTROL</span>
-                <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">Subscribers & Contact Desk</h2>
+                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">COMMUNICATION CONTROL</span>
+                <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Subscribers & Contact Desk</h2>
             </header>
 
             {error && (
                 <div className="border border-primary bg-[#ffffff] px-4 py-3">
-                    <p className="font-headline text-[10px] uppercase tracking-widest text-[#ff929d]">{error}</p>
+                    <p className="font-headline text-[10px] tracking-widest text-[#ff929d]">{error}</p>
                 </div>
             )}
 
             {message && (
                 <div className="border border-green-500/30 bg-green-500/10 px-4 py-3">
-                    <p className="font-headline text-[10px] uppercase tracking-widest text-green-300">{message}</p>
+                    <p className="font-headline text-[10px] tracking-widest text-green-300">{message}</p>
                 </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-[#ffffff] border border-primary p-5">
-                    <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Total Subscribers</p>
+                    <p className="font-headline text-[9px] tracking-widest opacity-50">Total Subscribers</p>
                     <p className="font-brand text-4xl mt-4">{stats.totalSubs}</p>
                 </div>
                 <div className="bg-[#ffffff] border border-primary p-5">
-                    <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Active Subscribers</p>
+                    <p className="font-headline text-[9px] tracking-widest opacity-50">Active Subscribers</p>
                     <p className="font-brand text-4xl mt-4">{stats.activeSubs}</p>
                 </div>
                 <div className="bg-[#ffffff] border border-primary p-5">
-                    <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Open Queries</p>
+                    <p className="font-headline text-[9px] tracking-widest opacity-50">Open Queries</p>
                     <p className="font-brand text-4xl mt-4 text-[#ff929d]">{stats.open}</p>
                 </div>
                 <div className="bg-[#ffffff] border border-primary p-5">
-                    <p className="font-headline text-[9px] uppercase tracking-widest opacity-50">Solved Queries</p>
+                    <p className="font-headline text-[9px] tracking-widest opacity-50">Solved Queries</p>
                     <p className="font-brand text-4xl mt-4 text-green-300">{stats.solved}</p>
                 </div>
             </div>
@@ -173,19 +173,19 @@ export default function AdminCommunicationsPage() {
                 <div className="flex flex-wrap items-center gap-3 border-b border-primary pb-4">
                     <button
                         onClick={() => setActiveTab('subscribers')}
-                        className={`px-4 py-2 font-headline text-[10px] uppercase tracking-widest border ${activeTab === 'subscribers' ? 'border-[#b90c1b] text-black bg-primary/40' : 'border-primary text-black/80 hover:text-white'}`}
+                        className={`px-4 py-2 font-headline text-[10px] tracking-widest border ${activeTab === 'subscribers' ? 'border-[#b90c1b] text-black bg-primary/40' : 'border-primary text-black/80 hover:text-white'}`}
                     >
                         Newsletter Subscribers
                     </button>
                     <button
                         onClick={() => setActiveTab('contacts')}
-                        className={`px-4 py-2 font-headline text-[10px] uppercase tracking-widest border ${activeTab === 'contacts' ? 'border-[#b90c1b] text-black bg-primary/40' : 'border-primary text-black/80 hover:text-white'}`}
+                        className={`px-4 py-2 font-headline text-[10px] tracking-widest border ${activeTab === 'contacts' ? 'border-[#b90c1b] text-black bg-primary/40' : 'border-primary text-black/80 hover:text-white'}`}
                     >
                         Contact Submissions
                     </button>
                     <button
                         onClick={onRefresh}
-                        className="ml-auto px-4 py-2 font-headline text-[10px] uppercase tracking-widest border border-secondary text-black/80 hover:border-primary"
+                        className="ml-auto px-4 py-2 font-headline text-[10px] tracking-widest border border-secondary text-black/80 hover:border-primary"
                         disabled={loading}
                     >
                         {loading ? 'Refreshing...' : 'Refresh'}
@@ -199,12 +199,12 @@ export default function AdminCommunicationsPage() {
                                 value={subscriberQuery}
                                 onChange={(e) => setSubscriberQuery(e.target.value)}
                                 placeholder="Search email"
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
                             />
                             <select
                                 value={subscriberStatusFilter}
                                 onChange={(e) => setSubscriberStatusFilter(e.target.value as typeof subscriberStatusFilter)}
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                             >
                                 <option value="all">All Status</option>
                                 <option value="active">Active</option>
@@ -213,7 +213,7 @@ export default function AdminCommunicationsPage() {
                             <select
                                 value={subscriberSort}
                                 onChange={(e) => setSubscriberSort(e.target.value as typeof subscriberSort)}
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                             >
                                 <option value="recent">Recent</option>
                                 <option value="email">Email</option>
@@ -221,9 +221,9 @@ export default function AdminCommunicationsPage() {
                             </select>
                         </div>
                         {loading ? (
-                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-50">Loading subscribers...</p>
+                            <p className="font-headline text-[10px] tracking-widest opacity-50">Loading subscribers...</p>
                         ) : filteredSubscribers.length === 0 ? (
-                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-50">No subscribers match the current filters.</p>
+                            <p className="font-headline text-[10px] tracking-widest opacity-50">No subscribers match the current filters.</p>
                         ) : <SubscribersTable subscribers={filteredSubscribers} />}
                     </div>
                 ) : null}
@@ -235,12 +235,12 @@ export default function AdminCommunicationsPage() {
                                 value={contactQuery}
                                 onChange={(e) => setContactQuery(e.target.value)}
                                 placeholder="Search name or email"
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
                             />
                             <select
                                 value={contactStatusFilter}
                                 onChange={(e) => setContactStatusFilter(e.target.value as typeof contactStatusFilter)}
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                             >
                                 <option value="all">All Status</option>
                                 <option value="open">Open</option>
@@ -249,7 +249,7 @@ export default function AdminCommunicationsPage() {
                             <select
                                 value={contactSort}
                                 onChange={(e) => setContactSort(e.target.value as typeof contactSort)}
-                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                             >
                                 <option value="recent">Recent</option>
                                 <option value="status">Status</option>
@@ -257,9 +257,9 @@ export default function AdminCommunicationsPage() {
                             </select>
                         </div>
                         {loading ? (
-                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-50">Loading contact requests...</p>
+                            <p className="font-headline text-[10px] tracking-widest opacity-50">Loading contact requests...</p>
                         ) : filteredContacts.length === 0 ? (
-                            <p className="font-headline text-[10px] uppercase tracking-widest opacity-50">No contact submissions match the current filters.</p>
+                            <p className="font-headline text-[10px] tracking-widest opacity-50">No contact submissions match the current filters.</p>
                         ) : (
                             <div className="flex flex-col gap-4">
                                 {filteredContacts.map((contact) => (

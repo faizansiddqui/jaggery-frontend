@@ -116,30 +116,30 @@ export default function AdminAnalytics() {
    return (
       <div className="flex flex-col gap-12">
          <header className="flex flex-col gap-2">
-            <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#b90c1b] font-black">PERFORMANCE ANALYTICS</span>
-            <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">Kinetic Insight / Q4</h2>
+            <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">PERFORMANCE ANALYTICS</span>
+            <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Kinetic Insight / Q4</h2>
          </header>
 
          {error && (
             <div className="border border-primary bg-primary/10 px-4 py-3 flex items-center justify-between gap-4">
-               <p className="font-headline text-[10px] uppercase tracking-widest text-primary">{error}</p>
-               <button onClick={load} className="font-headline text-[10px] uppercase tracking-widest underline underline-offset-4">Retry</button>
+               <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
+               <button onClick={load} className="font-headline text-[10px] tracking-widest underline underline-offset-4">Retry</button>
             </div>
          )}
 
          {isLoading && (
             <div className="bg-[#ffffff] border border-primary/10 p-8 flex items-center gap-3">
                <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-               <span className="font-headline text-[10px] uppercase tracking-widest opacity-60">Loading analytics metrics...</span>
+               <span className="font-headline text-[10px] tracking-widest opacity-60">Loading analytics metrics...</span>
             </div>
          )}
 
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {metrics.map((m, i) => (
                <div key={i} className="bg-[#ffffff] border border-primary/10 p-10 flex flex-col items-center text-center group hover:bg-primary transition-all">
-                  <span className="font-headline text-[10px] uppercase tracking-[0.2em] font-black opacity-40 group-hover:text-white group-hover:opacity-100">{m.label}</span>
+                  <span className="font-headline text-[10px] tracking-[0.2em] font-black opacity-40 group-hover:text-white group-hover:opacity-100">{m.label}</span>
                   <span className="font-brand text-5xl mt-6 group-hover:text-white transition-all">{m.val}</span>
-                  <span className={`font-headline text-[10px] mt-4 uppercase tracking-widest ${trendClass(Number((m as { trendValue?: number }).trendValue || 0), Boolean((m as { reversed?: boolean }).reversed))} group-hover:text-white`}>
+                  <span className={`font-headline text-[10px] mt-4 tracking-widest ${trendClass(Number((m as { trendValue?: number }).trendValue || 0), Boolean((m as { reversed?: boolean }).reversed))} group-hover:text-white`}>
                      {m.trend} TRENDING
                   </span>
                </div>
@@ -148,14 +148,14 @@ export default function AdminAnalytics() {
 
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="bg-[#ffffff] border border-primary p-12">
-               <h3 className="font-brand text-4xl uppercase tracking-widest border-b border-primary pb-8 mb-10">Regional Performance</h3>
+               <h3 className="font-brand text-4xl tracking-widest border-b border-primary pb-8 mb-10">Regional Performance</h3>
                <div className="flex flex-col gap-8 opacity-60">
                   {regionalRows.map((r, i) => {
                      const growth = Number(r.growthPercent || 0);
                      const barWidth = Math.max(4, Math.round((Math.max(0, growth) / maxRegionalGrowth) * 100));
                      return (
                         <div key={`${r.region}-${i}`} className="flex flex-col gap-2">
-                           <div className="flex justify-between font-headline text-[10px] uppercase tracking-widest">
+                           <div className="flex justify-between font-headline text-[10px] tracking-widest">
                               <span>{r.region}</span>
                               <span>{formatTrend(growth)} GROWTH</span>
                            </div>
@@ -181,21 +181,21 @@ export default function AdminAnalytics() {
                   ></div>
                   <div className="flex flex-col items-center">
                      <span className="font-brand text-6xl">{performanceIndex.toFixed(0)}%</span>
-                     <span className="font-headline text-[10px] uppercase tracking-widest opacity-40">Target Met</span>
+                     <span className="font-headline text-[10px] tracking-widest opacity-40">Target Met</span>
                   </div>
                </div>
-               <p className="mt-12 font-headline text-[10px] uppercase tracking-widest opacity-40 px-12 leading-relaxed">
+               <p className="mt-12 font-headline text-[10px] tracking-widest opacity-40 px-12 leading-relaxed">
                   {data?.notes || 'Global performance analytics unavailable. Awaiting live telemetry sync.'}
                </p>
             </div>
          </div>
 
          <div className="bg-[#ffffff] border border-primary p-8 md:p-10">
-            <h3 className="font-brand text-4xl uppercase tracking-widest border-b border-primary pb-6 mb-8">Product Intelligence</h3>
+            <h3 className="font-brand text-4xl tracking-widest border-b border-primary pb-6 mb-8">Product Intelligence</h3>
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                {productBlocks.map((block) => (
                   <section key={block.title} className="border border-primary bg-[#ffffff]/5 p-5">
-                     <h4 className="font-headline text-[10px] uppercase tracking-[0.25em] opacity-70 mb-4">{block.title}</h4>
+                     <h4 className="font-headline text-[10px] tracking-[0.25em] opacity-70 mb-4">{block.title}</h4>
                      {block.rows.length ? (
                         <div className="space-y-3">
                            {block.rows.map((item, idx) => (
@@ -208,8 +208,8 @@ export default function AdminAnalytics() {
                                     )}
                                  </div>
                                  <div className="flex-1 min-w-0">
-                                    <p className="font-headline text-[10px] uppercase tracking-widest truncate">{item.productName}</p>
-                                    <p className="font-headline text-[9px] uppercase tracking-[0.2em] opacity-40">ID {item.productId}</p>
+                                    <p className="font-headline text-[10px] tracking-widest truncate">{item.productName}</p>
+                                    <p className="font-headline text-[9px] tracking-[0.2em] opacity-40">ID {item.productId}</p>
                                  </div>
                                  <span className="font-brand text-2xl whitespace-nowrap">
                                     {block.title === 'BEST SELLING' ? `${currency}${item.metric.toFixed(2)}` : `${item.metric.toFixed(0)}`}
@@ -218,7 +218,7 @@ export default function AdminAnalytics() {
                            ))}
                         </div>
                      ) : (
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-40">No data available</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-40">No data available</p>
                      )}
                   </section>
                ))}

@@ -64,8 +64,8 @@ export default function AdminLayout({
               />
             </div>
           ) : null} */}
-          <h1 className="font-brand text-3xl tracking-tighter text-primary">{(settings.siteName || 'Amila Gold').toUpperCase()}</h1>
-          <p className="font-headline text-[9px] uppercase tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
+          <h1 className="font-brand text-3xl tracking-tighter text-primary">{settings.siteName || 'Amila Gold'}</h1>
+          <p className="font-headline text-[9px] tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>
 
         <nav className="flex-1 py-1 px-4 flex flex-col gap-1 overflow-y-auto">
@@ -73,7 +73,7 @@ export default function AdminLayout({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-4 px-4 py-4 font-headline text-[10px] uppercase tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-on-primary' : 'hover:bg-on-surface/5 opacity-60 hover:opacity-100'}`}
+              className={`flex items-center gap-4 px-4 py-4 font-headline text-[10px] tracking-widest transition-all ${pathname === item.href ? 'bg-primary text-on-primary' : 'hover:bg-on-surface/5 opacity-60 hover:opacity-100'}`}
             >
               <span className="material-symbols-outlined text-sm">{item.icon}</span>
               {item.name}
@@ -84,8 +84,8 @@ export default function AdminLayout({
         <div className="p-6 border-t border-outline/10 flex items-center gap-4 bg-surface-container">
           <div className="w-10 h-10 bg-primary flex items-center justify-center font-brand text-xs text-on-primary">SA</div>
           <div className="flex flex-col">
-            <span className="font-headline text-[10px] uppercase tracking-[0.1em] font-black">{username}</span>
-            <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">Admin</span>
+            <span className="font-headline text-[10px] tracking-[0.1em] font-black">{username}</span>
+            <span className="font-headline text-[9px] tracking-widest opacity-40">Admin</span>
           </div>
           <button onClick={handleLogout} className="ml-auto material-symbols-outlined text-sm opacity-60 hover:opacity-100" aria-label="Admin logout">logout</button>
         </div>

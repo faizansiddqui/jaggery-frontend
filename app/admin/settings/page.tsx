@@ -380,26 +380,26 @@ export default function AdminSettings() {
     return (
         <div className="flex flex-col gap-12">
             <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm uppercase tracking-[0.4em] text-[#b90c1b] font-black">SYSTEM PARAMETERS</span>
-                <h2 className="font-brand text-5xl md:text-7xl uppercase leading-none tracking-tighter">Portal Settings</h2>
+                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">SYSTEM PARAMETERS</span>
+                <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Portal Settings</h2>
             </header>
 
             {error && (
                 <div className="border border-primary bg-primary/10 px-4 py-3">
-                    <p className="font-headline text-[10px] uppercase tracking-widest text-primary">{error}</p>
+                    <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
                 </div>
             )}
 
             {message && (
                 <div className="border border-green-500/30 bg-green-500/10 px-4 py-3">
-                    <p className="font-headline text-[10px] uppercase tracking-widest text-green-300">{message}</p>
+                    <p className="font-headline text-[10px] tracking-widest text-green-300">{message}</p>
                 </div>
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 lg:items-start gap-12">
                 <div className="lg:col-span-8 flex flex-col gap-12">
                     <section className="flex flex-col gap-8 bg-[#ffffff] border border-primary/10 p-10">
-                        <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-primary/10 pb-6">Global Branding</h3>
+                        <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Global Branding</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <label className="flex flex-col gap-2">
                                 <span className="font-headline text-[9px] tracking-widest opacity-40">Store Name</span>
@@ -456,13 +456,13 @@ export default function AdminSettings() {
                         </div>
 
                         <div className="border border-primary/10 p-6 flex flex-col gap-4">
-                            <p className="font-headline text-[9px] uppercase tracking-[0.25em] opacity-50">Brand Logo</p>
+                            <p className="font-headline text-[9px] tracking-[0.25em] opacity-50">Brand Logo</p>
                             <div className="grid grid-cols-1 md:grid-cols-[140px_1fr_auto] gap-4 items-end">
                                 <div className="w-[140px] h-[140px] border border-outline/10 bg-surface-container flex items-center justify-center overflow-hidden">
                                     {activeLogoPreview ? (
                                         <Image src={activeLogoPreview} alt={form.siteName || 'brand logo'} width={240} height={120} unoptimized className="max-w-full max-h-full object-contain" />
                                     ) : (
-                                        <span className="font-headline text-[9px] uppercase tracking-widest opacity-40">No logo</span>
+                                        <span className="font-headline text-[9px] tracking-widest opacity-40">No logo</span>
                                     )}
                                 </div>
                                 <div className='flex items-start flex-col gap-9'>
@@ -473,14 +473,14 @@ export default function AdminSettings() {
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
-                                            className="bg-surface-container border border-outline/15 px-2 py-3 font-headline text-[10px] uppercase tracking-widest focus:outline-none focus:border-primary"
+                                            className="bg-surface-container border border-outline/15 px-2 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                                         />
                                     </label>
                                     <button
                                         type="button"
                                         onClick={onUploadLogo}
                                         disabled={uploadingLogo || !logoFile}
-                                        className="bg-primary text-white py-3 px-6 font-headline text-[11px] uppercase tracking-widest hover:bg-primary/30 disabled:opacity-40"
+                                        className="bg-primary text-white py-3 px-6 font-headline text-[11px] tracking-widest hover:bg-primary/30 disabled:opacity-40"
                                     >
                                         {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
                                     </button>
@@ -490,50 +490,50 @@ export default function AdminSettings() {
                     </section>
 
                     <section className="flex flex-col gap-8 bg-[#ffffff] border border-primary/10 p-10">
-                        <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-primary/10 pb-6">Social URLs</h3>
+                        <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Social URLs</h3>
                         <div className="grid grid-cols-1 gap-4">
-                            <label htmlFor="instagramUrl" className="font-headline text-[9px] uppercase tracking-widest opacity-40">Instagram URL</label>
+                            <label htmlFor="instagramUrl" className="font-headline text-[9px] tracking-widest opacity-40">Instagram URL</label>
                             <input autoComplete="off" value={form.instagramUrl} onChange={(e) => updateField('instagramUrl', e.target.value)} placeholder="Instagram URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                            <label htmlFor="youtubeUrl" className="font-headline text-[9px] uppercase tracking-widest opacity-40">YouTube URL</label>
+                            <label htmlFor="youtubeUrl" className="font-headline text-[9px] tracking-widest opacity-40">YouTube URL</label>
                             <input autoComplete="off" value={form.youtubeUrl} onChange={(e) => updateField('youtubeUrl', e.target.value)} placeholder="YouTube URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                            <label htmlFor="facebookUrl" className="font-headline text-[9px] uppercase tracking-widest opacity-40">Facebook URL</label>
+                            <label htmlFor="facebookUrl" className="font-headline text-[9px] tracking-widest opacity-40">Facebook URL</label>
                             <input autoComplete="off" value={form.facebookUrl} onChange={(e) => updateField('facebookUrl', e.target.value)} placeholder="Facebook URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                            <p className="font-headline text-[9px] uppercase tracking-widest opacity-40">Use secure URLs only (https://). Allowed domains: instagram.com, youtube.com/youtu.be, facebook.com</p>
+                            <p className="font-headline text-[9px] tracking-widest opacity-40">Use secure URLs only (https://). Allowed domains: instagram.com, youtube.com/youtu.be, facebook.com</p>
                         </div>
                     </section>
                 </div>
 
                 <div className="lg:col-span-4 lg:self-start lg:sticky lg:top-10 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-2 flex flex-col gap-8">
                     <section className="bg-[#ffffff] border border-primary/10 p-10 flex flex-col gap-6">
-                        <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-primary/10 pb-6">Security</h3>
+                        <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Security</h3>
                         <input autoComplete="off" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current Password" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
                         <input autoComplete="off" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New Password" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                        <button onClick={onResetPassword} disabled={resettingPassword || !currentPassword || !newPassword} className="border border-[#ffffff]/20 py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-[#ffffff]/10 disabled:opacity-40">
+                        <button onClick={onResetPassword} disabled={resettingPassword || !currentPassword || !newPassword} className="border border-[#ffffff]/20 py-3 font-headline text-[11px] tracking-widest hover:bg-[#ffffff]/10 disabled:opacity-40">
                             {resettingPassword ? 'Updating...' : 'Reset Admin Password'}
                         </button>
-                        <button onClick={onLogout} className="bg-primary text-white py-3 font-headline text-[11px] uppercase tracking-widest hover:bg-primary/30">
+                        <button onClick={onLogout} className="bg-primary text-white py-3 font-headline text-[11px] tracking-widest hover:bg-primary/30">
                             Logout Admin
                         </button>
                     </section>
 
                     <section className="bg-primary p-10 flex flex-col gap-6 text-white">
-                        <h3 className="font-brand text-3xl uppercase tracking-widest border-b border-white/20 pb-6">Runtime Preview</h3>
+                        <h3 className="font-brand text-3xl tracking-widest border-b border-white/20 pb-6">Runtime Preview</h3>
                         {activeLogoPreview ? (
                             <div className="w-full h-24 border border-white/20 bg-white/10 flex items-center justify-center overflow-hidden">
                                 <Image src={activeLogoPreview} alt={form.siteName || 'brand logo'} width={260} height={100} unoptimized className="max-w-full max-h-full object-contain" />
                             </div>
                         ) : null}
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Navbar: {form.navbarTitle || 'APEX THRILL'}</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Footer: {form.footerTitle || 'APEX THRILL'}</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Company Email: {form.companyEmail || 'not set'}</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Company Phone: {form.companyPhone || 'not set'}</p>
-                        <p className="font-headline text-[10px] uppercase tracking-widest opacity-80">Currency: {form.currencySymbol || '$'}</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-80">Navbar: {form.navbarTitle || 'APEX THRILL'}</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-80">Footer: {form.footerTitle || 'APEX THRILL'}</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-80">Company Email: {form.companyEmail || 'not set'}</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-80">Company Phone: {form.companyPhone || 'not set'}</p>
+                        <p className="font-headline text-[10px] tracking-widest opacity-80">Currency: {form.currencySymbol || '$'}</p>
                     </section>
                 </div>
             </div>
 
             <div className="flex justify-end">
-                <button onClick={onSave} disabled={loading || saving || !dirty} className="bg-[#ffffff] text-[#1c1b1b] px-12 py-6 font-brand text-2xl uppercase hover:bg-primary hover:text-[#ffffff] transition-all disabled:opacity-40">
+                <button onClick={onSave} disabled={loading || saving || !dirty} className="bg-[#ffffff] text-[#1c1b1b] px-12 py-6 font-brand text-2xl hover:bg-primary hover:text-[#ffffff] transition-all disabled:opacity-40">
                     {saving ? 'Saving...' : 'Commit Changes'}
                 </button>
             </div>

@@ -1,7 +1,7 @@
 export default function Comp3() {
   return (
     <>
-      <div className="flex items-center gap-2 mb-8 text-[10px] font-bold uppercase tracking-widest opacity-40">
+      <div className="flex items-center gap-2 mb-8 text-[10px] font-bold tracking-widest opacity-40">
         <span>Admin</span>
         <span
           className="material-symbols-outlined text-[10px]"
