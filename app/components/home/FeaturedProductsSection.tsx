@@ -120,13 +120,38 @@ export default function FeaturedProductsSection() {
   }, [mobileReady, products.length]);
 
   return (
-    <section className="px-3 md:px-0 py-5 lg:py-28 bg-surface-container-low">
+    <section className="px-3 md:px-0 py-5 lg:pb-20 lg:pt-20 bg-surface-container-low">
       <div className="container mx-auto px-2 lg:px-8">
         <div className="mb-4 lg:mb-10 text-center">
           <h2 className="font-headline text-6xl text-primary mt-4">Purest Offerings</h2>
         </div>
         {loading ? (
-          <ProductGridSkeleton count={3} />
+          <>
+            {/* Mobile loader: match horizontal carousel card sizing */}
+            <div className="md:hidden">
+              <div className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2" aria-label="Featured products loading">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="snap-start min-w-[82%] bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/40 animate-pulse"
+                  >
+                    <div className="aspect-square rounded-xl bg-surface-container-high mb-6" />
+                    <div className="h-6 rounded bg-surface-container-high w-5/6 mb-3" />
+                    <div className="h-4 rounded bg-surface-container-high w-full mb-5" />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="h-5 rounded bg-surface-container-high w-28" />
+                      <div className="w-11 h-11 rounded-full bg-surface-container-high" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop/tablet loader */}
+            <div className="hidden md:block">
+              <ProductGridSkeleton count={3} />
+            </div>
+          </>
         ) : error ? (
           <div className="text-center py-10 text-error">{error}</div>
         ) : (
