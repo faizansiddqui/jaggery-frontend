@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
@@ -17,7 +17,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const [selectedSize, setSelectedSize] = useState<string>(firstSize);
   const productId = product?.id ?? 0;
 
-  const { addItem, isVariantInCart, updateQty } = useCart();
+  const { items, addItem, isVariantInCart, updateQty } = useCart();
   const inCart = isVariantInCart(productId, selectedSize, "");
   const inWishlist = isInWishlist(productId);
 
@@ -45,8 +45,26 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const isOutOfStock = availableStock <= 0;
 
   const [qty, setQty] = useState<number>(1);
+  const [actionError, setActionError] = useState<string>("");
+  const actionsRef = useRef<HTMLDivElement | null>(null);
+  const [showSticky, setShowSticky] = useState(false);
+
+  useEffect(() => {
+    const el = actionsRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setShowSticky(!entry.isIntersecting);
+      },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const handleAddToCart = () => {
+    setActionError("");
     if (!product || productId <= 0 || isOutOfStock) return;
     if (inCart) {
       router.push("/cart");
@@ -73,6 +91,45 @@ export default function ProductHeader({ product }: { product?: Product | null })
     }
   };
 
+  const ensureVariantQty = (targetQty: number) => {
+    const safeTarget = Math.max(1, Math.floor(targetQty || 1));
+    const current = items.find((i) => i.id === productId && i.size === selectedSize && (i.color || "") === "");
+    const currentQty = current?.qty ?? 0;
+    const delta = safeTarget - currentQty;
+    if (delta !== 0 && currentQty > 0) {
+      updateQty(productId, selectedSize, delta, "");
+    }
+  };
+
+  const handleBuyNow = () => {
+    setActionError("");
+    if (!product || productId <= 0) return;
+    if (isOutOfStock) return;
+    if (qty > availableStock) {
+      setActionError(`Only ${availableStock} left in stock for ${selectedSize || "this variant"}.`);
+      return;
+    }
+
+    // Add if missing, then sync qty, then go to checkout/cart page.
+    if (!inCart) {
+      addItem({
+        id: productId,
+        name: product?.name ?? "Product",
+        price: displayPrice,
+        color: "",
+        size: selectedSize,
+        image: displayImage,
+        collection: product?.collection ?? "SHOP",
+      });
+    }
+
+    // Update to selected quantity (after addItem state settles).
+    window.setTimeout(() => {
+      ensureVariantQty(qty);
+      router.push("/cart");
+    }, 0);
+  };
+
   const handleWishlist = () => {
     if (!product || productId <= 0) return;
     toggle({
@@ -85,7 +142,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-start mt-1 lg:mt-8 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-start mt-1 lg:mt-8 w-full pb-24 md:pb-0">
       {/* Product Images */}
       <div className="lg:col-span-7 relative">
         <div className="rounded-xl overflow-hidden aspect-[4/5] bg-surface-container-low shadow-sm">
@@ -158,7 +215,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
           </div>
         </div>
 
-        <div className="pt-6 space-y-6 border-t border-outline-variant/20">
+        <div ref={actionsRef} className="pt-6 space-y-6 border-t border-outline-variant/20">
           <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="flex items-center justify-between w-full sm:w-auto bg-surface-container-highest rounded-full px-4 py-2">
                 <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="p-1 hover:text-primary transition-colors focus:outline-none">
@@ -186,6 +243,17 @@ export default function ProductHeader({ product }: { product?: Product | null })
             </button>
           </div>
 
+          {/* Mobile inline Buy Now (kept for visibility before sticky appears) */}
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            disabled={!product || productId <= 0 || isOutOfStock}
+            className="md:hidden w-full bg-secondary text-on-secondary py-4 rounded-full font-bold uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 flex justify-center items-center gap-3 shadow-lg shadow-secondary/20 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined icon-filled">bolt</span>
+            Buy Now
+          </button>
+
           <button
             type="button"
             onClick={handleWishlist}
@@ -202,8 +270,50 @@ export default function ProductHeader({ product }: { product?: Product | null })
             <span className="material-symbols-outlined text-secondary icon-filled">verified</span>
             Natural & Pure Guaranteed
           </div>
+
+          {actionError ? (
+            <div className="text-center text-xs font-bold uppercase tracking-widest text-error">
+              {actionError}
+            </div>
+          ) : null}
         </div>
       </div>
+
+      {/* Mobile sticky CTA bar */}
+      {product && productId > 0 ? (
+        <div
+          className={`md:hidden fixed left-0 right-0 bottom-0 z-40 transition-transform duration-300 ${showSticky ? "translate-y-0" : "translate-y-full"}`}
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          aria-hidden={!showSticky}
+        >
+          <div className="mx-auto max-w-screen-2xl">
+            <div className="bg-surface/90 backdrop-blur border border-outline-variant/40 shadow-2xl rounded-t-2xl p-3">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!product || productId <= 0 || isOutOfStock}
+                  className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-all active:scale-[0.99] flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined icon-filled">
+                    {isOutOfStock ? "block" : inCart ? "shopping_cart" : "add_shopping_cart"}
+                  </span>
+                  <span className="text-[11px]">Add</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  disabled={!product || productId <= 0 || isOutOfStock}
+                  className="w-full bg-secondary text-on-secondary py-4 rounded-xl font-bold uppercase tracking-widest hover:opacity-90 transition-all active:scale-[0.99] flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined icon-filled">bolt</span>
+                  <span className="text-[11px]">Buy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

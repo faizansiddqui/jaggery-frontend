@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/app/context/CartContext";
@@ -16,6 +16,10 @@ export default function FeaturedProductsSection() {
   const { addItem, isVariantInCart } = useCart();
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
+  const mobileTrackRef = useRef<HTMLDivElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const pauseUntilRef = useRef<number>(0);
+  const [mobileReady, setMobileReady] = useState(false);
 
   useEffect(() => {
     fetchFeaturedProducts()
@@ -36,8 +40,87 @@ export default function FeaturedProductsSection() {
     return words.slice(0, limit).join(" ") + "...";
   };
 
+  const mobileItems = useMemo(() => {
+    if (products.length === 0) return [];
+    // Duplicate for seamless looping
+    return [...products, ...products];
+  }, [products]);
+
+  useEffect(() => {
+    const el = mobileTrackRef.current;
+    if (!el) return;
+
+    const onResize = () => {
+      // Reset to start to avoid odd offsets on breakpoint changes
+      el.scrollLeft = 0;
+      setMobileReady(true);
+    };
+
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    const el = mobileTrackRef.current;
+    if (!el) return;
+    if (!mobileReady) return;
+    if (products.length < 2) return;
+
+    // Smooth continuous auto-scroll: ~1 card every 5s.
+    let lastT = performance.now();
+    const getStep = () => {
+      const first = el.querySelector<HTMLElement>("[data-feature-card]");
+      const cardW = first?.offsetWidth ?? Math.max(240, Math.floor(el.clientWidth * 0.82));
+      const gap = 16;
+      return cardW + gap;
+    };
+
+    const loop = (t: number) => {
+      const dt = Math.max(0, t - lastT);
+      lastT = t;
+
+      // Pause briefly when user interacts (touch/drag/scroll) to avoid fighting gestures.
+      if (t >= pauseUntilRef.current) {
+        const step = getStep();
+        const pxPerMs = step / 3000; // 3s per card
+        el.scrollLeft += dt * pxPerMs;
+
+        // Seamless reset at midpoint (duplicated list)
+        const half = el.scrollWidth / 2;
+        if (half > 0 && el.scrollLeft >= half) {
+          el.scrollLeft -= half;
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    const pause = (ms: number) => {
+      pauseUntilRef.current = performance.now() + ms;
+    };
+
+    const onUserIntent = () => pause(2000);
+    el.addEventListener("touchstart", onUserIntent, { passive: true });
+    el.addEventListener("touchmove", onUserIntent, { passive: true });
+    el.addEventListener("pointerdown", onUserIntent, { passive: true });
+    el.addEventListener("wheel", onUserIntent, { passive: true });
+    el.addEventListener("scroll", onUserIntent, { passive: true });
+
+    rafRef.current = requestAnimationFrame(loop);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      el.removeEventListener("touchstart", onUserIntent);
+      el.removeEventListener("touchmove", onUserIntent);
+      el.removeEventListener("pointerdown", onUserIntent);
+      el.removeEventListener("wheel", onUserIntent);
+      el.removeEventListener("scroll", onUserIntent);
+    };
+  }, [mobileReady, products.length]);
+
   return (
-    <section className="py-15 lg:py-28 bg-surface-container-low">
+    <section className="px-3 md:px-0 py-5 lg:py-28 bg-surface-container-low">
       <div className="container mx-auto px-2 lg:px-8">
         <div className="mb-4 lg:mb-10 text-center">
           <h2 className="font-headline text-6xl text-primary mt-4">Purest Offerings</h2>
@@ -47,84 +130,195 @@ export default function FeaturedProductsSection() {
         ) : error ? (
           <div className="text-center py-10 text-error">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-            {products.length === 0 ? (
-              <div className="col-span-3 text-center text-on-surface-variant">No products found.</div>
-            ) : (
-              products.map((product) => {
-                const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
+          <>
+            {/* Mobile: horizontal, scrollable, auto-scroll, infinite */}
+            <div className="md:hidden">
+              {products.length === 0 ? (
+                <div className="text-center text-on-surface-variant py-10">No products found.</div>
+              ) : (
+                <div
+                  ref={mobileTrackRef}
+                  className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2"
+                  aria-label="Featured products carousel"
+                >
+                  {mobileItems.map((product, idx) => {
+                    const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
+                    const displayPrice = Number(product.price ?? primary?.price ?? 0);
+                    const displayOriginal =
+                      typeof product.originalPrice === "number" && product.originalPrice > displayPrice
+                        ? product.originalPrice
+                        : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
+                          ? primary.originalPrice
+                          : undefined;
+                    const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
+                    const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
+                    const inCart = isVariantInCart(product.id, weightLabel || "");
 
-                // Use normalized product fields (product.price / product.originalPrice) as the source of truth.
-                const displayPrice = Number(product.price ?? primary?.price ?? 0);
-                const displayOriginal = (typeof product.originalPrice === "number" && product.originalPrice > displayPrice)
-                  ? product.originalPrice
-                  : (primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice ? primary.originalPrice : undefined);
+                    const handleAdd = () => {
+                      if (!inStock || inCart) return;
+                      addItem({
+                        id: product.id,
+                        name: product.name,
+                        price: displayPrice,
+                        color: "",
+                        size: weightLabel || "",
+                        image: product.image,
+                        collection: product.collection || "",
+                      });
+                    };
 
-                const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
-                const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
-                const inCart = isVariantInCart(product.id, weightLabel || "");
-
-                const handleAdd = () => {
-                  if (!inStock) return;
-                  addItem({
-                    id: product.id,
-                    name: product.name,
-                    price: displayPrice,
-                    color: "",
-                    size: weightLabel || "",
-                    image: product.image,
-                    collection: product.collection || "",
-                  });
-                };
-
-                return (
-                  <div
-                    key={product.id}
-                    className="group bg-surface rounded-xl p-6 transition-all hover:bg-surface-container-high shadow-sm"
-                  >
-                    <Link href={createProductHref(product)} className="block">
-                      <div className="aspect-square rounded-lg overflow-hidden mb-8 relative">
-                        {product.image ? (
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            unoptimized
-                            sizes="(min-width: 768px) 30vw, 90vw"
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-surface-container-high" />
-                        )}
-                      </div>
-                      <h3 className="font-headline text-2xl text-primary mb-2">{product.name}</h3>
-                      <p className="text-on-surface-variant mb-6 text-sm">{truncateWords(product.description, 4)}</p>
-                    </Link>
-                    <div className="space-y-1 mb-2">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-label text-lg font-bold text-secondary">{currencySymbol}{displayPrice}.00</span>
-                          {displayOriginal && displayOriginal > displayPrice && (
-                            <span className="font-body text-xs text-primary line-through">{currencySymbol}{displayOriginal}.00</span>
-                          )}
-                        </div>
-                        <div className="mt-4 flex items-center gap-3">
+                    return (
+                      <div
+                        key={`${product.id}-${idx}`}
+                        data-feature-card
+                        className="snap-start min-w-[82%] bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/40"
+                      >
+                        <Link href={createProductHref(product)} className="block">
+                          <div className="aspect-square rounded-xl overflow-hidden mb-6 relative bg-surface-container-high">
+                            {product.image ? (
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                unoptimized
+                                sizes="82vw"
+                                className="object-cover"
+                              />
+                            ) : null}
+                          </div>
+                          <h3 className="font-headline text-xl text-primary mb-2 leading-snug">{product.name}</h3>
+                          <p className="text-on-surface-variant mb-4 text-sm">{truncateWords(product.description, 6)}</p>
+                        </Link>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-label text-lg font-bold text-secondary">
+                              {currencySymbol}
+                              {displayPrice}.00
+                            </span>
+                            {displayOriginal && displayOriginal > displayPrice ? (
+                              <span className="font-body text-xs text-primary line-through">
+                                {currencySymbol}
+                                {displayOriginal}.00
+                              </span>
+                            ) : null}
+                          </div>
                           <button
+                            type="button"
                             onClick={handleAdd}
                             disabled={!inStock || inCart}
-                            className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all disabled:opacity-50"
+                            aria-label={inCart ? "Added to cart" : "Add to cart"}
+                            className="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all disabled:opacity-50"
                           >
-                            <span className="material-symbols-outlined text-sm">{inCart ? "check_circle" : "add_shopping_cart"}</span>
-                            {inCart ? "Added" : "Add"}
+                            <span className="material-symbols-outlined text-[22px]">
+                              {inCart ? "check" : "shopping_cart"}
+                            </span>
                           </button>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <style jsx global>{`
+              .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+
+            {/* Desktop/tablet: original grid */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+              {products.length === 0 ? (
+                <div className="col-span-3 text-center text-on-surface-variant">No products found.</div>
+              ) : (
+                products.map((product) => {
+                  const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
+
+                  // Use normalized product fields (product.price / product.originalPrice) as the source of truth.
+                  const displayPrice = Number(product.price ?? primary?.price ?? 0);
+                  const displayOriginal =
+                    typeof product.originalPrice === "number" && product.originalPrice > displayPrice
+                      ? product.originalPrice
+                      : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
+                        ? primary.originalPrice
+                        : undefined;
+
+                  const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
+                  const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
+                  const inCart = isVariantInCart(product.id, weightLabel || "");
+
+                  const handleAdd = () => {
+                    if (!inStock) return;
+                    addItem({
+                      id: product.id,
+                      name: product.name,
+                      price: displayPrice,
+                      color: "",
+                      size: weightLabel || "",
+                      image: product.image,
+                      collection: product.collection || "",
+                    });
+                  };
+
+                  return (
+                    <div
+                      key={product.id}
+                      className="group bg-surface rounded-xl p-6 transition-all hover:bg-surface-container-high shadow-sm"
+                    >
+                      <Link href={createProductHref(product)} className="block">
+                        <div className="aspect-square rounded-lg overflow-hidden mb-8 relative">
+                          {product.image ? (
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              unoptimized
+                              sizes="(min-width: 768px) 30vw, 90vw"
+                              className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 bg-surface-container-high" />
+                          )}
+                        </div>
+                        <h3 className="font-headline text-2xl text-primary mb-2">{product.name}</h3>
+                        <p className="text-on-surface-variant mb-6 text-sm">{truncateWords(product.description, 4)}</p>
+                      </Link>
+                      <div className="space-y-1 mb-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-label text-lg font-bold text-secondary">
+                              {currencySymbol}
+                              {displayPrice}.00
+                            </span>
+                            {displayOriginal && displayOriginal > displayPrice && (
+                              <span className="font-body text-xs text-primary line-through">
+                                {currencySymbol}
+                                {displayOriginal}.00
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-4 flex items-center gap-3">
+                            <button
+                              onClick={handleAdd}
+                              disabled={!inStock || inCart}
+                              className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all disabled:opacity-50"
+                            >
+                              <span className="material-symbols-outlined text-sm">{inCart ? "check_circle" : "add_shopping_cart"}</span>
+                              {inCart ? "Added" : "Add"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                  );
+                })
+              )}
+            </div>
+          </>
         )}
       </div>
     </section>

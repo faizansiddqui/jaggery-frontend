@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-// import Image from 'next/image';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { clearAdminSession, getAdminUsername } from '@/app/lib/adminSession';
 import { useRequireAdminSession } from '@/app/lib/guards';
@@ -48,11 +48,11 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="flex min-h-screen bg-background text-on-background">
+    <div className="admin-ui flex min-h-screen bg-background text-on-background">
       {/* Sidebar */}
       <aside className="w-64 border-r border-outline/10 flex flex-col fixed h-full bg-surface z-50">
         <div className="p-8 border-b border-outline/10">
-          {/* {settings.logoUrl ? (
+          {settings.logoUrl ? (
             <div className="mb-4 flex items-center">
               <Image
                 src={settings.logoUrl}
@@ -63,7 +63,7 @@ export default function AdminLayout({
                 className="h-10 w-auto object-contain"
               />
             </div>
-          ) : null} */}
+          ) : null}
           <h1 className="font-brand text-3xl tracking-tighter text-primary">{settings.siteName || 'Amila Gold'}</h1>
           <p className="font-headline text-[9px] tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>
@@ -87,7 +87,7 @@ export default function AdminLayout({
             <span className="font-headline text-[10px] tracking-[0.1em] font-black">{username}</span>
             <span className="font-headline text-[9px] tracking-widest opacity-40">Admin</span>
           </div>
-          <button onClick={handleLogout} className="ml-auto material-symbols-outlined text-sm opacity-60 hover:opacity-100" aria-label="Admin logout">logout</button>
+          <button onClick={handleLogout} className="icon-btn ml-auto material-symbols-outlined text-sm opacity-60 hover:opacity-100" aria-label="Admin logout">logout</button>
         </div>
       </aside>
 

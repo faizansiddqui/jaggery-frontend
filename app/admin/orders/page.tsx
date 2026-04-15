@@ -548,15 +548,15 @@ export default function OrdersManagement() {
                               {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                            </span>
                         </div>
-                     </div>
-
-                     <div className="flex flex-col min-w-[220px] z-10">
-                        <span className="font-headline text-[10px] font-black tracking-[0.2em] text-primary">Status</span>
-                        <div className="flex items-center gap-2 mt-2">
-                           <span className="material-symbols-outlined text-[12px]">{getStatusIcon(status)}</span>
-                           <span className="font-headline text-xs font-bold tracking-widest">{formatStatusLabel(status)}</span>
+                        <div className="flex flex-col min-w-[220px] z-10">
+                           <span className="font-headline text-[10px] font-black tracking-[0.2em] text-primary">Status</span>
+                           <div className="flex items-center gap-2 mt-2">
+                              <span className="material-symbols-outlined text-[12px]">{getStatusIcon(status)}</span>
+                              <span className="font-headline text-xs font-bold tracking-widest">{formatStatusLabel(status)}</span>
+                           </div>
                         </div>
                      </div>
+
                   </div>
                );
             })}
