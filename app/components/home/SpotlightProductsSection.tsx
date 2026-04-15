@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { createProductHref, type Product } from "@/app/data/products";
@@ -22,6 +23,7 @@ function discountPct(original: number | undefined, selling: number) {
 }
 
 export default function SpotlightProductsSection() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -161,7 +163,7 @@ export default function SpotlightProductsSection() {
                       ) : null}
                     </div>
 
-                    <div className="pt-3 lg:pt-4">
+                    <div className="pt-3 lg:pt-4 space-y-2">
                       <h3 className="font-headline text-[15px] lg:text-lg text-primary leading-snug line-clamp-2">
                         {product.name}
                       </h3>
@@ -178,34 +180,32 @@ export default function SpotlightProductsSection() {
                               </span>
                             ) : null}
                           </div>
-                          {/* {weightLabel ? (
-                            <div className="text-[10px] lg:text-xs text-on-surface-variant uppercase tracking-widest mt-1">
-                              {weightLabel}
-                            </div>
-                          ) : null} */}
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAdd();
-                          }}
-                          disabled={!inStock || inCart}
-                          aria-label={inCart ? "Added to cart" : "Add to cart"}
-                          className="shrink-0 w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all disabled:opacity-50 disabled:hover:opacity-50"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">
-                            {inCart ? "check" : "shopping_cart"}
-                          </span>
-                        </button>
                       </div>
-
-                      {/* {!inStock ? (
-                        <div className="mt-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest text-error">
-                          Out of stock
-                        </div>
-                      ) : null} */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (inCart) {
+                            router.push("/cart");
+                            return;
+                          }
+                          handleAdd();
+                        }}
+                        disabled={!inStock && !inCart}
+                        aria-label={inCart ? "Go to cart" : "Add to cart"}
+                        className="shrink-0 min-w-10 h-10 mt-3 lg:mt-0 rounded-full bg-primary text-on-primary flex items-center justify-center px-3 hover:opacity-90 transition-all disabled:opacity-50 disabled:hover:opacity-50"
+                      >
+                        {inCart ? (
+                          <>
+                            <span className="material-symbols-outlined text-[20px]">shopping_cart</span> <span className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Go to cart</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-[20px]">shopping_cart</span> <span className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Add to cart</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </Link>
                 </div>

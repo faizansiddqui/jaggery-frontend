@@ -98,7 +98,11 @@ export default function CartCheckoutPage() {
         <main className="min-h-screen pt-24 pb-5 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 overflow-x-hidden">
             <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <section className="flex-1 space-y-8 min-w-0 w-full overflow-x-hidden">
-                <header>
+                <header className="space-y-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-outline-variant/40 bg-surface-container-low px-3 py-1 text-xs text-on-surface-variant">
+                        <span className="material-symbols-outlined text-[15px] text-secondary">shopping_bag</span>
+                        Cart overview
+                    </div>
                     <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-primary">
                         Your Harvest Selection
                     </h1>
@@ -107,11 +111,14 @@ export default function CartCheckoutPage() {
 
                 <div className="space-y-6 w-full overflow-x-hidden">
                     {items.map((item) => (
-                        <div key={`${item.id}-${item.size}-${item.color}`} className="w-full max-w-full overflow-hidden bg-surface-container-low rounded-xl p-4 flex gap-4 sm:gap-6 items-start">
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 relative">
+                        <div
+                            key={`${item.id}-${item.size}-${item.color}`}
+                            className="group w-full max-w-full overflow-hidden bg-surface-container-low rounded-2xl border border-outline-variant/20 p-4 sm:p-5 flex gap-4 sm:gap-5 items-start shadow-sm hover:shadow-md hover:border-outline-variant/40 transition-all"
+                        >
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-surface-container-highest shrink-0 relative ring-1 ring-outline-variant/20">
                                 {productHrefById[item.id] ? (
                                     <Link href={productHrefById[item.id]} className="block w-full h-full relative" aria-label={`View ${item.name}`}>
-                                        <Image src={item.image} alt={item.name} fill unoptimized className="object-cover" sizes="96px" />
+                                        <Image src={item.image} alt={item.name} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="96px" />
                                     </Link>
                                 ) : (
                                     <Image src={item.image} alt={item.name} fill unoptimized className="object-cover" sizes="96px" />
@@ -121,49 +128,53 @@ export default function CartCheckoutPage() {
                             {(() => {
                                 const available = stockByCartKey[getCartKey(item.id, item.size, item.color || "")];
                                 const outOfStock = typeof available === "number" && available <= 0;
-                                const exceedsStock = typeof available === "number" && item.qty > available && available > 0;
                                 return (
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-headline text-lg sm:text-xl text-primary font-bold break-words">{item.name}</h3>
-                                <p className="text-on-surface-variant text-xs sm:text-sm font-label uppercase tracking-widest break-words">
+                                <h3 className="font-headline text-lg sm:text-xl text-primary font-bold leading-snug break-words">{item.name}</h3>
+                                <p className="text-on-surface-variant text-xs sm:text-sm font-label break-words mt-1">
                                     {item.size}{item.color ? ` • ${item.color}` : ""}
                                 </p>
                                 {outOfStock ? (
-                                    <p className="mt-2 text-[11px] uppercase tracking-widest font-bold text-error">Out of stock</p>
+                                    <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-error/10 text-error px-2 py-1 text-[11px] font-semibold">
+                                        <span className="material-symbols-outlined text-[14px]">error</span>
+                                        Out of stock
+                                    </p>
                                 ) : null}
 
-                                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-4 min-w-0">
-                                    <div className="flex items-center bg-surface-container-high rounded-full px-3 py-1 gap-4 w-fit max-w-full">
+                                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] items-center gap-3 mt-4 min-w-0">
+                                    <div className="flex items-center bg-surface-container-high rounded-full px-2 py-1.5 gap-2 w-fit max-w-full ring-1 ring-outline-variant/20">
                                         <button
                                             type="button"
                                             onClick={() => updateQty(item.id, item.size, -1, item.color)}
-                                            className="text-primary hover:text-secondary transition-colors"
+                                            className="w-8 h-8 rounded-full border border-outline-variant/30 text-primary hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center"
                                         >
                                             <span className="material-symbols-outlined text-sm">remove</span>
                                         </button>
-                                        <span className="font-body font-bold text-sm">{String(item.qty).padStart(2, "0")}</span>
+                                        <span className="font-body font-semibold text-sm min-w-8 text-center">{String(item.qty).padStart(2, "0")}</span>
                                         <button
                                             type="button"
                                             onClick={() => updateQty(item.id, item.size, 1, item.color)}
                                             disabled={outOfStock || (typeof available === "number" && item.qty >= available)}
-                                            className="text-primary hover:text-secondary transition-colors"
+                                            className="w-8 h-8 rounded-full border border-outline-variant/30 text-primary hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center disabled:opacity-50"
                                         >
                                             <span className="material-symbols-outlined text-sm">add</span>
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center justify-between gap-4 min-w-0">
-                                        <span className="font-headline text-lg sm:text-xl font-bold text-secondary">
-                                            {currencySymbol}{(item.price * item.qty).toFixed(2)}
-                                        </span>
+                                    <div className="flex items-center justify-between gap-3 min-w-0 sm:justify-end">
+                                        <div className="inline-flex items-center gap-2 bg-secondary/10 rounded-full px-3 py-1.5">
+                                            <span className="material-symbols-outlined text-[16px] text-secondary">payments</span>
+                                            <span className="font-headline text-lg sm:text-xl font-bold text-secondary">
+                                                {currencySymbol}{(item.price * item.qty).toFixed(2)}
+                                            </span>
+                                        </div>
                                         <button
                                             type="button"
                                             onClick={() => removeItem(item.id, item.size, item.color)}
-                                            className="text-on-surface-variant hover:text-secondary transition-colors"
+                                            className="w-9 h-9 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center shrink-0"
                                             aria-label={`Remove ${item.name}`}
                                         >
-                                            <span className="material-symbols-outlined">close</span>
-                                        </button>
+                                            <span className="material-symbols-outlined text-[18px]">delete</span>                                        </button>
                                     </div>
                                 </div>
                             </div>
