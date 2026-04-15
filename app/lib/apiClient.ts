@@ -1407,9 +1407,17 @@ export async function fetchAdminBanners(): Promise<AdminBanner[]> {
 }
 
 export async function fetchPublicBanners(): Promise<AdminBanner[]> {
-    const data = await request('/admin/banners/public');
-    const rows = Array.isArray(data.banners) ? data.banners : [];
-    return rows.map((entry) => mapBanner(entry));
+    const { cached } = await import('@/app/lib/clientCache');
+    return cached<AdminBanner[]>(
+        'banners:public',
+        5 * 60 * 1000,
+        async () => {
+            const data = await request('/admin/banners/public');
+            const rows = Array.isArray(data.banners) ? data.banners : [];
+            return rows.map((entry) => mapBanner(entry));
+        },
+        { allowStaleOnError: true }
+    );
 }
 
 export async function createAdminBanner(payload: {
