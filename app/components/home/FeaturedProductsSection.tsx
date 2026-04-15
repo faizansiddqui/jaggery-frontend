@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart } from "@/app/context/CartContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { createProductHref, type Product } from "@/app/data/products";
 import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
@@ -13,7 +12,6 @@ export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { addItem, isVariantInCart } = useCart();
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const mobileTrackRef = useRef<HTMLDivElement | null>(null);
@@ -123,7 +121,7 @@ export default function FeaturedProductsSection() {
     <section className="px-3 md:px-0 py-5 lg:pb-20 lg:pt-20 bg-surface-container-low">
       <div className="container mx-auto px-2 lg:px-8">
         <div className="mb-4 lg:mb-10 text-center">
-          <h2 className="font-headline text-6xl text-primary mt-4">Purest Offerings</h2>
+          <h2 className="font-headline text-4xl md:text-5xl text-left text-primary mt-4">Purest Offerings</h2>
         </div>
         {loading ? (
           <>
@@ -175,22 +173,7 @@ export default function FeaturedProductsSection() {
                         : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
                           ? primary.originalPrice
                           : undefined;
-                    const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
                     const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
-                    const inCart = isVariantInCart(product.id, weightLabel || "");
-
-                    const handleAdd = () => {
-                      if (!inStock || inCart) return;
-                      addItem({
-                        id: product.id,
-                        name: product.name,
-                        price: displayPrice,
-                        color: "",
-                        size: weightLabel || "",
-                        image: product.image,
-                        collection: product.collection || "",
-                      });
-                    };
 
                     return (
                       <div
@@ -227,18 +210,17 @@ export default function FeaturedProductsSection() {
                               </span>
                             ) : null}
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleAdd}
-                            disabled={!inStock || inCart}
-                            aria-label={inCart ? "Added to cart" : "Add to cart"}
-                            className="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center hover:opacity-90 transition-all disabled:opacity-50"
+                          <Link
+                            href={createProductHref(product)}
+                            aria-label="Book now"
+                            className="shrink-0 bg-primary text-on-primary px-5 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest hover:opacity-90 transition-all"
                           >
-                            <span className="material-symbols-outlined text-[22px]">
-                              {inCart ? "check" : "shopping_cart"}
-                            </span>
-                          </button>
+                            Book Now
+                          </Link>
                         </div>
+                        {!inStock ? (
+                          <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-error">Out of stock</div>
+                        ) : null}
                       </div>
                     );
                   })}
@@ -271,23 +253,6 @@ export default function FeaturedProductsSection() {
                       : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
                         ? primary.originalPrice
                         : undefined;
-
-                  const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
-                  const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
-                  const inCart = isVariantInCart(product.id, weightLabel || "");
-
-                  const handleAdd = () => {
-                    if (!inStock) return;
-                    addItem({
-                      id: product.id,
-                      name: product.name,
-                      price: displayPrice,
-                      color: "",
-                      size: weightLabel || "",
-                      image: product.image,
-                      collection: product.collection || "",
-                    });
-                  };
 
                   return (
                     <div
@@ -327,14 +292,13 @@ export default function FeaturedProductsSection() {
                             )}
                           </div>
                           <div className="mt-4 flex items-center gap-3">
-                            <button
-                              onClick={handleAdd}
-                              disabled={!inStock || inCart}
-                              className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-all disabled:opacity-50"
+                            <Link
+                              href={createProductHref(product)}
+                              className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all"
                             >
-                              <span className="material-symbols-outlined text-sm">{inCart ? "check_circle" : "add_shopping_cart"}</span>
-                              {inCart ? "Added" : "Add"}
-                            </button>
+                              <span className="material-symbols-outlined text-sm">event_available</span>
+                              Book Now
+                            </Link>
                           </div>
                         </div>
                       </div>

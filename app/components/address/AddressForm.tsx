@@ -28,13 +28,13 @@ function Field({
 }) {
     return (
         <label className="flex flex-col gap-2">
-            <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">{label}</span>
+            <span className="font-headline text-xs opacity-70">{label}</span>
             <input
                 type={type}
                 value={value}
                 placeholder={placeholder}
                 onChange={(event) => onChange(event.target.value)}
-                className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-primary"
+                className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-sm focus:outline-none focus:border-primary"
             />
         </label>
     );
@@ -152,11 +152,11 @@ export default function AddressForm({
                     />
                 </div>
                 <label className="flex flex-col gap-2">
-                    <span className="font-headline text-[10px] uppercase tracking-[0.2em] opacity-60">Address Type</span>
+                    <span className="font-headline text-xs opacity-70">Address Type</span>
                     <select
                         value={value.addressType}
                         onChange={(event) => setField('addressType', event.target.value)}
-                        className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-xs uppercase tracking-widest focus:outline-none focus:border-primary"
+                        className="bg-surface border border-outline-variant/30 rounded-xl px-4 py-3 font-headline text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="Home">Home</option>
                         <option value="Office">Office</option>
@@ -165,13 +165,13 @@ export default function AddressForm({
                 </label>
             </div>
 
-            {error && <p className="mt-4 font-headline text-[10px] uppercase tracking-widest text-error">{error}</p>}
+            {error && <p className="mt-4 font-headline text-sm text-error">{error}</p>}
 
             <div className="mt-5 flex flex-wrap gap-3">
                 <button
                     onClick={onSubmit}
                     disabled={busy}
-                    className="bg-primary text-on-primary px-5 py-3 rounded-full font-headline text-[10px] uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-70"
+                    className="bg-primary text-on-primary px-5 py-3 rounded-full font-headline text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-70"
                 >
                     {busy ? 'Saving...' : submitLabel}
                 </button>
@@ -179,7 +179,7 @@ export default function AddressForm({
                     <button
                         onClick={onCancel}
                         disabled={busy}
-                        className="border border-outline-variant/30 rounded-full px-5 py-3 font-headline text-[10px] uppercase tracking-widest hover:border-primary"
+                        className="border border-outline-variant/30 rounded-full px-5 py-3 font-headline text-sm hover:border-primary"
                     >
                         Cancel
                     </button>

@@ -126,7 +126,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
     // Update to selected quantity (after addItem state settles).
     window.setTimeout(() => {
       ensureVariantQty(qty);
-      router.push("/cart");
+      router.push("/checkout");
     }, 0);
   };
 

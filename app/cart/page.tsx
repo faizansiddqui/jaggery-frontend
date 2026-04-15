@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -7,90 +7,22 @@ import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import {
-    fetchUserAddresses,
-    createUserAddress,
-    updateUserAddress,
-    createBackendOrder,
-    verifyBackendPayment,
     type UserAddress,
-    type UserAddressInput,
 } from "@/app/lib/apiClient";
 import { fetchBackendProducts, stockForCartLine } from "@/app/lib/backendProducts";
 import { createProductHref } from "@/app/data/products";
-import AddressCard from "@/app/components/address/AddressCard";
-import AddressForm from "@/app/components/address/AddressForm";
-import AddressModal from "@/app/components/address/AddressModal";
-
-declare global {
-    interface Window {
-        Razorpay: new (options: Record<string, unknown>) => { open: () => void };
-    }
-}
 
 const SHIPPING = 0;
 
 export default function CartCheckoutPage() {
     const router = useRouter();
-    const { items, removeItem, updateQty, itemCount, clearCart } = useCart();
+    const { items, removeItem, updateQty, itemCount } = useCart();
     const { isAuthenticated, user } = useAuth();
     const { settings } = useSiteSettings();
     const currencySymbol = settings.currencySymbol || "₹";
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [addresses, setAddresses] = useState<UserAddress[]>([]);
-    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-    const [showAddAddress, setShowAddAddress] = useState(false);
-    const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
-    const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
-    const [addressError, setAddressError] = useState("");
-    const [paymentError, setPaymentError] = useState("");
     const [stockByCartKey, setStockByCartKey] = useState<Record<string, number>>({});
     const [productHrefById, setProductHrefById] = useState<Record<number, string>>({});
     const [isCheckingStock, setIsCheckingStock] = useState(false);
-    const [newAddress, setNewAddress] = useState<UserAddressInput>({
-        FullName: "",
-        phone1: "",
-        phone2: "",
-        address: "",
-        address_line2: "",
-        city: "",
-        state: "",
-        district: "",
-        pinCode: "",
-        country: "India",
-        addressType: "Home",
-    });
-
-    useEffect(() => {
-        const script = document.createElement("script");
-        script.src = "https://checkout.razorpay.com/v1/checkout.js";
-        script.async = true;
-        document.body.appendChild(script);
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
-
-    // Load addresses
-    useEffect(() => {
-        const loadAddresses = async () => {
-            if (!isAuthenticated) {
-                setIsLoadingAddresses(false);
-                return;
-            }
-            try {
-                const data = await fetchUserAddresses();
-                setAddresses(data);
-                if (data.length > 0) {
-                    setSelectedAddressId(data[0].address_id);
-                }
-            } catch (error) {
-                console.error("Failed to load addresses:", error);
-            } finally {
-                setIsLoadingAddresses(false);
-            }
-        };
-        loadAddresses();
-    }, [isAuthenticated]);
 
     useEffect(() => {
         let active = true;
@@ -147,157 +79,8 @@ export default function CartCheckoutPage() {
         return typeof available === "number" && (available <= 0 || item.qty > available);
     });
 
-    const resetAddressForm = () => {
-        setEditingAddressId(null);
-        setAddressError("");
-        setNewAddress({
-            FullName: "",
-            phone1: "",
-            phone2: "",
-            address: "",
-            address_line2: "",
-            city: "",
-            state: "",
-            district: "",
-            pinCode: "",
-            country: "India",
-            addressType: "Home",
-        });
-    };
-
-    const openEditAddress = (addr: UserAddress) => {
-        setEditingAddressId(addr.address_id);
-        setAddressError("");
-        setNewAddress({
-            FullName: addr.FullName || "",
-            phone1: addr.phone1 || "",
-            phone2: addr.phone2 || "",
-            address: addr.address || "",
-            address_line2: addr.address_line2 || "",
-            city: addr.city || "",
-            state: addr.state || "",
-            district: addr.district || "",
-            pinCode: addr.pinCode || "",
-            country: addr.country || "India",
-            addressType: addr.addressType || "Home",
-        });
-        setShowAddAddress(true);
-    };
-
-    const handleAddressSubmit = async () => {
-        if (!newAddress.FullName || !newAddress.phone1 || !newAddress.address || !newAddress.city || !newAddress.pinCode) {
-            setAddressError("Please fill all required fields.");
-            return;
-        }
-        try {
-            setAddressError("");
-            if (editingAddressId) {
-                const updated = await updateUserAddress(editingAddressId, newAddress);
-                setAddresses((prev) => prev.map((addr) => (addr.address_id === editingAddressId ? updated : addr)));
-                setSelectedAddressId(updated.address_id);
-            } else {
-                const created = await createUserAddress(newAddress);
-                setAddresses((prev) => [...prev, created]);
-                setSelectedAddressId(created.address_id);
-            }
-            setShowAddAddress(false);
-            resetAddressForm();
-        } catch {
-            setAddressError("Failed to save address.");
-        }
-    };
-
-    const handlePayment = async () => {
-        if (!itemCount || isProcessing) return;
-        if (isCheckingStock || hasStockIssue) {
-            setPaymentError("Some items are out of stock. Please update your cart to continue.");
-            return;
-        }
-
-        if (!selectedAddressId) {
-            alert("Please select a delivery address.");
-            return;
-        }
-
-        if (!isAuthenticated) {
-            alert("Please login to continue.");
-            router.push("/user/auth");
-            return;
-        }
-
-        setIsProcessing(true);
-        setPaymentError("");
-
-        try {
-            const data = await createBackendOrder(
-                items.map((item) => ({
-                    product_id: item.id,
-                    quantity: item.qty,
-                    size: item.size,
-                    color: item.color || "",
-                    price: item.price,
-                })),
-                selectedAddressId
-            ) as Record<string, unknown>;
-            const orderId = (data.order as Record<string, unknown>)?.id as string;
-            const localOrderId = String(data.local_order_id || "");
-            const razorpayRuntimeKey = String(data.key || "");
-            if (!orderId || !razorpayRuntimeKey) throw new Error("Razorpay is not configured yet.");
-
-            const selectedAddress = addresses.find(a => a.address_id === selectedAddressId);
-
-            const razorpay = new window.Razorpay({
-                key: razorpayRuntimeKey,
-                amount: Number(data.amount || Math.round(total * 100)),
-                currency: String(data.currency || "INR"),
-                name: "Amila Gold",
-                description: `${itemCount} items`,
-                order_id: orderId,
-                prefill: {
-                    name: selectedAddress?.FullName || "",
-                    email: user?.email || "",
-                    contact: selectedAddress?.phone1 || "",
-                },
-                theme: {
-                    color: "#1f4d1d",
-                },
-                handler: async (paymentResponse: Record<string, unknown>) => {
-                    try {
-                        const verifyData = await verifyBackendPayment({
-                            razorpay_order_id: String(paymentResponse.razorpay_order_id || ""),
-                            razorpay_payment_id: String(paymentResponse.razorpay_payment_id || ""),
-                            razorpay_signature: String(paymentResponse.razorpay_signature || ""),
-                            items: items.map((item) => ({
-                                product_id: item.id,
-                                quantity: item.qty,
-                                size: item.size,
-                                color: item.color || "",
-                                price: item.price,
-                            })),
-                            address_id: selectedAddressId || undefined,
-                            email: user?.email || "",
-                        }) as Record<string, unknown>;
-                        if (verifyData.status) {
-                            clearCart();
-                            router.push(`/order/success?order_id=${encodeURIComponent(String(verifyData.order_id || localOrderId || ""))}`);
-                        } else {
-                            router.push(`/order/failed?error=${encodeURIComponent(String(verifyData.message || "Payment verification failed"))}`);
-                        }
-                    } catch {
-                        router.push(`/order/failed?error=${encodeURIComponent("Payment verification failed")}`);
-                    }
-                },
-                modal: {
-                    ondismiss: () => setIsProcessing(false),
-                },
-            });
-
-            razorpay.open();
-        } catch (_error) {
-            setPaymentError(_error instanceof Error ? _error.message : "Payment could not be started. Please try again.");
-            setIsProcessing(false);
-        }
-    };
+    const canContinue = itemCount > 0 && !isCheckingStock && !hasStockIssue;
+    const totalLabel = useMemo(() => `${currencySymbol}${total.toFixed(2)}`, [currencySymbol, total]);
 
     if (!itemCount) {
         return (
@@ -315,7 +98,8 @@ export default function CartCheckoutPage() {
     }
 
     return (
-        <main className="min-h-screen pt-24 pb-12 flex flex-col lg:flex-row max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 gap-8 lg:gap-12">
+        <main className="min-h-screen pt-24 pb-28 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <section className="flex-1 space-y-8 min-w-0">
                 <header>
                     <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-primary">
@@ -412,98 +196,71 @@ export default function CartCheckoutPage() {
                 </div>
             </section>
 
-            <section data-lenis-prevent="true" className="flex-1 bg-surface-container-low lg:bg-surface-container rounded-3xl p-2 sm:p-8 lg:p-12 min-w-0 lg:sticky lg:top-32 self-start h-fit">
-                <div className="max-w-md mx-auto space-y-8">
-                    <h2 className="font-headline text-2xl text-primary font-bold">Select Delivery Address</h2>
-
-                    {!isAuthenticated ? (
-                        <div className="text-center py-8">
-                            <p className="text-on-surface-variant mb-4">Please login to continue</p>
-                            <Link href="/user/auth" className="inline-block bg-primary text-on-primary px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">
-                                Login to Continue
-                            </Link>
+            {/* Order summary (right sticky) */}
+            <aside className="w-full lg:w-[420px] lg:sticky lg:top-28 self-start">
+                <div className="bg-surface-container-low border border-outline-variant/20 rounded-3xl p-6 shadow-sm">
+                    <h2 className="font-headline text-2xl text-primary font-bold">Order Summary</h2>
+                    <div className="mt-6 space-y-3">
+                        <div className="flex justify-between text-on-surface-variant">
+                            <span>Subtotal</span>
+                            <span>{currencySymbol}{subtotal.toFixed(2)}</span>
                         </div>
-                    ) : isLoadingAddresses ? (
-                        <div className="text-center py-8">
-                            <div className="animate-pulse text-primary font-headline italic">Loading addresses...</div>
+                        <div className="flex justify-between text-on-surface-variant">
+                            <span>Shipping</span>
+                            <span>{currencySymbol}{SHIPPING.toFixed(2)}</span>
                         </div>
-                    ) : addresses.length === 0 ? (
-                        <div className="text-center py-8">
-                            <p className="text-on-surface-variant mb-4">No saved addresses found</p>
-                            <button
-                                onClick={() => {
-                                    resetAddressForm();
-                                    setShowAddAddress(true);
-                                }}
-                                className="inline-block bg-primary text-on-primary px-8 py-3 rounded-full text-sm font-bold uppercase tracking-widest hover:opacity-90 transition-opacity"
-                            >
-                                Add Address
-                            </button>
+                        <div className="pt-4 border-t border-outline-variant/20 flex justify-between items-baseline">
+                            <span className="font-headline text-xl font-bold text-primary">Total</span>
+                            <span className="font-headline text-2xl font-black text-secondary">{currencySymbol}{total.toFixed(2)}</span>
                         </div>
-                    ) : (
-                        <div className="space-y-4 max-h-[400px] overflow-y-auto scrollbar-hidden">
-                            {addresses.map((addr) => (
-                                <AddressCard
-                                    key={addr.address_id}
-                                    address={addr}
-                                    selected={selectedAddressId === addr.address_id}
-                                    onSelect={() => setSelectedAddressId(addr.address_id)}
-                                    onEdit={() => openEditAddress(addr)}
-                                />
-                            ))}
-
-                            <button
-                                onClick={() => {
-                                    resetAddressForm();
-                                    setShowAddAddress(true);
-                                }}
-                                className="w-full py-4 border-2 border-dashed border-outline-variant/50 rounded-xl text-on-surface-variant hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
-                            >
-                                <span className="material-symbols-outlined">add</span>
-                                Add New Address
-                            </button>
-                        </div>
-                    )}
-
-                    {addressError ? <p className="text-xs text-error">{addressError}</p> : null}
-                    {showAddAddress && (
-                        <AddressModal
-                            title={editingAddressId ? "Edit Address" : "Add New Address"}
-                            onClose={() => {
-                                setShowAddAddress(false);
-                                resetAddressForm();
-                            }}
-                        >
-                            <AddressForm
-                                value={newAddress}
-                                onChange={setNewAddress}
-                                onSubmit={handleAddressSubmit}
-                                onCancel={() => {
-                                    setShowAddAddress(false);
-                                    resetAddressForm();
-                                }}
-                                submitLabel={editingAddressId ? "Update Address" : "Save Address"}
-                                error={addressError}
-                            />
-                        </AddressModal>
-                    )}
+                    </div>
 
                     <button
                         type="button"
-                        onClick={handlePayment}
-                        disabled={isProcessing || !selectedAddressId || !isAuthenticated || isCheckingStock || hasStockIssue}
-                        className="w-full bg-primary text-on-primary py-4 rounded-full font-headline text-lg font-bold tracking-wide hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                router.push("/user/auth");
+                                return;
+                            }
+                            router.push("/checkout");
+                        }}
+                        disabled={!canContinue}
+                        className="mt-6 w-full bg-primary text-on-primary py-4 rounded-full font-headline text-lg font-bold tracking-wide hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl"
                     >
-                        <span className="material-symbols-outlined">credit_card</span>
-                        <span>{isProcessing ? "Processing..." : isCheckingStock ? "Verifying stock..." : hasStockIssue ? "Stock issue in cart" : `Pay ${currencySymbol}${total.toFixed(2)}`}</span>
+                        <span className="material-symbols-outlined">arrow_forward</span>
+                        <span>{isCheckingStock ? "Verifying stock..." : hasStockIssue ? "Stock issue in cart" : "Continue"}</span>
                     </button>
 
-                    <p className="text-center text-on-surface-variant text-xs font-body">
-                        Secure checkout via Razorpay
+                    <p className="text-center text-on-surface-variant text-xs font-body mt-3">
+                        Next: delivery address & payment
                     </p>
-                    {paymentError ? <p className="text-center text-xs text-error">{paymentError}</p> : null}
                 </div>
-            </section>
+            </aside>
+            </div>
+
+            {/* Mobile sticky bottom summary */}
+            <div className="lg:hidden fixed left-0 right-0 bottom-0 z-40 bg-surface/90 backdrop-blur border-t border-outline-variant/20">
+                <div className="max-w-[1440px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                        <div className="text-[11px] text-on-surface-variant">Total</div>
+                        <div className="font-headline text-lg font-black text-secondary truncate">{totalLabel}</div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                router.push("/user/auth");
+                                return;
+                            }
+                            router.push("/checkout");
+                        }}
+                        disabled={!canContinue}
+                        className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold uppercase tracking-widest text-xs disabled:opacity-60"
+                    >
+                        Continue
+                    </button>
+                </div>
+            </div>
         </main>
     );
 }

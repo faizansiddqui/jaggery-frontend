@@ -16,28 +16,28 @@ export default function AddressCard({ address, selected, onSelect, onEdit }: Add
         >
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <p className="font-brand text-2xl uppercase leading-none">{address.FullName}</p>
-                    <p className="mt-2 font-headline text-[10px] uppercase tracking-widest opacity-60">{address.addressType || 'Home'}</p>
+                    <p className="font-brand text-2xl leading-none">{address.FullName}</p>
+                    <p className="mt-2 font-headline text-xs opacity-60">{address.addressType || 'Home'}</p>
                 </div>
                 {selected && <span className="material-symbols-outlined text-[#b90c1b]">check_circle</span>}
             </div>
 
-            <p className="mt-3 font-headline text-[10px] uppercase tracking-widest opacity-70 leading-relaxed">
+            <p className="mt-3 font-headline text-sm opacity-70 leading-relaxed">
                 {address.address}
                 {address.address_line2 ? `, ${address.address_line2}` : ''}, {address.city}, {address.state}, {address.country} {address.pinCode}
             </p>
-            <p className="mt-2 font-headline text-[10px] uppercase tracking-widest opacity-50">{address.phone1}</p>
+            <p className="mt-2 font-headline text-sm opacity-60">{address.phone1}</p>
 
             <div className="mt-4 flex gap-2">
                 <button
                     onClick={onSelect}
-                    className={`px-3 py-2 rounded-full font-headline text-[10px] uppercase tracking-widest transition-colors ${selected ? 'bg-primary text-on-primary' : 'border border-outline-variant/30 hover:border-primary'}`}
+                    className={`px-4 py-2 rounded-full font-headline text-sm transition-colors ${selected ? 'bg-primary text-on-primary' : 'border border-outline-variant/30 hover:border-primary'}`}
                 >
                     {selected ? 'Selected' : 'Use This'}
                 </button>
                 <button
                     onClick={onEdit}
-                    className="px-3 py-2 rounded-full border border-outline-variant/30 font-headline text-[10px] uppercase tracking-widest hover:border-primary"
+                    className="px-4 py-2 rounded-full border border-outline-variant/30 font-headline text-sm hover:border-primary"
                 >
                     Edit
                 </button>

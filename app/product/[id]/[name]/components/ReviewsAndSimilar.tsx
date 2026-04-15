@@ -93,7 +93,7 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
           )
           : [];
 
-        const selected = (sameCollection.length ? sameCollection : basePool).slice(0, 8);
+        const selected = (sameCollection.length ? sameCollection : basePool);
         setSimilarProducts(selected);
       } catch {
         setSimilarProducts([]);
