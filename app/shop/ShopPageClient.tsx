@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart } from "@/app/context/CartContext";
+import { useRouter } from "next/navigation";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
 import { fetchBackendProducts } from "@/app/lib/backendProducts";
@@ -28,7 +28,7 @@ const sortOptions = [
 ];
 
 export default function ShopPageClient() {
-  const { addItem, isVariantInCart } = useCart();
+  const router = useRouter();
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const [products, setProducts] = useState<Product[]>([]);
@@ -102,20 +102,6 @@ export default function ShopPageClient() {
   const [maxPrice, setMaxPrice] = useState<number>(1000);
 
   const AVAILABLE_WEIGHTS = useMemo(() => collectWeightOptions(products), [products]);
-
-  const handleAddToCart = (product: Product) => {
-    const rv = resolveListingVariant(product, selectedWeights);
-    if (rv.stock <= 0) return;
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: rv.price,
-      color: "",
-      size: rv.label,
-      image: rv.image,
-      collection: product.collection || "SHOP COLLECTION",
-    });
-  };
 
   const toggleWeight = (w: string) => {
     setSelectedWeights((prev) =>
@@ -455,8 +441,6 @@ export default function ShopPageClient() {
                     <article className="group relative">
                       {(() => {
                         const rv = resolveListingVariant(p, selectedWeights);
-                        const inCart = isVariantInCart(p.id, rv.label, "");
-                        const outOfStock = rv.stock <= 0;
                         return (
                           <>
                       <div className="relative mb-6 overflow-hidden rounded-xl bg-surface-container-high aspect-[4/5]">
@@ -486,15 +470,12 @@ export default function ShopPageClient() {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          handleAddToCart(p);
+                          router.push(createProductHref(p));
                         }}
-                        disabled={inCart || outOfStock}
-                        className={`w-full py-3 rounded-full font-label text-sm uppercase tracking-widest transition-colors flex items-center justify-center gap-2 ${inCart || outOfStock ? "bg-primary text-white border-[1.5px] border-primary disabled:opacity-75" : "border-[1.5px] border-secondary text-secondary hover:bg-secondary/10"}`}
+                        className="w-full py-3 rounded-full font-label text-sm uppercase tracking-widest transition-colors flex items-center justify-center gap-2 border-[1.5px] border-secondary text-secondary hover:bg-secondary/10"
                       >
-                        <span className="material-symbols-outlined text-[18px]">
-                          {outOfStock ? "block" : inCart ? "done" : "add_shopping_cart"}
-                        </span>
-                        {outOfStock ? "Out of Stock" : inCart ? "Added to Cart" : "Add to Cart"}
+                        <span className="material-symbols-outlined text-[18px]">event_available</span>
+                        Book Now
                       </button>
                           </>
                         );

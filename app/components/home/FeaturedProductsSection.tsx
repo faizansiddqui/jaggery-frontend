@@ -236,9 +236,9 @@ export default function FeaturedProductsSection() {
                             Book Now
                           </Link>
                         </div>
-                        {!inStock ? (
+                        {/* {!inStock ? (
                           <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-error">Out of stock</div>
-                        ) : null}
+                        ) : null} */}
                       </div>
                     );
                   })}

@@ -95,7 +95,16 @@
   }
 
   .serif-italic {
-    font-style: italic;
+    font-style: normal;
+  }
+
+  /* Keep typography cleaner / less cursive across site */
+  .font-headline,
+  .font-brand,
+  .italic,
+  em,
+  i {
+    font-style: normal !important;
   }
 }
 

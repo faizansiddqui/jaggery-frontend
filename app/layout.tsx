@@ -9,7 +9,7 @@ const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-headline",
   display: "swap",
-  style: ["normal", "italic"],
+  style: ["normal"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 

@@ -2,7 +2,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/app/context/CartContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import ReviewFormModal from "./review/ReviewFormModal";
 import { fetchBackendProducts } from "@/app/lib/backendProducts";
@@ -27,7 +26,6 @@ const formatDateLabel = (value?: string) => {
 };
 
 export default function ReviewsAndSimilar({ product }: { product?: Product | null }) {
-  const { addItem, isVariantInCart } = useCart();
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -120,18 +118,6 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleAddToCart = (item: Product) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      price: Number(item.price || 0),
-      color: "",
-      size: "Default",
-      image: item.image || "",
-      collection: item.collection || "SIMILAR COLLECTIONS",
-    });
   };
 
   const renderStars = (rating: number) => {
@@ -228,18 +214,13 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
                   <span className="font-body text-xs text-on-surface-variant line-through">{currencySymbol}{Number(item.originalPrice).toFixed(2)}</span>
                 )}
               </div>
-              <button
-                type="button"
-                onClick={() => handleAddToCart(item)}
-                disabled={isVariantInCart(item.id, "Default", "")}
-                className={`mt-6 w-full py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all active:scale-95 border-[1.5px] flex items-center justify-center gap-2 ${isVariantInCart(item.id, "Default", "") ? "border-primary bg-primary text-on-primary disabled:opacity-75" : "border-primary text-primary hover:bg-primary hover:text-on-primary"
-                  }`}
+              <Link
+                href={createProductHref(item)}
+                className="mt-6 w-full py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all active:scale-95 border-[1.5px] flex items-center justify-center gap-2 border-primary text-primary hover:bg-primary hover:text-on-primary"
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  {isVariantInCart(item.id, "Default", "") ? "done" : "add_shopping_cart"}
-                </span>
-                {isVariantInCart(item.id, "Default", "") ? "Added" : "Add to Cart"}
-              </button>
+                <span className="material-symbols-outlined text-[16px]">event_available</span>
+                Book Now
+              </Link>
             </div>
           ))}
           {similarProducts.length === 0 && (

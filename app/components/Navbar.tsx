@@ -189,6 +189,19 @@ export default function Navbar() {
               <span className="font-headline text-lg font-bold tracking-tight">{isAuthenticated ? 'My Profile' : 'Sign In'}</span>
             </Link>
 
+            <Link
+              href="/cart"
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                }`}
+              style={{ transitionDelay: sidebarOpen ? `${(NAV_LINKS.length + 1) * 55 + 100}ms` : "0ms" }}
+            >
+              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">shopping_cart</span>
+              <span className="font-headline text-lg font-bold tracking-tight">
+                Cart {stableCartCount > 0 && <span className="ml-1 bg-secondary text-white text-[10px] px-1.5 py-0.5 rounded-full">{stableCartCount}</span>}
+              </span>
+            </Link>
+
             {/* Logout link (only when authenticated) */}
             {isAuthenticated && (
               <button
@@ -204,19 +217,6 @@ export default function Navbar() {
                 <span className="font-headline text-lg font-bold tracking-tight">Sign Out</span>
               </button>
             )}
-
-            <Link
-              href="/cart"
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl text-on-surface hover:bg-surface-container hover:text-primary transition-all duration-200 group ${sidebarOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
-                }`}
-              style={{ transitionDelay: sidebarOpen ? `${(NAV_LINKS.length + 1) * 55 + 100}ms` : "0ms" }}
-            >
-              <span className="material-symbols-outlined text-[20px] text-secondary group-hover:text-primary transition-colors">shopping_cart</span>
-              <span className="font-headline text-lg font-bold tracking-tight">
-                Cart {stableCartCount > 0 && <span className="ml-1 bg-secondary text-white text-[10px] px-1.5 py-0.5 rounded-full">{stableCartCount}</span>}
-              </span>
-            </Link>
           </nav>
 
           {/* Sidebar Footer */}

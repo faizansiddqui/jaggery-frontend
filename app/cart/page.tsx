@@ -6,9 +6,6 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
-import {
-    type UserAddress,
-} from "@/app/lib/apiClient";
 import { fetchBackendProducts, stockForCartLine } from "@/app/lib/backendProducts";
 import { createProductHref } from "@/app/data/products";
 
@@ -17,7 +14,7 @@ const SHIPPING = 0;
 export default function CartCheckoutPage() {
     const router = useRouter();
     const { items, removeItem, updateQty, itemCount } = useCart();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated } = useAuth();
     const { settings } = useSiteSettings();
     const currencySymbol = settings.currencySymbol || "₹";
     const [stockByCartKey, setStockByCartKey] = useState<Record<string, number>>({});
@@ -98,9 +95,9 @@ export default function CartCheckoutPage() {
     }
 
     return (
-        <main className="min-h-screen pt-24 pb-28 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
+        <main className="min-h-screen pt-24 pb-5 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 overflow-x-hidden">
             <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-            <section className="flex-1 space-y-8 min-w-0">
+            <section className="flex-1 space-y-8 min-w-0 w-full overflow-x-hidden">
                 <header>
                     <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-primary">
                         Your Harvest Selection
@@ -108,9 +105,9 @@ export default function CartCheckoutPage() {
                     <p className="mt-2 text-on-surface-variant font-body">{itemCount} items in your cart.</p>
                 </header>
 
-                <div className="space-y-6">
+                <div className="space-y-6 w-full overflow-x-hidden">
                     {items.map((item) => (
-                        <div key={`${item.id}-${item.size}-${item.color}`} className="bg-surface-container-low rounded-xl p-4 flex gap-4 sm:gap-6 items-start">
+                        <div key={`${item.id}-${item.size}-${item.color}`} className="w-full max-w-full overflow-hidden bg-surface-container-low rounded-xl p-4 flex gap-4 sm:gap-6 items-start">
                             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-surface-container-highest shrink-0 relative">
                                 {productHrefById[item.id] ? (
                                     <Link href={productHrefById[item.id]} className="block w-full h-full relative" aria-label={`View ${item.name}`}>
@@ -133,14 +130,10 @@ export default function CartCheckoutPage() {
                                 </p>
                                 {outOfStock ? (
                                     <p className="mt-2 text-[11px] uppercase tracking-widest font-bold text-error">Out of stock</p>
-                                ) : exceedsStock ? (
-                                    <p className="mt-2 text-[11px] uppercase tracking-widest font-bold text-error">Only {available} left in stock</p>
-                                ) : typeof available === "number" ? (
-                                    <p className="mt-2 text-[11px] uppercase tracking-widest font-bold text-primary/70">{available} in stock</p>
                                 ) : null}
 
-                                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-4">
-                                    <div className="flex items-center bg-surface-container-high rounded-full px-3 py-1 gap-4 w-fit">
+                                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-4 min-w-0">
+                                    <div className="flex items-center bg-surface-container-high rounded-full px-3 py-1 gap-4 w-fit max-w-full">
                                         <button
                                             type="button"
                                             onClick={() => updateQty(item.id, item.size, -1, item.color)}
@@ -159,7 +152,7 @@ export default function CartCheckoutPage() {
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center justify-between gap-4 min-w-0">
                                         <span className="font-headline text-lg sm:text-xl font-bold text-secondary">
                                             {currencySymbol}{(item.price * item.qty).toFixed(2)}
                                         </span>
@@ -178,21 +171,6 @@ export default function CartCheckoutPage() {
                             })()}
                         </div>
                     ))}
-                </div>
-
-                <div className="pt-8 border-t border-outline-variant/20 space-y-4">
-                    <div className="flex justify-between font-body text-on-surface-variant">
-                        <span>Subtotal</span>
-                        <span>{currencySymbol}{subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between font-body text-on-surface-variant">
-                        <span>Shipping</span>
-                        <span>{currencySymbol}{SHIPPING.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between items-baseline pt-4 border-t border-outline-variant/20">
-                        <span className="font-headline text-2xl text-primary font-bold">Total</span>
-                        <span className="font-headline text-3xl text-secondary font-black">{currencySymbol}{total.toFixed(2)}</span>
-                    </div>
                 </div>
             </section>
 
@@ -227,8 +205,8 @@ export default function CartCheckoutPage() {
                         disabled={!canContinue}
                         className="mt-6 w-full bg-primary text-on-primary py-4 rounded-full font-headline text-lg font-bold tracking-wide hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl"
                     >
-                        <span className="material-symbols-outlined">arrow_forward</span>
                         <span>{isCheckingStock ? "Verifying stock..." : hasStockIssue ? "Stock issue in cart" : "Continue"}</span>
+                        <span className="material-symbols-outlined">arrow_forward</span>
                     </button>
 
                     <p className="text-center text-on-surface-variant text-xs font-body mt-3">
@@ -257,6 +235,7 @@ export default function CartCheckoutPage() {
                         disabled={!canContinue}
                         className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold uppercase tracking-widest text-xs disabled:opacity-60"
                     >
+                        
                         Continue
                     </button>
                 </div>

@@ -239,7 +239,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
               <span className="material-symbols-outlined icon-filled">
                 {isOutOfStock ? "block" : inCart ? "shopping_cart" : "add_shopping_cart"}
               </span>
-              {isOutOfStock ? "Out of Stock" : inCart ? "Added to Cart" : "Add to Cart"}
+              {isOutOfStock ? "Out of Stock" : inCart ? "Go to Cart" : "Add to Cart"}
             </button>
           </div>
 
@@ -298,7 +298,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
                   <span className="material-symbols-outlined icon-filled">
                     {isOutOfStock ? "block" : inCart ? "shopping_cart" : "add_shopping_cart"}
                   </span>
-                  <span className="text-[11px]">Add</span>
+                  <span className="text-[11px]">{inCart ? "Go to cart" : "Add"}</span>
                 </button>
                 <button
                   type="button"

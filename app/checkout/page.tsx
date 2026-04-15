@@ -307,7 +307,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen pt-24 pb-5 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
+    <main className="min-h-screen pt-24 pb-5 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 overflow-x-hidden">
       <div className="flex items-start justify-between gap-8 lg:gap-12 flex-col lg:flex-row">
         <section className="flex-1 min-w-0 space-y-6">
           <header className="flex items-end justify-between gap-6">
@@ -337,16 +337,6 @@ export default function CheckoutPage() {
               {addresses.length === 0 ? (
                 <div className="bg-surface-container-low border border-outline-variant/20 rounded-3xl p-8 text-center">
                   <p className="text-on-surface-variant mb-4">No saved addresses found</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetAddressForm();
-                      setShowAddAddress(true);
-                    }}
-                    className="bg-primary text-on-primary px-8 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-opacity"
-                  >
-                    Add address
-                  </button>
                 </div>
               ) : (
                 <div className="space-y-4 max-h-[400px] md:max-h-full overflow-y-auto hide-scrollbar overflow-y-auto md:grid md:grid-cols-2 gap-4" data-lenis-prevent="true">

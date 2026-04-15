@@ -33,7 +33,7 @@ export default function UserAuthPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-24 bg-surface">
+    <main className="min-h-[10vh] md:min-h-screen flex items-center justify-center px-6 py-4 md:py-15 bg-surface">
       <div className="w-full max-w-md">
         <AuthHeader loginStep={loginStep} loginEmail={loginEmail} />
 

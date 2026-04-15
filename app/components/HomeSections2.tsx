@@ -151,29 +151,9 @@ function TestimonialsSection() {
   return (
     <section className="py-15 lg:py-20 bg-surface">
       <div className="container mx-auto px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-          <h2 className="font-headline text-5xl text-primary max-w-lg leading-tight">
-            Shared Stories from the Modern Agrarian Table
-          </h2>
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => handleSlide("prev")}
-              className="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-              aria-label="Previous testimonials"
-            >
-              <span className="material-symbols-outlined">west</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSlide("next")}
-              className="w-14 h-14 rounded-full border border-outline-variant flex items-center justify-center hover:bg-primary hover:text-white transition-all"
-              aria-label="Next testimonials"
-            >
-              <span className="material-symbols-outlined">east</span>
-            </button>
-          </div>
-        </div>
+        <h2 className="font-headline text-5xl text-primary max-w-lg leading-tight">
+          Shared Stories from the Modern Agrarian Table
+        </h2>
         <div
           ref={testimonialsRef}
           className="flex gap-12 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mx-8 px-8"

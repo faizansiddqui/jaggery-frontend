@@ -201,11 +201,11 @@ export default function SpotlightProductsSection() {
                         </button>
                       </div>
 
-                      {!inStock ? (
+                      {/* {!inStock ? (
                         <div className="mt-2 text-[10px] lg:text-xs font-bold uppercase tracking-widest text-error">
                           Out of stock
                         </div>
-                      ) : null}
+                      ) : null} */}
                     </div>
                   </Link>
                 </div>

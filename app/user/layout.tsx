@@ -25,16 +25,16 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   ];
 
   return (
-    <main className="max-w-screen-2xl mx-auto px-6 md:px-12 py-24 md:py-32 flex flex-col md:flex-row gap-8 md:gap-12 lg:gap-16 pb-32 md:pb-12 min-h-screen">
+    <main className="max-w-screen-2xl mx-auto px-6 md:px-12 py-10 md:py-15 flex flex-col md:flex-row gap-8 md:gap-12 pb-5 md:pb-15 min-h-screen">
       {/* Sidebar Navigation */}
       <aside className="w-full md:w-64 shrink-0 md:space-y-12">
         <div className="md:sticky top-32">
-          <div className="mb-4 md:mb-8">
+          {/* <div className="mb-4 md:mb-8">
             <h1 className="font-headline text-3xl lg:text-4xl font-bold italic tracking-tight text-primary mb-2">
               Welcome, {user?.email?.split('@')[0] || 'User'}
             </h1>
             <p className="text-on-surface-variant text-xs lg:text-sm font-label uppercase tracking-wider">{user?.email}</p>
-          </div>
+          </div> */}
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex flex-col gap-6">
