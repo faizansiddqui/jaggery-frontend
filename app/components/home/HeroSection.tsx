@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fetchPublicBanners } from "@/app/lib/apiClient";
+import { peekCached } from "@/app/lib/clientCache";
 
 export default function HeroSection() {
   const [banners, setBanners] = useState<Array<{ id: string; title: string; subtitle: string; href: string; img: string }>>([]);
@@ -13,6 +14,20 @@ export default function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const cached = peekCached<any[]>("banners:public").data;
+    if (Array.isArray(cached) && cached.length) {
+      setBanners(
+        cached
+          .filter((row) => row.imageUrl && row.targetUrl && row.title && row.subtitle)
+          .map((row) => ({
+            id: row.id,
+            title: row.title,
+            subtitle: row.subtitle,
+            href: row.targetUrl,
+            img: row.imageUrl,
+          }))
+      );
+    }
     fetchPublicBanners()
       .then((rows) => {
         setBanners(

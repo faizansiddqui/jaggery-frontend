@@ -7,6 +7,7 @@ import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { createProductHref, type Product } from "@/app/data/products";
 import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
 import { fetchFeaturedProducts } from "@/app/lib/productsClient";
+import { peekCached } from "@/app/lib/clientCache";
 
 export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -15,11 +16,20 @@ export default function FeaturedProductsSection() {
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const mobileTrackRef = useRef<HTMLDivElement | null>(null);
-  const rafRef = useRef<number | null>(null);
   const pauseUntilRef = useRef<number>(0);
+  const intervalRef = useRef<number | null>(null);
   const [mobileReady, setMobileReady] = useState(false);
 
   useEffect(() => {
+    // Hydrate from cache after mount to avoid SSR hydration mismatch.
+    window.setTimeout(() => {
+      const cached = peekCached<Product[]>("products:all").data;
+      if (Array.isArray(cached) && cached.length) {
+        setProducts(cached);
+        setLoading(false);
+      }
+    }, 0);
+
     fetchFeaturedProducts()
       .then((data) => {
         setProducts(data);
@@ -65,8 +75,6 @@ export default function FeaturedProductsSection() {
     if (!mobileReady) return;
     if (products.length < 2) return;
 
-    // Smooth continuous auto-scroll: ~1 card every 5s.
-    let lastT = performance.now();
     const getStep = () => {
       const first = el.querySelector<HTMLElement>("[data-feature-card]");
       const cardW = first?.offsetWidth ?? Math.max(240, Math.floor(el.clientWidth * 0.82));
@@ -74,46 +82,56 @@ export default function FeaturedProductsSection() {
       return cardW + gap;
     };
 
-    const loop = (t: number) => {
-      const dt = Math.max(0, t - lastT);
-      lastT = t;
-
-      // Pause briefly when user interacts (touch/drag/scroll) to avoid fighting gestures.
-      if (t >= pauseUntilRef.current) {
-        const step = getStep();
-        const pxPerMs = step / 3000; // 3s per card
-        el.scrollLeft += dt * pxPerMs;
-
-        // Seamless reset at midpoint (duplicated list)
-        const half = el.scrollWidth / 2;
-        if (half > 0 && el.scrollLeft >= half) {
-          el.scrollLeft -= half;
-        }
+    const normalize = () => {
+      const half = el.scrollWidth / 2;
+      if (half > 0 && el.scrollLeft >= half) {
+        el.scrollLeft -= half;
       }
-
-      rafRef.current = requestAnimationFrame(loop);
     };
 
     const pause = (ms: number) => {
       pauseUntilRef.current = performance.now() + ms;
     };
 
-    const onUserIntent = () => pause(2000);
+    const startInterval = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = window.setInterval(() => {
+        if (performance.now() < pauseUntilRef.current) return;
+        const step = getStep();
+        el.scrollBy({ left: step, behavior: "smooth" });
+        // normalize after smooth scroll finishes
+        window.setTimeout(normalize, 450);
+      }, 3000);
+    };
+
+    const stopInterval = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    };
+
+    const onUserIntent = () => {
+      pause(2200);
+      stopInterval();
+      window.setTimeout(() => {
+        if (!mobileTrackRef.current) return;
+        startInterval();
+      }, 2300);
+    };
     el.addEventListener("touchstart", onUserIntent, { passive: true });
     el.addEventListener("touchmove", onUserIntent, { passive: true });
     el.addEventListener("pointerdown", onUserIntent, { passive: true });
     el.addEventListener("wheel", onUserIntent, { passive: true });
-    el.addEventListener("scroll", onUserIntent, { passive: true });
+    el.addEventListener("scroll", normalize, { passive: true });
 
-    rafRef.current = requestAnimationFrame(loop);
+    startInterval();
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      stopInterval();
       el.removeEventListener("touchstart", onUserIntent);
       el.removeEventListener("touchmove", onUserIntent);
       el.removeEventListener("pointerdown", onUserIntent);
       el.removeEventListener("wheel", onUserIntent);
-      el.removeEventListener("scroll", onUserIntent);
+      el.removeEventListener("scroll", normalize);
     };
   }, [mobileReady, products.length]);
 

@@ -44,6 +44,25 @@ function writeLocal<T>(key: string, env: CacheEnvelope<T>) {
   }
 }
 
+export function peekCached<T>(key: string): { data: T | null; isFresh: boolean } {
+  const memHit = mem.get(key) as CacheEnvelope<T> | undefined;
+  if (memHit) {
+    return { data: memHit.data, isFresh: isFresh(memHit.savedAt, memHit.ttlMs) };
+  }
+  const localHit = readLocal<T>(key);
+  if (localHit) {
+    mem.set(key, localHit as CacheEnvelope<unknown>);
+    return { data: localHit.data, isFresh: isFresh(localHit.savedAt, localHit.ttlMs) };
+  }
+  return { data: null, isFresh: false };
+}
+
+export function putCached<T>(key: string, ttlMs: number, data: T) {
+  const env: CacheEnvelope<T> = { v: 1, savedAt: now(), ttlMs, data };
+  mem.set(key, env as CacheEnvelope<unknown>);
+  writeLocal(key, env);
+}
+
 export async function cached<T>(
   key: string,
   ttlMs: number,

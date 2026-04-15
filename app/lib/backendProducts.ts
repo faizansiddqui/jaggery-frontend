@@ -237,7 +237,7 @@ export async function fetchBackendProducts(query?: string): Promise<Product[]> {
 
     return cached<Product[]>(
         cacheKey,
-        2 * 60 * 1000,
+        15 * 60 * 1000,
         async () => {
             const baseCandidates = getBackendBaseUrlCandidates();
             for (const baseUrl of baseCandidates) {
@@ -278,7 +278,7 @@ export async function fetchBackendProductById(id: string | number): Promise<Prod
 
     return cached<Product | null>(
         `product:${idValue}`,
-        5 * 60 * 1000,
+        30 * 60 * 1000,
         async () => {
             const baseCandidates = getBackendBaseUrlCandidates();
             for (const baseUrl of baseCandidates) {

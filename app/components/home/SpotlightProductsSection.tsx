@@ -7,6 +7,7 @@ import { useCart } from "@/app/context/CartContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { createProductHref, type Product } from "@/app/data/products";
 import { fetchFeaturedProducts } from "@/app/lib/productsClient";
+import { peekCached } from "@/app/lib/clientCache";
 
 function formatMoney(currencySymbol: string, value: number) {
   const amount = Number.isFinite(value) ? value : 0;
@@ -29,6 +30,15 @@ export default function SpotlightProductsSection() {
   const currencySymbol = settings.currencySymbol || "₹";
 
   useEffect(() => {
+    // Hydrate from cache after mount to avoid SSR hydration mismatch.
+    window.setTimeout(() => {
+      const cached = peekCached<Product[]>("products:all").data;
+      if (Array.isArray(cached) && cached.length) {
+        setProducts(cached);
+        setLoading(false);
+      }
+    }, 0);
+
     fetchFeaturedProducts()
       .then((data) => {
         setProducts(data);

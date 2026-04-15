@@ -76,11 +76,7 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
 
         const basePool = all.filter((p) => {
           if (!p || !p.id) return false;
-          if (productId > 0 && p.id === productId) return false;
-          if (productPublicId && p.publicId === productPublicId) return false;
-          const hasStock = Number(p.quantity || 0) > 0;
-          const variantStock = Object.values(p.stockByVariant || {}).some((qty) => Number(qty || 0) > 0);
-          if (!hasStock && !variantStock) return false;
+          // Show all products (even if out of stock), including current product if present.
           return true;
         });
 
