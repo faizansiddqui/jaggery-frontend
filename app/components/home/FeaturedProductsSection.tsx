@@ -20,6 +20,7 @@ export default function FeaturedProductsSection() {
   const pauseUntilRef = useRef<number>(0);
   const intervalRef = useRef<number | null>(null);
   const [mobileReady, setMobileReady] = useState(false);
+  const mobileProducts = useMemo(() => products.slice(0, 4), [products]);
 
   useEffect(() => {
     window.setTimeout(() => {
@@ -41,12 +42,6 @@ export default function FeaturedProductsSection() {
       });
   }, []);
 
-  // Infinite Scroll Logic for Mobile
-  const mobileItems = useMemo(() => {
-    if (products.length === 0) return [];
-    return [...products, ...products];
-  }, [products]);
-
   useEffect(() => {
     const el = mobileTrackRef.current;
     if (!el) return;
@@ -61,16 +56,11 @@ export default function FeaturedProductsSection() {
 
   useEffect(() => {
     const el = mobileTrackRef.current;
-    if (!el || !mobileReady || products.length < 2) return;
+    if (!el || !mobileReady || mobileProducts.length < 2) return;
 
     const getStep = () => {
       const first = el.querySelector<HTMLElement>("[data-feature-card]");
       return (first?.offsetWidth ?? 0) + 16;
-    };
-
-    const normalize = () => {
-      const half = el.scrollWidth / 2;
-      if (half > 0 && el.scrollLeft >= half) el.scrollLeft -= half;
     };
 
     const startInterval = () => {
@@ -78,7 +68,6 @@ export default function FeaturedProductsSection() {
       intervalRef.current = window.setInterval(() => {
         if (performance.now() < pauseUntilRef.current) return;
         el.scrollBy({ left: getStep(), behavior: "smooth" });
-        window.setTimeout(normalize, 600);
       }, 3500);
     };
 
@@ -87,15 +76,25 @@ export default function FeaturedProductsSection() {
     };
 
     el.addEventListener("touchstart", onUserInteraction, { passive: true });
-    el.addEventListener("scroll", normalize, { passive: true });
     startInterval();
 
     return () => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       el.removeEventListener("touchstart", onUserInteraction);
-      el.removeEventListener("scroll", normalize);
     };
-  }, [mobileReady, products.length]);
+  }, [mobileReady, mobileProducts.length]);
+
+  const scrollMobileTrack = (direction: "prev" | "next") => {
+    const el = mobileTrackRef.current;
+    if (!el) return;
+    const first = el.querySelector<HTMLElement>("[data-feature-card]");
+    const step = (first?.offsetWidth ?? 0) + 16;
+    pauseUntilRef.current = performance.now() + 3000;
+    el.scrollBy({
+      left: direction === "next" ? step : -step,
+      behavior: "smooth",
+    });
+  };
 
   const scrollDesktopTrack = (direction: "prev" | "next") => {
     const el = desktopTrackRef.current;
@@ -121,8 +120,8 @@ export default function FeaturedProductsSection() {
               Carefully curated essentials designed for your lifestyle.
             </p>
           </div>
-          <Link 
-            href="/shop" 
+          <Link
+            href="/shop"
             className="text-sm font-bold uppercase tracking-widest text-primary border-b-2 border-primary/20 hover:border-primary transition-all pb-1 w-fit"
           >
             View All Collection
@@ -137,14 +136,33 @@ export default function FeaturedProductsSection() {
           <>
             {/* Mobile Carousel */}
             <div className="md:hidden -mx-4 px-4">
+              <div className="flex items-center justify-end gap-3 mb-6">
+                <button
+                  type="button"
+                  onClick={() => scrollMobileTrack("prev")}
+                  className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                  aria-label="Scroll featured products left"
+                >
+                  <span className="material-symbols-outlined">west</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollMobileTrack("next")}
+                  className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                  aria-label="Scroll featured products right"
+                >
+                  <span className="material-symbols-outlined">east</span>
+                </button>
+              </div>
+
               <div
                 ref={mobileTrackRef}
                 className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory"
               >
-                {mobileItems.map((product, idx) => (
-                  <div 
-                    key={`${product.id}-${idx}`} 
-                    data-feature-card 
+                {mobileProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    data-feature-card
                     className="snap-center min-w-[85vw]"
                   >
                     <ProductCard product={product} currency={currencySymbol} />
@@ -219,7 +237,7 @@ function ProductCard({ product, currency }: { product: Product; currency: string
             Sale
           </div>
         )}
-        
+
         {product.image && (
           <Image
             src={product.image}
@@ -229,12 +247,12 @@ function ProductCard({ product, currency }: { product: Product; currency: string
             sizes="(max-width: 768px) 85vw, 33vw"
           />
         )}
-        
+
         {/* Quick Add Overlay (Desktop Only) */}
         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-            <button className="w-full bg-white/90 backdrop-blur-md py-3 rounded-xl text-sm font-bold text-slate-900 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
-               Quick View
-            </button>
+          <button className="w-full bg-white/90 backdrop-blur-md py-3 rounded-xl text-sm font-bold text-slate-900 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
+            Quick View
+          </button>
         </div>
       </Link>
 
