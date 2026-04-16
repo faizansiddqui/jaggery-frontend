@@ -1,102 +1,214 @@
 "use client";
+
 import React from "react";
 import Link from "next/link";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { getWholesaleWhatsAppUrl } from "@/app/lib/whatsapp";
+import { Mail, Phone, MapPin, type LucideIcon } from "lucide-react";
 
 const WHOLESALE_WHATSAPP_URL = getWholesaleWhatsAppUrl();
 
-type FooterLinkItem = { label: string; href: string; external?: boolean };
+type FooterLinkItem = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+type SocialItem = {
+  label: string;
+  href?: string | null;
+  icon: "facebook" | "instagram" | "youtube";
+};
 
 const footerLinks: Record<string, FooterLinkItem[]> = {
-  "Links": [
+  Links: [
     { label: "Our Products", href: "/shop" },
     { label: "My Orders", href: "/user/orders" },
     { label: "My Wishlist", href: "/user/wishlist" },
   ],
-  "Support": [
+  Support: [
     { label: "Shipping", href: "/shipping" },
     { label: "Contact", href: "/contact" },
     { label: "Wholesale", href: WHOLESALE_WHATSAPP_URL, external: true },
   ],
-  "Legal": [
+  Legal: [
     { label: "Privacy Policy", href: "/privacy-policy" },
     { label: "Terms of Service", href: "/terms-of-service" },
   ],
 };
 
+function SocialSvg({
+  type,
+  className,
+}: {
+  type: SocialItem["icon"];
+  className?: string;
+}) {
+  const baseProps = {
+    width: 20,
+    height: 20,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    className,
+    "aria-hidden": true,
+  };
+
+  if (type === "facebook") {
+    return (
+      <svg {...baseProps}>
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+      </svg>
+    );
+  }
+
+  if (type === "instagram") {
+    return (
+      <svg {...baseProps}>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg {...baseProps}>
+      <path d="M22 8.5s-.2-1.6-.8-2.3c-.8-.9-1.7-.9-2.1-1-3.1-.2-7.8-.2-7.8-.2h-.1s-4.7 0-7.8.2c-.4.1-1.3.1-2.1 1-.6.7-.8 2.3-.8 2.3S0 10.4 0 12v.1c0 1.6.2 3.5.2 3.5s.2 1.6.8 2.3c.8.9 1.9.9 2.4 1 1.8.2 7.6.2 7.6.2s4.7 0 7.8-.2c.4-.1 1.3-.1 2.1-1 .6-.7.8-2.3.8-2.3s.2-1.9.2-3.5V12c0-1.6-.2-3.5-.2-3.5z" />
+      <path d="M10 15.5V8.5l6 3.5-6 3.5z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function SocialLink({
+  item,
+}: {
+  item: SocialItem;
+}) {
+  if (!item.href) return null;
+
+  return (
+    <a
+      href={item.href}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={item.label}
+      className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-[#F7F5F0]/60 hover:text-[#EBBB59] hover:border-[#EBBB59] transition-all duration-300"
+    >
+      <SocialSvg type={item.icon} />
+    </a>
+  );
+}
+
 export default function Footer() {
   const { settings } = useSiteSettings();
   const brandName = settings.footerTitle || settings.siteName || "Amila Gold";
-  return (
-    <footer className="bg-green-900 text-stone-50 rounded-t-3xl mt-12">
-      {/* Main Footer Content */}
-      <div className="flex flex-col md:flex-row justify-between items-start px-8 py-10 lg:px-12 lg:py-16 w-full gap-12">
-        {/* Brand Column */}
-        <div className="mb-4 md:mb-0 max-w-xs">
-          <span className="font-headline text-xl text-stone-100 italic mb-4 block">{brandName}</span>
-          <p className="font-body text-sm tracking-wide text-stone-300/70 leading-relaxed mb-6">
-            {settings.footerDescription || "Providing the purest unrefined gold for the modern, conscious soul."}
-          </p>
-          <div className="flex gap-4">
-            <a href={settings.facebookUrl || "#"} target="_blank" rel="noreferrer" aria-label="Facebook" className="text-stone-300/70 hover:text-yellow-400 transition-colors">
-              <span className="material-symbols-outlined">thumb_up</span>
-            </a>
-            <a href={settings.instagramUrl || "#"} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-stone-300/70 hover:text-yellow-400 transition-colors">
-              <span className="material-symbols-outlined">photo_camera</span>
-            </a>
-            <a href={settings.youtubeUrl || "#"} target="_blank" rel="noreferrer" aria-label="YouTube" className="text-stone-300/70 hover:text-yellow-400 transition-colors">
-              <span className="material-symbols-outlined">smart_display</span>
-            </a>
-          </div>
-          <div className="mt-5 space-y-1">
-            <p className="font-body text-xs tracking-wide text-stone-300/70">{settings.companyEmail || ''}</p>
-            <p className="font-body text-xs tracking-wide text-stone-300/70">{settings.companyPhone || ''}</p>
-            <p className="font-body text-xs tracking-wide text-stone-300/70">{settings.companyAddress || ''}</p>
-          </div>
-        </div>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-12">
-          {Object.entries(footerLinks).map(([category, links]) => (
-            <div key={category} className="flex flex-col gap-3">
-              <span className="font-body text-sm tracking-widest uppercase font-bold text-yellow-400">
-                {category}
-              </span>
-              {links.map((link) =>
-                link.external ? (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-body text-stone-300/70 hover:text-stone-50 hover:translate-x-1 transition-all duration-200 text-sm uppercase tracking-wide"
-                  >
-                    {link.label}
-                  </a>
-                ) : (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="font-body text-stone-300/70 hover:text-stone-50 hover:translate-x-1 transition-all duration-200 text-sm uppercase tracking-wide"
-                  >
-                    {link.label}
-                  </Link>
-                )
+  const socialLinks: SocialItem[] = [
+    { icon: "facebook", href: settings.facebookUrl, label: "Facebook" },
+    { icon: "instagram", href: settings.instagramUrl, label: "Instagram" },
+    { icon: "youtube", href: settings.youtubeUrl, label: "YouTube" },
+  ];
+
+  return (
+    <footer className="bg-[#153421] text-[#F7F5F0] rounded-t-[2.5rem] md:rounded-t-[4rem] mt-20 overflow-hidden font-sans">
+      <div className="container mx-auto px-6 py-16 lg:px-12 lg:py-24 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
+          <div className="lg:col-span-4 flex flex-col items-start">
+            <span className="font-serif text-3xl md:text-4xl text-[#EBBB59] italic mb-6">
+              {brandName}
+            </span>
+
+            <p className="text-[#F7F5F0]/70 text-base leading-relaxed mb-8 max-w-sm">
+              {settings.footerDescription ||
+                "Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed."}
+            </p>
+
+            <div className="flex gap-5 mb-8">
+              {socialLinks.map((item) => (
+                <SocialLink key={item.label} item={item} />
+              ))}
+            </div>
+
+            <div className="space-y-3 mt-auto">
+              {settings.companyEmail && (
+                <div className="flex items-center gap-3 text-sm text-[#F7F5F0]/60 hover:text-[#F7F5F0] transition-colors">
+                  <Mail size={14} className="text-[#EBBB59]" />
+                  <span>{settings.companyEmail}</span>
+                </div>
+              )}
+
+              {settings.companyPhone && (
+                <div className="flex items-center gap-3 text-sm text-[#F7F5F0]/60 hover:text-[#F7F5F0] transition-colors">
+                  <Phone size={14} className="text-[#EBBB59]" />
+                  <span>{settings.companyPhone}</span>
+                </div>
+              )}
+
+              {settings.companyAddress && (
+                <div className="flex items-start gap-3 text-sm text-[#F7F5F0]/60">
+                  <MapPin size={14} className="text-[#EBBB59] mt-1 shrink-0" />
+                  <span className="leading-snug">{settings.companyAddress}</span>
+                </div>
               )}
             </div>
-          ))}
+          </div>
+
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-10 md:gap-12 lg:pl-12">
+            {Object.entries(footerLinks).map(([category, links]) => (
+              <div key={category} className="flex flex-col gap-6">
+                <span className="text-xs tracking-[0.2em] uppercase font-bold text-[#EBBB59]/80">
+                  {category}
+                </span>
+
+                <ul className="flex flex-col gap-4">
+                  {links.map((link) => (
+                    <li key={link.label}>
+                      {link.external ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#F7F5F0]/60 hover:text-[#F7F5F0] hover:translate-x-1 inline-block transition-all duration-300 text-sm font-medium"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="text-[#F7F5F0]/60 hover:text-[#F7F5F0] hover:translate-x-1 inline-block transition-all duration-300 text-sm font-medium"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="px-8 py-10 lg:px-12 lg:py-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-        <span className="font-body text-xs tracking-widest uppercase opacity-50">
-          © 2026 {brandName}. The Modern Agrarian.
-        </span>
-        <div className="flex gap-8 items-center text-xs tracking-[0.2em] uppercase opacity-50">
-          <span>Handmade in the valley of India</span>
-          <span>Ethically Sourced</span>
+      <div className="border-t border-white/5 bg-black/10">
+        <div className="container mx-auto px-6 py-8 lg:px-12 flex flex-col lg:flex-row justify-between items-center gap-6 max-w-7xl">
+          <p className="text-[10px] md:text-xs tracking-[0.15em] uppercase text-[#F7F5F0]/40 text-center lg:text-left">
+            © 2026 <span className="text-[#F7F5F0]/60">{brandName}</span>. The Modern Agrarian.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-[10px] md:text-xs tracking-[0.2em] uppercase text-[#F7F5F0]/30 font-semibold">
+            <span className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#EBBB59]/40" />
+              Handmade in the valley of India
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#EBBB59]/40" />
+              Ethically Sourced
+            </span>
+          </div>
         </div>
       </div>
     </footer>

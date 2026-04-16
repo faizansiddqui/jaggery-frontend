@@ -10,16 +10,15 @@ import { createProductHref, type Product } from "@/app/data/products";
 import { fetchFeaturedProducts } from "@/app/lib/productsClient";
 import { peekCached } from "@/app/lib/clientCache";
 
+// --- Helpers ---
 function formatMoney(currencySymbol: string, value: number) {
   const amount = Number.isFinite(value) ? value : 0;
-  return `${currencySymbol}${Math.round(amount)}.00`;
+  return `${currencySymbol}${amount.toLocaleString()}`;
 }
 
 function discountPct(original: number | undefined, selling: number) {
-  if (!original || !Number.isFinite(original) || original <= 0) return 0;
-  if (!Number.isFinite(selling) || selling <= 0) return 0;
-  if (original <= selling) return 0;
-  return Math.min(95, Math.max(1, Math.round(((original - selling) / original) * 100)));
+  if (!original || original <= selling) return 0;
+  return Math.min(95, Math.round(((original - selling) / original) * 100));
 }
 
 export default function SpotlightProductsSection() {
@@ -32,14 +31,11 @@ export default function SpotlightProductsSection() {
   const currencySymbol = settings.currencySymbol || "₹";
 
   useEffect(() => {
-    // Hydrate from cache after mount to avoid SSR hydration mismatch.
-    window.setTimeout(() => {
-      const cached = peekCached<Product[]>("products:all").data;
-      if (Array.isArray(cached) && cached.length) {
-        setProducts(cached);
-        setLoading(false);
-      }
-    }, 0);
+    const cached = peekCached<Product[]>("products:all").data;
+    if (Array.isArray(cached) && cached.length) {
+      setProducts(cached);
+      setLoading(false);
+    }
 
     fetchFeaturedProducts()
       .then((data) => {
@@ -55,159 +51,153 @@ export default function SpotlightProductsSection() {
   const spotlight = useMemo(() => products.slice(0, 5), [products]);
 
   return (
-    <section className="pt-20 pb-5 px-2 md:px-0 mb-5 lg:pb-20 lg:pt-30 bg-surface">
-      <div className="container mx-auto px-2 lg:px-4">
-        <div className="flex items-end justify-between gap-6 mb-6 lg:mb-10">
-          <div>
-            {/* <p className="font-label text-on-surface-variant uppercase tracking-widest text-xs">Fresh picks</p> */}
-            <h2 className="font-headline text-4xl md:text-5xl text-primary mt-2">Today&rsquo;s Spotlight</h2>
+    <section className="pt-10 pb-6 lg:py-20 bg-[#F9F9F7]">
+      <div className="container mx-auto px-3 lg:px-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 lg:mb-10 gap-3">
+          <div className="space-y-1 lg:space-y-2">
+            <span className="text-[10px] lg:text-sm font-bold uppercase tracking-[0.2em] text-emerald-700/70">
+              Curated Collection
+            </span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Today’s <span className="text-emerald-800">Spotlight</span>
+            </h2>
           </div>
-          {/* <div className="hidden md:flex items-center gap-2 text-xs text-on-surface-variant">
-            <span className="inline-flex w-2 h-2 rounded-full bg-secondary" />
-            Curated, limited
-          </div> */}
+          <Link
+            href="/shop"
+            className="hidden md:flex text-sm font-semibold text-emerald-800 hover:underline items-center gap-1"
+          >
+            View all products
+            <span className="material-symbols-outlined text-sm">
+              arrow_forward
+            </span>
+          </Link>
         </div>
 
+        {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-6">
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className={`relative bg-surface-container-low border border-outline-variant/40 shadow-sm overflow-hidden rounded-[26px] animate-pulse ${i === 4 ? "hidden lg:block" : ""}`}
-                style={{
-                  clipPath: "polygon(0% 0%, calc(100% - 28px) 0%, 100% 28px, 100% 100%, 0% 100%)",
-                }}
-              >
-                <div className="p-3 lg:p-4">
-                  <div className="aspect-square rounded-[18px] bg-surface-container-high" />
-                  <div className="pt-3 lg:pt-4 space-y-3">
-                    <div className="h-5 lg:h-6 rounded bg-surface-container-high w-5/6" />
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="h-4 lg:h-5 rounded bg-surface-container-high w-24" />
-                      <div className="w-10 h-10 rounded-full bg-surface-container-high" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                className={`animate-pulse bg-white rounded-[1.5rem] p-2 lg:p-4 h-[260px] lg:h-[320px] ${i === 4 ? "hidden lg:block" : ""}`}
+              />
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-10 text-error">{error}</div>
-        ) : spotlight.length === 0 ? (
-          <div className="text-center py-10 text-on-surface-variant">No products found.</div>
+          <div className="text-center py-10 lg:py-20 bg-red-50 rounded-3xl text-red-600 font-medium text-sm lg:text-base">
+            {error}
+          </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-6">
             {spotlight.map((product) => {
-              const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
-
+              const primary =
+                Array.isArray(product.variants) && product.variants.length > 0
+                  ? product.variants[0]
+                  : undefined;
               const displayPrice = Number(product.price ?? primary?.price ?? 0);
               const displayOriginal =
-                typeof product.originalPrice === "number" && product.originalPrice > displayPrice
-                  ? product.originalPrice
-                  : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
-                    ? primary.originalPrice
-                    : undefined;
-
-              const weightLabel = primary?.label ?? (product.sizes && product.sizes[0]) ?? "";
+                product.originalPrice ?? primary?.originalPrice;
+              const weightLabel = primary?.label ?? product.sizes?.[0] ?? "";
               const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
               const inCart = isVariantInCart(product.id, weightLabel || "");
               const pct = discountPct(displayOriginal, displayPrice);
 
-              const handleAdd = () => {
-                if (!inStock || inCart) return;
-                addItem({
-                  id: product.id,
-                  name: product.name,
-                  price: displayPrice,
-                  color: "",
-                  size: weightLabel || "",
-                  image: product.image,
-                  collection: product.collection || "",
-                });
-              };
-
               return (
                 <div
                   key={product.id}
-                  className="group relative bg-surface-container-low border border-outline-variant/40 shadow-sm hover:shadow-md transition-all overflow-hidden rounded-[26px]"
-                  style={{
-                    clipPath:
-                      "polygon(0% 0%, calc(100% - 28px) 0%, 100% 28px, 100% 100%, 0% 100%)",
-                  }}
+                  className="group relative flex flex-col bg-white border border-slate-100 rounded-[1.5rem] lg:rounded-[2rem] p-2 lg:p-3 transition-all duration-300 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1"
                 >
-                  <div
-                    className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{
-                      background:
-                        "radial-gradient(1200px circle at 20% 0%, rgba(183,94,12,0.12), transparent 50%), radial-gradient(900px circle at 90% 40%, rgba(37,99,235,0.08), transparent 55%)",
-                    }}
-                  />
+                  {/* Image Container - Kept Square for Compact Height */}
+                  <Link
+                    href={createProductHref(product)}
+                    className="relative aspect-square rounded-xl lg:rounded-[1.5rem] overflow-hidden bg-slate-50"
+                  >
+                    {product.image && (
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        unoptimized
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    )}
 
-                  <Link href={createProductHref(product)} className="block p-2 lg:p-3">
-                    <div className="relative aspect-square rounded-[18px] overflow-hidden bg-surface-container-high">
-                      {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          unoptimized
-                          sizes="(min-width: 1024px) 25vw, 46vw"
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                      ) : null}
-
-                      {pct > 0 ? (
-                        <div className="absolute top-2 left-2 lg:top-3 lg:left-3 bg-secondary text-on-secondary px-2.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">
-                          {pct}% off
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="pt-3 lg:pt-4 space-y-2">
-                      <h3 className="font-headline text-[15px] lg:text-lg text-primary leading-snug line-clamp-2">
-                        {product.name}
-                      </h3>
-
-                      <div className="mt-2 flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="flex items-baseline gap-2">
-                            <span className="font-label font-bold text-secondary text-sm lg:text-base">
-                              {formatMoney(currencySymbol, displayPrice)}
-                            </span>
-                            {displayOriginal && displayOriginal > displayPrice ? (
-                              <span className="text-[11px] lg:text-xs text-on-surface-variant line-through">
-                                {formatMoney(currencySymbol, displayOriginal)}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
+                    {/* Discount Badge */}
+                    {pct > 0 && (
+                      <div className="absolute top-2 left-2 lg:top-3 lg:left-3 bg-emerald-600 backdrop-blur-md text-white px-2 py-0.5 lg:px-3 lg:py-1 rounded-full text-[9px] lg:text-[10px] font-black uppercase tracking-tighter">
+                        -{pct}%
                       </div>
+                    )}
+                  </Link>
+
+                  {/* Content - Compact spacing */}
+                  <div className="flex flex-col flex-grow pt-2 lg:pt-4 px-1 pb-1">
+                    <h3 className="font-bold text-slate-800 text-sm lg:text-lg leading-tight line-clamp-2 mb-1.5 lg:mb-2 group-hover:text-emerald-800 transition-colors">
+                      {product.name}
+                    </h3>
+
+                    <div className="mt-auto">
+                      <div className="flex items-baseline flex-wrap gap-x-1.5 gap-y-0.5 mb-2 lg:mb-4">
+                        <span className="text-sm lg:text-lg font-black text-slate-900">
+                          {formatMoney(currencySymbol, displayPrice)}
+                        </span>
+                        {displayOriginal && displayOriginal > displayPrice && (
+                          <span className="text-[10px] lg:text-xs text-slate-400 line-through decoration-red-400/50">
+                            {formatMoney(currencySymbol, displayOriginal)}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Add to Cart Button - Slimmer on mobile (h-9) */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           if (inCart) {
                             router.push("/cart");
-                            return;
+                          } else if (inStock) {
+                            addItem({
+                              id: product.id,
+                              name: product.name,
+                              price: displayPrice,
+                              color: "",
+                              size: weightLabel || "",
+                              image: product.image,
+                              collection: product.collection || "",
+                            });
                           }
-                          handleAdd();
                         }}
                         disabled={!inStock && !inCart}
-                        aria-label={inCart ? "Go to cart" : "Add to cart"}
-                        className="shrink-0 min-w-10 h-10 mt-3 lg:mt-0 rounded-full bg-primary text-on-primary flex items-center justify-center px-3 hover:opacity-90 transition-all disabled:opacity-50 disabled:hover:opacity-50"
+                        className={`
+    w-full h-9 lg:h-11 rounded-xl lg:rounded-2xl 
+    flex items-center justify-center gap-1.5 lg:gap-2 
+    transition-all duration-500 ease-out font-bold 
+    text-[10px] lg:text-xs uppercase tracking-wider 
+    active:scale-95 transform-gpu
+    ${
+      inCart
+        ? "bg-slate-900 text-white hover:bg-black shadow-lg"
+        : "bg-emerald-800 text-white hover:bg-emerald-700 shadow-md shadow-emerald-900/10 disabled:bg-slate-200 disabled:text-slate-400"
+    }
+  `}
                       >
-                        {inCart ? (
-                          <>
-                            <span className="material-symbols-outlined text-[20px]">shopping_cart</span> <span className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Go to cart</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-[20px]">shopping_cart</span> <span className="text-[10px] font-bold uppercase tracking-wider whitespace-nowrap">Add to cart</span>
-                          </>
-                        )}
+                        <span
+                          className={`material-symbols-outlined text-[16px] lg:text-[18px] transition-transform duration-500 ${inCart ? "rotate-[360deg]" : ""}`}
+                        >
+                          {inCart ? "arrow_forward" : "shopping_bag"}
+                        </span>
+
+                        <span>
+                          {inCart
+                            ? "Go To Cart"
+                            : inStock
+                              ? "Add To Cart"
+                              : "Out of Stock"}
+                        </span>
                       </button>
                     </div>
-                  </Link>
+                  </div>
                 </div>
               );
             })}
@@ -217,4 +207,3 @@ export default function SpotlightProductsSection() {
     </section>
   );
 }
-

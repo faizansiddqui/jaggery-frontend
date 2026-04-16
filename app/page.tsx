@@ -1,5 +1,6 @@
 import { HeroSection, HeritageSection, FeaturedProducts, SpotlightProducts } from "./components/HomeSections";
-import { SlowCraftSection, TestimonialsSection, NewsletterSection } from "./components/HomeSections2";
+import { SlowCraftSection, NewsletterSection } from "./components/HomeSections2";
+import TestimonialsSection from "./components/Testimonials";
 
 export default function HomeRoute() {
   return (

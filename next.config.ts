@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const normalizeTarget = (value: string) => {
   let output = String(value || "").trim();
   if (!output) return "";
+  // Fixes potential typos in environment variables
   output = output.replace(/\.railiway\.app/gi, ".railway.app");
   if (!/^https?:\/\//i.test(output)) {
     output = `https://${output}`;
@@ -11,9 +12,7 @@ const normalizeTarget = (value: string) => {
 };
 
 /**
- * Server-side proxy target for /api/backend/* (must be THIS app’s Node API, not another project).
- * Prefer BACKEND_PROXY_TARGET; else same origin as NEXT_PUBLIC_BACKEND_URL (your Jaggery deploy URL).
- * Never hardcode a foreign backend — that was causing production to read the ecommerce Mongo catalog.
+ * Server-side proxy target configuration
  */
 const resolvedProxy =
   process.env.BACKEND_PROXY_TARGET?.trim() ||
@@ -24,7 +23,7 @@ const resolvedProxy =
 
 if (process.env.NODE_ENV === "production" && !resolvedProxy) {
   console.warn(
-    "[next.config] Set BACKEND_PROXY_TARGET or NEXT_PUBLIC_BACKEND_URL to your Jaggery backend URL (e.g. Railway). Rewrites may not work until set."
+    "[next.config] Set BACKEND_PROXY_TARGET or NEXT_PUBLIC_BACKEND_URL to your Jaggery backend URL. Rewrites may not work until set."
   );
 }
 
@@ -32,9 +31,15 @@ const backendProxyTarget = normalizeTarget(resolvedProxy || "http://localhost:80
 
 const nextConfig: NextConfig = {
   images: {
+    // Adding Cloudinary here fixes the "Invalid src prop" error
     remotePatterns: [
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "fonts.gstatic.com" },
+      { 
+        protocol: "https", 
+        hostname: "res.cloudinary.com", 
+        pathname: "/**" 
+      },
     ],
   },
   async rewrites() {

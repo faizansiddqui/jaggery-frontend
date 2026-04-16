@@ -21,7 +21,6 @@ export default function FeaturedProductsSection() {
   const [mobileReady, setMobileReady] = useState(false);
 
   useEffect(() => {
-    // Hydrate from cache after mount to avoid SSR hydration mismatch.
     window.setTimeout(() => {
       const cached = peekCached<Product[]>("products:all").data;
       if (Array.isArray(cached) && cached.length) {
@@ -41,29 +40,19 @@ export default function FeaturedProductsSection() {
       });
   }, []);
 
-  const truncateWords = (text: string | undefined, limit = 4) => {
-    if (!text) return "";
-    const words = text.trim().split(/\s+/);
-    if (words.length <= limit) return words.join(" ");
-    return words.slice(0, limit).join(" ") + "...";
-  };
-
+  // Infinite Scroll Logic for Mobile
   const mobileItems = useMemo(() => {
     if (products.length === 0) return [];
-    // Duplicate for seamless looping
     return [...products, ...products];
   }, [products]);
 
   useEffect(() => {
     const el = mobileTrackRef.current;
     if (!el) return;
-
     const onResize = () => {
-      // Reset to start to avoid odd offsets on breakpoint changes
       el.scrollLeft = 0;
       setMobileReady(true);
     };
-
     onResize();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -71,264 +60,174 @@ export default function FeaturedProductsSection() {
 
   useEffect(() => {
     const el = mobileTrackRef.current;
-    if (!el) return;
-    if (!mobileReady) return;
-    if (products.length < 2) return;
+    if (!el || !mobileReady || products.length < 2) return;
 
     const getStep = () => {
       const first = el.querySelector<HTMLElement>("[data-feature-card]");
-      const cardW = first?.offsetWidth ?? Math.max(240, Math.floor(el.clientWidth * 0.82));
-      const gap = 16;
-      return cardW + gap;
+      return (first?.offsetWidth ?? 0) + 16;
     };
 
     const normalize = () => {
       const half = el.scrollWidth / 2;
-      if (half > 0 && el.scrollLeft >= half) {
-        el.scrollLeft -= half;
-      }
-    };
-
-    const pause = (ms: number) => {
-      pauseUntilRef.current = performance.now() + ms;
+      if (half > 0 && el.scrollLeft >= half) el.scrollLeft -= half;
     };
 
     const startInterval = () => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       intervalRef.current = window.setInterval(() => {
         if (performance.now() < pauseUntilRef.current) return;
-        const step = getStep();
-        el.scrollBy({ left: step, behavior: "smooth" });
-        // normalize after smooth scroll finishes
-        window.setTimeout(normalize, 450);
-      }, 3000);
+        el.scrollBy({ left: getStep(), behavior: "smooth" });
+        window.setTimeout(normalize, 600);
+      }, 3500);
     };
 
-    const stopInterval = () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    const onUserInteraction = () => {
+      pauseUntilRef.current = performance.now() + 3000;
     };
 
-    const onUserIntent = () => {
-      pause(2200);
-      stopInterval();
-      window.setTimeout(() => {
-        if (!mobileTrackRef.current) return;
-        startInterval();
-      }, 2300);
-    };
-    el.addEventListener("touchstart", onUserIntent, { passive: true });
-    el.addEventListener("touchmove", onUserIntent, { passive: true });
-    el.addEventListener("pointerdown", onUserIntent, { passive: true });
-    el.addEventListener("wheel", onUserIntent, { passive: true });
+    el.addEventListener("touchstart", onUserInteraction, { passive: true });
     el.addEventListener("scroll", normalize, { passive: true });
-
     startInterval();
 
     return () => {
-      stopInterval();
-      el.removeEventListener("touchstart", onUserIntent);
-      el.removeEventListener("touchmove", onUserIntent);
-      el.removeEventListener("pointerdown", onUserIntent);
-      el.removeEventListener("wheel", onUserIntent);
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      el.removeEventListener("touchstart", onUserInteraction);
       el.removeEventListener("scroll", normalize);
     };
   }, [mobileReady, products.length]);
 
   return (
-    <section className="px-3 md:px-0 py-5 lg:pb-20 lg:pt-20 bg-surface-container-low">
-      <div className="container mx-auto px-2 lg:px-8">
-        <div className="mb-4 lg:mb-10 text-center">
-          <h2 className="font-headline text-4xl md:text-5xl text-left text-primary mt-4">Purest Offerings</h2>
+    <section className="py-16 lg:py-24 bg-[#fcfcfd] overflow-hidden">
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div className="max-w-xl">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 mb-4">
+              Purest Offerings
+            </h2>
+            <p className="text-slate-500 text-lg">
+              Carefully curated essentials designed for your lifestyle.
+            </p>
+          </div>
+          <Link 
+            href="/shop" 
+            className="text-sm font-bold uppercase tracking-widest text-primary border-b-2 border-primary/20 hover:border-primary transition-all pb-1 w-fit"
+          >
+            View All Collection
+          </Link>
         </div>
+
         {loading ? (
+          <ProductGridSkeleton count={3} />
+        ) : error ? (
+          <div className="text-center py-20 text-red-500 font-medium">{error}</div>
+        ) : (
           <>
-            {/* Mobile loader: match horizontal carousel card sizing */}
-            <div className="md:hidden">
-              <div className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2" aria-label="Featured products loading">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="snap-start min-w-[82%] bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/40 animate-pulse"
+            {/* Mobile Carousel */}
+            <div className="md:hidden -mx-4 px-4">
+              <div
+                ref={mobileTrackRef}
+                className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory"
+              >
+                {mobileItems.map((product, idx) => (
+                  <div 
+                    key={`${product.id}-${idx}`} 
+                    data-feature-card 
+                    className="snap-center min-w-[85vw]"
                   >
-                    <div className="aspect-square rounded-xl bg-surface-container-high mb-6" />
-                    <div className="h-6 rounded bg-surface-container-high w-5/6 mb-3" />
-                    <div className="h-4 rounded bg-surface-container-high w-full mb-5" />
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="h-5 rounded bg-surface-container-high w-28" />
-                      <div className="w-11 h-11 rounded-full bg-surface-container-high" />
-                    </div>
+                    <ProductCard product={product} currency={currencySymbol} />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Desktop/tablet loader */}
-            <div className="hidden md:block">
-              <ProductGridSkeleton count={3} />
-            </div>
-          </>
-        ) : error ? (
-          <div className="text-center py-10 text-error">{error}</div>
-        ) : (
-          <>
-            {/* Mobile: horizontal, scrollable, auto-scroll, infinite */}
-            <div className="md:hidden">
-              {products.length === 0 ? (
-                <div className="text-center text-on-surface-variant py-10">No products found.</div>
-              ) : (
-                <div
-                  ref={mobileTrackRef}
-                  className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2"
-                  aria-label="Featured products carousel"
-                >
-                  {mobileItems.map((product, idx) => {
-                    const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
-                    const displayPrice = Number(product.price ?? primary?.price ?? 0);
-                    const displayOriginal =
-                      typeof product.originalPrice === "number" && product.originalPrice > displayPrice
-                        ? product.originalPrice
-                        : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
-                          ? primary.originalPrice
-                          : undefined;
-                    const inStock = (primary?.stock ?? product.quantity ?? 0) > 0;
-
-                    return (
-                      <div
-                        key={`${product.id}-${idx}`}
-                        data-feature-card
-                        className="snap-start min-w-[82%] bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/40"
-                      >
-                        <Link href={createProductHref(product)} className="block">
-                          <div className="aspect-square rounded-xl overflow-hidden mb-6 relative bg-surface-container-high">
-                            {product.image ? (
-                              <Image
-                                src={product.image}
-                                alt={product.name}
-                                fill
-                                unoptimized
-                                sizes="82vw"
-                                className="object-cover"
-                              />
-                            ) : null}
-                          </div>
-                          <h3 className="font-headline text-xl text-primary mb-2 leading-snug">{product.name}</h3>
-                          <p className="text-on-surface-variant mb-4 text-sm">{truncateWords(product.description, 6)}</p>
-                        </Link>
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-baseline gap-2">
-                            <span className="font-label text-lg font-bold text-secondary">
-                              {currencySymbol}
-                              {displayPrice}.00
-                            </span>
-                            {displayOriginal && displayOriginal > displayPrice ? (
-                              <span className="font-body text-xs text-primary line-through">
-                                {currencySymbol}
-                                {displayOriginal}.00
-                              </span>
-                            ) : null}
-                          </div>
-                          <Link
-                            href={createProductHref(product)}
-                            aria-label="Book now"
-                            className="shrink-0 bg-primary text-on-primary px-5 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest hover:opacity-90 transition-all"
-                          >
-                            Book Now
-                          </Link>
-                        </div>
-                        {/* {!inStock ? (
-                          <div className="mt-3 text-[10px] font-bold uppercase tracking-widest text-error">Out of stock</div>
-                        ) : null} */}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            <style jsx global>{`
-              .hide-scrollbar {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-              }
-              .hide-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-
-            {/* Desktop/tablet: original grid */}
-            <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-              {products.length === 0 ? (
-                <div className="col-span-3 text-center text-on-surface-variant">No products found.</div>
-              ) : (
-                products.map((product) => {
-                  const primary = Array.isArray(product.variants) && product.variants.length > 0 ? product.variants[0] : undefined;
-
-                  // Use normalized product fields (product.price / product.originalPrice) as the source of truth.
-                  const displayPrice = Number(product.price ?? primary?.price ?? 0);
-                  const displayOriginal =
-                    typeof product.originalPrice === "number" && product.originalPrice > displayPrice
-                      ? product.originalPrice
-                      : primary && typeof primary.originalPrice === "number" && primary.originalPrice > displayPrice
-                        ? primary.originalPrice
-                        : undefined;
-
-                  return (
-                    <div
-                      key={product.id}
-                      className="group bg-surface rounded-xl p-6 transition-all hover:bg-surface-container-high shadow-sm"
-                    >
-                      <Link href={createProductHref(product)} className="block">
-                        <div className="aspect-square rounded-lg overflow-hidden mb-8 relative">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              unoptimized
-                              sizes="(min-width: 768px) 30vw, 90vw"
-                              className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 bg-surface-container-high" />
-                          )}
-                        </div>
-                        <h3 className="font-headline text-2xl text-primary mb-2">{product.name}</h3>
-                        <p className="text-on-surface-variant mb-6 text-sm">{truncateWords(product.description, 4)}</p>
-                      </Link>
-                      <div className="space-y-1 mb-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-label text-lg font-bold text-secondary">
-                              {currencySymbol}
-                              {displayPrice}.00
-                            </span>
-                            {displayOriginal && displayOriginal > displayPrice && (
-                              <span className="font-body text-xs text-primary line-through">
-                                {currencySymbol}
-                                {displayOriginal}.00
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-4 flex items-center gap-3">
-                            <Link
-                              href={createProductHref(product)}
-                              className="flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-all"
-                            >
-                              <span className="material-symbols-outlined text-sm">event_available</span>
-                              Book Now
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+            {/* Desktop/Tablet Grid */}
+            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} currency={currencySymbol} />
+              ))}
             </div>
           </>
         )}
       </div>
+
+      <style jsx global>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </section>
   );
 }
 
+/**
+ * Slick, Reusable Product Card Component
+ */
+function ProductCard({ product, currency }: { product: Product; currency: string }) {
+  const primary = product.variants?.[0];
+  const price = Number(product.price ?? primary?.price ?? 0);
+  const oldPrice = product.originalPrice ?? primary?.originalPrice;
+  const isSale = oldPrice && oldPrice > price;
+
+  return (
+    <div className="group relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500">
+      {/* Image Container */}
+      <Link href={createProductHref(product)} className="relative aspect-[10/11] overflow-hidden rounded-2xl bg-slate-50">
+        {isSale && (
+          <div className="absolute top-4 left-4 z-10 bg-black text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+            Sale
+          </div>
+        )}
+        
+        {product.image && (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-1000 group-hover:scale-110"
+            sizes="(max-width: 768px) 85vw, 33vw"
+          />
+        )}
+        
+        {/* Quick Add Overlay (Desktop Only) */}
+        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+            <button className="w-full bg-white/90 backdrop-blur-md py-3 rounded-xl text-sm font-bold text-slate-900 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
+               Quick View
+            </button>
+        </div>
+      </Link>
+
+      {/* Content */}
+      <div className="px-3 pt-6 pb-4 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-xl font-bold text-slate-900 group-hover:text-primary transition-colors line-clamp-1">
+            {product.name}
+          </h3>
+          <div className="flex flex-col items-end">
+            <span className="text-lg font-bold text-slate-900">
+              {currency}{price}
+            </span>
+            {isSale && (
+              <span className="text-xs text-slate-400 line-through">
+                {currency}{oldPrice}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-6">
+          {product.description}
+        </p>
+
+        <div className="mt-auto">
+          <Link
+            href={createProductHref(product)}
+            className="flex items-center justify-center gap-2 w-full bg-slate-900 text-white py-4 rounded-2xl text-xs font-bold uppercase tracking-[0.2em] hover:bg-primary transition-all duration-300"
+          >
+            <span>Book Now</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
