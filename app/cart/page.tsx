@@ -238,7 +238,7 @@ export default function CartPage() {
               <div className="h-px bg-outline-variant/20 my-2" />
               
               <div className="flex justify-between items-center py-2">
-                  <p className="text-[20px] text-on-surface-variant/80 uppercase font-black tracking-widest mb-1">Total Payable</p>
+                  <p className="text-[20px] text-on-surface-variant/80 uppercase font-black tracking-widest mb-1">Total</p>
                 <div className="text-right">
                   <p className="text-4xl font-black text-primary leading-none tracking-tighter">
                     {currencySymbol}{total.toLocaleString()}
