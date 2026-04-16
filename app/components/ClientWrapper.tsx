@@ -7,11 +7,12 @@ import { usePathname } from "next/navigation";
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  const disableSmoothScroll = pathname?.startsWith("/product/");
 
   useEffect(() => {
     let locomotiveScroll: any;
     
-    if (isAdmin) {
+    if (isAdmin || disableSmoothScroll) {
       if (locomotiveScroll) locomotiveScroll.destroy();
       return;
     }
@@ -34,7 +35,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
     return () => {
       if (locomotiveScroll) locomotiveScroll.destroy();
     };
-  }, [isAdmin]);
+  }, [isAdmin, disableSmoothScroll]);
 
   if (isAdmin) {
     return <main className="flex-grow">{children}</main>;

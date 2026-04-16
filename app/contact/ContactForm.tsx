@@ -1,57 +1,30 @@
 "use client";
 import React, { useState } from 'react';
-import { submitContactForm } from '@/app/lib/apiClient';
 
 export default function ContactForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedEmail = email.trim();
-    const trimmedMessage = message.trim();
-    if (!trimmedName || !trimmedEmail || !trimmedMessage) {
-      setError('Please fill all required fields.');
-      return;
-    }
-    try {
-      setIsSubmitting(true);
-      setError('');
-      await submitContactForm({
-        name: trimmedName,
-        email: trimmedEmail,
-        department: 'GENERAL INQUIRY',
-        message: trimmedMessage,
-      });
-      setSent(true);
-      setName('');
-      setEmail('');
-      setMessage('');
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Could not submit your query. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    const supportEmail = 'support@amilagold.com';
+    const subject = `Contact from website: ${name || email}`;
+    const body = `${message}\n\n---\nFrom: ${name || 'Anonymous'}\nEmail: ${email || ''}`;
+    // Open user's mail client as a minimal fallback
+    window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    setSent(true);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
       {sent ? (
         <div className="p-4 bg-surface-container-highest rounded-md">
-          <p className="font-headline text-sm">Thanks - your query has been submitted successfully.</p>
+          <p className="font-headline text-sm">Thanks — your message is ready in your mail client.</p>
         </div>
       ) : (
         <>
-          {error ? (
-            <div className="p-3 bg-error/10 border border-error/30 rounded-md">
-              <p className="font-headline text-xs text-error">{error}</p>
-            </div>
-          ) : null}
           <div>
             <label className="text-sm font-label uppercase text-on-surface-variant">Name</label>
             <input
@@ -84,8 +57,8 @@ export default function ContactForm() {
           </div>
 
           <div className="pt-2">
-            <button type="submit" disabled={isSubmitting} className="px-6 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 disabled:opacity-60">
-              {isSubmitting ? 'Submitting...' : 'Send Message'}
+            <button type="submit" className="px-6 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90">
+              Send Message
             </button>
           </div>
         </>

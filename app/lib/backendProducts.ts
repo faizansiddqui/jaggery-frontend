@@ -1,7 +1,6 @@
-import type { Product } from '@/app/data/products';
+import type { Product, WeightVariant } from '@/app/data/products';
 import { formatProductNameForPath } from '@/app/data/products';
 import { getBackendBaseUrlCandidates } from '@/app/lib/session';
-import { cached } from '@/app/lib/clientCache';
 
 type GenericRecord = Record<string, unknown>;
 
@@ -80,30 +79,6 @@ function normalizeToken(value: unknown) {
     return String(value || '').trim().toLowerCase();
 }
 
-/** Collapse spaces so "500 g" matches "500g" for variant labels. */
-function normalizeSizeKey(value: unknown) {
-    return normalizeToken(value).replace(/\s+/g, '');
-}
-
-/**
- * Match cart line size to a product weight variant (label casing/spacing tolerant).
- */
-export function matchVariantByCartSize(product: Product, sizeLabel: string) {
-    const variants = product.variants;
-    if (!Array.isArray(variants) || variants.length === 0) return undefined;
-    const target = normalizeSizeKey(sizeLabel);
-    return variants.find((v) => normalizeSizeKey(v.label) === target);
-}
-
-/** Stock available for a cart line: per-variant when variants exist, else product quantity. */
-export function stockForCartLine(product: Product, sizeLabel: string) {
-    if (Array.isArray(product.variants) && product.variants.length > 0) {
-        const matched = matchVariantByCartSize(product, sizeLabel);
-        return matched ? Math.max(0, Number(matched.stock || 0)) : 0;
-    }
-    return Math.max(0, Number(product.quantity || 0));
-}
-
 function buildStockMaps(raw: GenericRecord) {
     const variants = Array.isArray(raw.variants) ? raw.variants : [];
     const stockBySize: Record<string, number> = {};
@@ -134,6 +109,15 @@ function buildStockMaps(raw: GenericRecord) {
     });
 
     return { stockBySize, stockByVariant, variantPrices, variantData };
+}
+
+export function matchVariantByCartSize(
+    product: Pick<Product, 'variants'>,
+    cartSize: string
+): WeightVariant | undefined {
+    const target = normalizeToken(cartSize);
+    if (!target) return undefined;
+    return product.variants?.find((variant) => normalizeToken(variant?.label) === target);
 }
 
 export function normalizeBackendProduct(input: unknown): Product {
@@ -232,78 +216,61 @@ export function normalizeBackendProduct(input: unknown): Product {
 }
 
 export async function fetchBackendProducts(query?: string): Promise<Product[]> {
-    const normalizedQuery = String(query || '').trim();
-    const cacheKey = normalizedQuery ? `products:search:${normalizedQuery.toLowerCase()}` : 'products:all';
+    const baseCandidates = getBackendBaseUrlCandidates();
+    for (const baseUrl of baseCandidates) {
+        try {
+            const endpoint = query && query.trim().length > 0
+                ? `${baseUrl}/user/search?search=${encodeURIComponent(query.trim())}&limit=100`
+                : `${baseUrl}/user/show-product?limit=100`;
 
-    return cached<Product[]>(
-        cacheKey,
-        15 * 60 * 1000,
-        async () => {
-            const baseCandidates = getBackendBaseUrlCandidates();
-            for (const baseUrl of baseCandidates) {
-                try {
-                    const endpoint = normalizedQuery
-                        ? `${baseUrl}/user/search?search=${encodeURIComponent(normalizedQuery)}&limit=100`
-                        : `${baseUrl}/user/show-product?limit=100`;
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                cache: 'no-store',
+            });
 
-                    const response = await fetch(endpoint, {
-                        method: 'GET',
-                        cache: 'no-store',
-                    });
+            if (!response.ok) continue;
 
-                    if (!response.ok) continue;
+            const data = (await response.json()) as GenericRecord;
+            const list = Array.isArray(data.products)
+                ? data.products
+                : Array.isArray(data.data)
+                    ? data.data
+                    : [];
 
-                    const data = (await response.json()) as GenericRecord;
-                    const list = Array.isArray(data.products)
-                        ? data.products
-                        : Array.isArray(data.data)
-                            ? data.data
-                            : [];
+            return list.map(normalizeBackendProduct).filter((item: Product) => Number.isFinite(item.id) && item.id > 0);
+        } catch {
+            continue;
+        }
+    }
 
-                    return list.map(normalizeBackendProduct).filter((item: Product) => Number.isFinite(item.id) && item.id > 0);
-                } catch {
-                    continue;
-                }
-            }
-
-            return [];
-        },
-        { allowStaleOnError: true }
-    );
+    return [];
 }
 
 export async function fetchBackendProductById(id: string | number): Promise<Product | null> {
     const idValue = String(id || '').trim();
     if (!idValue) return null;
 
-    return cached<Product | null>(
-        `product:${idValue}`,
-        30 * 60 * 1000,
-        async () => {
-            const baseCandidates = getBackendBaseUrlCandidates();
-            for (const baseUrl of baseCandidates) {
-                try {
-                    const response = await fetch(`${baseUrl}/user/get-product-byid/${encodeURIComponent(idValue)}`, {
-                        method: 'GET',
-                        cache: 'no-store',
-                    });
+    const baseCandidates = getBackendBaseUrlCandidates();
+    for (const baseUrl of baseCandidates) {
+        try {
+            const response = await fetch(`${baseUrl}/user/get-product-byid/${encodeURIComponent(idValue)}`, {
+                method: 'GET',
+                cache: 'no-store',
+            });
 
-                    if (!response.ok) continue;
+            if (!response.ok) continue;
 
-                    const data = (await response.json()) as GenericRecord;
-                    const rawProduct = Array.isArray(data.data)
-                        ? data.data[0]
-                        : asRecord(data.product && typeof data.product === 'object' ? data.product : null);
-                    if (!rawProduct || (typeof rawProduct === 'object' && Object.keys(asRecord(rawProduct)).length === 0)) continue;
+            const data = (await response.json()) as GenericRecord;
+            const rawProduct = Array.isArray(data.data)
+                ? data.data[0]
+                : asRecord(data.product && typeof data.product === 'object' ? data.product : null);
+            if (!rawProduct || (typeof rawProduct === 'object' && Object.keys(asRecord(rawProduct)).length === 0)) continue;
 
-                    return normalizeBackendProduct(rawProduct);
-                } catch {
-                    continue;
-                }
-            }
+            return normalizeBackendProduct(rawProduct);
+        } catch {
+            continue;
+        }
+    }
 
-            return null;
-        },
-        { allowStaleOnError: true }
-    );
+    return null;
 }

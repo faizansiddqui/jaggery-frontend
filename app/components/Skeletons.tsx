@@ -8,15 +8,22 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function ProductGridSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
       {Array.from({ length: count }).map((_, i) => (
-        <article key={i} className="group relative">
-          <div className="relative mb-6 overflow-hidden rounded-xl bg-surface-container-high aspect-[4/5] w-full animate-pulse"></div>
-          <div className="flex flex-col lg:flex-row justify-between items-start mb-2 gap-4">
-            <div className="h-6 bg-surface-container-high rounded w-3/4 animate-pulse"></div>
-            <div className="h-6 bg-surface-container-high rounded w-16 animate-pulse"></div>
+        <article key={i} className="group relative animate-pulse">
+          <div className="relative mb-8 overflow-hidden rounded-[1rem] bg-surface-container-high aspect-square shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-surface-container-high via-surface-container to-surface-container-high" />
           </div>
-          <div className="h-12 bg-surface-container-high rounded-full w-full mt-4 animate-pulse"></div>
+          <div className="flex flex-col gap-3 px-2">
+            <div className="h-8 bg-surface-container-high rounded-xl w-4/5"></div>
+            <div className="flex items-center gap-3">
+              <div className="h-8 bg-surface-container-high rounded-xl w-24"></div>
+              <div className="h-5 bg-surface-container-high rounded-xl w-16"></div>
+            </div>
+          </div>
+          <div className="mt-6 px-2">
+            <div className="h-14 bg-surface-container-high rounded-2xl w-full"></div>
+          </div>
         </article>
       ))}
     </div>

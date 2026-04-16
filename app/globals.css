@@ -95,16 +95,7 @@
   }
 
   .serif-italic {
-    font-style: normal;
-  }
-
-  /* Keep typography cleaner / less cursive across site */
-  .font-headline,
-  .font-brand,
-  .italic,
-  em,
-  i {
-    font-style: normal !important;
+    font-style: italic;
   }
 }
 
@@ -172,72 +163,6 @@
   /* Filled icons utility */
   .icon-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
-  /* Admin: make buttons look like real buttons (scoped) */
-  .admin-ui :where(button, a[role="button"], input[type="button"], input[type="submit"])
-    :not(.icon-btn)
-    :not([data-variant="ghost"])
-    :not([data-unstyled="true"])
-    :not(.absolute) {
-    border-radius: 9999px;
-    border-width: 2px;
-    border-style: solid;
-    border-color: color-mix(in oklab, var(--color-primary) 0%, transparent);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-    padding: 0.75rem 1.25rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    line-height: 1rem;
-    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 120ms ease, opacity 160ms ease;
-  }
-
-  .admin-ui :where(button, a[role="button"], input[type="button"], input[type="submit"])
-    :not(.icon-btn)
-    :not([data-variant="ghost"])
-    :not([data-unstyled="true"])
-    :not(.absolute):hover {
-    background: transparent;
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  .admin-ui :where(button, a[role="button"], input[type="button"], input[type="submit"])
-    :not(.icon-btn)
-    :not([data-variant="ghost"])
-    :not([data-unstyled="true"])
-    :not(.absolute):active {
-    transform: scale(0.99);
-  }
-
-  .admin-ui :where(button, a[role="button"], input[type="button"], input[type="submit"])
-    :not(.icon-btn)
-    :not([data-variant="ghost"])
-    :not([data-unstyled="true"])
-    :not(.absolute):disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  /* Admin exceptions: icon-only / link-like buttons */
-  .admin-ui :where(button.icon-btn, button[data-variant="ghost"], button[data-unstyled="true"]) {
-    background: transparent;
-    color: inherit;
-    border-color: transparent;
-    padding: 0;
-    border-radius: 0.75rem;
-    letter-spacing: normal;
-    text-transform: none;
-    font-weight: 600;
-  }
-
-  .admin-ui :where(button.icon-btn, button[data-variant="ghost"], button[data-unstyled="true"]):hover {
-    background: transparent;
-    color: var(--color-primary);
-    border-color: transparent;
-  }
-
   /* Lenis Scroll CSS (Locomotive v5) */
   html.lenis, html.lenis body {
     height: auto;
@@ -247,6 +172,8 @@
   }
   .lenis.lenis-smooth [data-lenis-prevent] {
     overscroll-behavior: contain;
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .lenis.lenis-stopped {
     overflow: hidden;

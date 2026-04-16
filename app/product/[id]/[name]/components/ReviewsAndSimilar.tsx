@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/app/context/CartContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import ReviewFormModal from "./review/ReviewFormModal";
 import { fetchBackendProducts } from "@/app/lib/backendProducts";
@@ -26,6 +27,7 @@ const formatDateLabel = (value?: string) => {
 };
 
 export default function ReviewsAndSimilar({ product }: { product?: Product | null }) {
+  const { addItem, isVariantInCart } = useCart();
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -74,7 +76,11 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
 
         const basePool = all.filter((p) => {
           if (!p || !p.id) return false;
-          // Show all products (even if out of stock), including current product if present.
+          if (productId > 0 && p.id === productId) return false;
+          if (productPublicId && p.publicId === productPublicId) return false;
+          const hasStock = Number(p.quantity || 0) > 0;
+          const variantStock = Object.values(p.stockByVariant || {}).some((qty) => Number(qty || 0) > 0);
+          if (!hasStock && !variantStock) return false;
           return true;
         });
 
@@ -87,7 +93,7 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
           )
           : [];
 
-        const selected = (sameCollection.length ? sameCollection : basePool);
+        const selected = (sameCollection.length ? sameCollection : basePool).slice(0, 8);
         setSimilarProducts(selected);
       } catch {
         setSimilarProducts([]);
@@ -118,6 +124,18 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddToCart = (item: Product) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: Number(item.price || 0),
+      color: "",
+      size: "Default",
+      image: item.image || "",
+      collection: item.collection || "SIMILAR COLLECTIONS",
+    });
   };
 
   const renderStars = (rating: number) => {
@@ -191,7 +209,7 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
           {similarProducts.map((item) => (
             <div key={item.id} className="group w-[70vw] max-w-[260px] sm:w-[240px] md:w-[230px] lg:w-[220px] snap-start flex-shrink-0">
               <Link href={createProductHref(item)}>
-                <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-surface-container mb-6 shadow-sm">
+                <div className="w-full aspect-square rounded-2xl overflow-hidden bg-surface-container mb-6 shadow-sm">
                   {item.image ? (
                     <Image src={item.image} alt={item.name} width={300} height={400} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
                   ) : (
@@ -214,13 +232,18 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
                   <span className="font-body text-xs text-on-surface-variant line-through">{currencySymbol}{Number(item.originalPrice).toFixed(2)}</span>
                 )}
               </div>
-              <Link
-                href={createProductHref(item)}
-                className="mt-6 w-full py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all active:scale-95 border-[1.5px] flex items-center justify-center gap-2 border-primary text-primary hover:bg-primary hover:text-on-primary"
+              <button
+                type="button"
+                onClick={() => handleAddToCart(item)}
+                disabled={isVariantInCart(item.id, "Default", "")}
+                className={`mt-6 w-full py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all active:scale-95 border-[1.5px] flex items-center justify-center gap-2 ${isVariantInCart(item.id, "Default", "") ? "border-primary bg-primary text-on-primary disabled:opacity-75" : "border-primary text-primary hover:bg-primary hover:text-on-primary"
+                  }`}
               >
-                <span className="material-symbols-outlined text-[16px]">event_available</span>
-                Book Now
-              </Link>
+                <span className="material-symbols-outlined text-[16px]">
+                  {isVariantInCart(item.id, "Default", "") ? "done" : "add_shopping_cart"}
+                </span>
+                {isVariantInCart(item.id, "Default", "") ? "Added" : "Add to Cart"}
+              </button>
             </div>
           ))}
           {similarProducts.length === 0 && (

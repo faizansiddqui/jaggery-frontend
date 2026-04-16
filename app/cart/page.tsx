@@ -1,256 +1,273 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
-import { useAuth } from "@/app/context/AuthContext";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
-import { fetchBackendProducts, stockForCartLine } from "@/app/lib/backendProducts";
-import { createProductHref } from "@/app/data/products";
 
 const SHIPPING = 0;
 
-export default function CartCheckoutPage() {
-    const router = useRouter();
-    const { items, removeItem, updateQty, itemCount } = useCart();
-    const { isAuthenticated } = useAuth();
-    const { settings } = useSiteSettings();
-    const currencySymbol = settings.currencySymbol || "₹";
-    const [stockByCartKey, setStockByCartKey] = useState<Record<string, number>>({});
-    const [productHrefById, setProductHrefById] = useState<Record<number, string>>({});
-    const [isCheckingStock, setIsCheckingStock] = useState(false);
+function CartSkeletonCard() {
+  return (
+    <div className="rounded-[0.5rem] border border-outline-variant/30 bg-white p-3 sm:p-6">
+      <div className="grid grid-cols-[110px_minmax(0,1fr)] gap-4 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-6">
+        <div className="h-32 rounded-[0.5rem] bg-surface-variant/30 sm:h-44 animate-pulse" />
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3 flex-1">
+              <div className="h-5 w-2/3 rounded-full bg-surface-variant/30 animate-pulse" />
+              <div className="grid grid-cols-2 gap-2 max-w-[220px]">
+                <div className="h-7 rounded-full bg-surface-variant/20 animate-pulse" />
+                <div className="h-7 rounded-full bg-surface-variant/20 animate-pulse" />
+              </div>
+            </div>
+            <div className="h-10 w-10 rounded-full bg-surface-variant/20 animate-pulse" />
+          </div>
+          <div className="flex items-end justify-between gap-4 pt-6">
+            <div className="h-11 w-28 rounded-2xl bg-surface-variant/20 animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-3 w-16 rounded-full bg-surface-variant/20 animate-pulse ml-auto" />
+              <div className="h-7 w-24 rounded-full bg-surface-variant/30 animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-    useEffect(() => {
-        let active = true;
-        const loadStock = async () => {
-            if (!items.length) {
-                if (active) {
-                    setStockByCartKey({});
-                    setProductHrefById({});
-                    setIsCheckingStock(false);
-                }
-                return;
-            }
-            setIsCheckingStock(true);
-            try {
-                const products = await fetchBackendProducts();
-                const productMap = new Map(products.map((product) => [Number(product.id), product]));
-                const next: Record<string, number> = {};
-                const hrefs: Record<number, string> = {};
-                for (const item of items) {
-                    const product = productMap.get(Number(item.id));
-                    const key = `${Number(item.id)}|${String(item.size || "").trim().toLowerCase()}|${String(item.color || "").trim().toLowerCase()}`;
-                    if (!product) {
-                        next[key] = 0;
-                        continue;
-                    }
-                    hrefs[Number(item.id)] = createProductHref(product);
-                    next[key] = stockForCartLine(product, item.size);
-                }
-                if (active) {
-                    setStockByCartKey(next);
-                    setProductHrefById(hrefs);
-                }
-            } catch {
-                if (active) {
-                    setStockByCartKey({});
-                    setProductHrefById({});
-                }
-            } finally {
-                if (active) setIsCheckingStock(false);
-            }
-        };
-        loadStock();
-        return () => {
-            active = false;
-        };
-    }, [items]);
+function CartPageSkeleton() {
+  return (
+    <main className="min-h-screen pt-30 pb-2 px-3 sm:px-8 lg:px-16 bg-surface font-['Poppins'] max-w-[1600px] mx-auto">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">
+        <section className="w-full lg:col-span-8 space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-3">
+              <div className="h-12 w-52 rounded-full bg-surface-variant/30 animate-pulse" />
+              <div className="h-5 w-72 rounded-full bg-surface-variant/20 animate-pulse" />
+            </div>
+            <div className="h-5 w-32 rounded-full bg-surface-variant/20 animate-pulse" />
+          </div>
+          <div className="space-y-6">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <CartSkeletonCard key={index} />
+            ))}
+          </div>
+        </section>
 
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-    const total = subtotal + SHIPPING;
-    const getCartKey = (id: number, size: string, color: string) =>
-        `${Number(id)}|${String(size || "").trim().toLowerCase()}|${String(color || "").trim().toLowerCase()}`;
-    const hasStockIssue = items.some((item) => {
-        const available = stockByCartKey[getCartKey(item.id, item.size, item.color || "")];
-        return typeof available === "number" && (available <= 0 || item.qty > available);
-    });
-
-    const canContinue = itemCount > 0 && !isCheckingStock && !hasStockIssue;
-    const totalLabel = useMemo(() => `${currencySymbol}${total.toFixed(2)}`, [currencySymbol, total]);
-
-    if (!itemCount) {
-        return (
-            <main className="min-h-screen pt-24 pb-12 px-6 max-w-6xl mx-auto flex items-center justify-center">
-                <div className="text-center space-y-6">
-                    <span className="material-symbols-outlined text-7xl text-secondary opacity-30">shopping_cart</span>
-                    <h1 className="font-headline text-4xl text-primary font-bold">Your cart is empty</h1>
-                    <p className="text-on-surface-variant">Start adding products to your collection.</p>
-                    <Link href="/shop" className="inline-block mt-6 px-8 py-3 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-opacity">
-                        Continue Shopping
-                    </Link>
+        <aside className="w-full lg:col-span-4 lg:sticky lg:top-32">
+          <div className="bg-white border border-outline-variant/30 rounded-[0.5rem] p-4 lg:p-8 shadow-2xl shadow-primary/5">
+            <div className="h-8 w-40 rounded-full bg-surface-variant/30 animate-pulse" />
+            <div className="mt-8 space-y-5">
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-24 rounded-full bg-surface-variant/20 animate-pulse" />
+                <div className="h-4 w-16 rounded-full bg-surface-variant/20 animate-pulse" />
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="h-4 w-28 rounded-full bg-surface-variant/20 animate-pulse" />
+                <div className="h-6 w-14 rounded-full bg-surface-variant/20 animate-pulse" />
+              </div>
+              <div className="h-px bg-outline-variant/20 my-2" />
+              <div className="flex justify-between items-end py-2">
+                <div className="space-y-2">
+                  <div className="h-4 w-24 rounded-full bg-surface-variant/20 animate-pulse" />
+                  <div className="h-4 w-20 rounded-full bg-surface-variant/20 animate-pulse" />
                 </div>
-            </main>
-        );
-    }
+                <div className="h-10 w-28 rounded-full bg-surface-variant/30 animate-pulse" />
+              </div>
+            </div>
+            <div className="mt-10 h-14 rounded-[1.5rem] bg-surface-variant/30 animate-pulse" />
+            <div className="mt-8 space-y-4">
+              <div className="h-4 w-36 rounded-full bg-surface-variant/20 animate-pulse" />
+              <div className="h-4 w-40 rounded-full bg-surface-variant/20 animate-pulse" />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
+}
 
+export default function CartPage() {
+  const { items, removeItem, updateQty, itemCount, isHydrating } = useCart();
+  const { settings } = useSiteSettings();
+  const currencySymbol = settings.currencySymbol || "Rs.";
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total = subtotal + SHIPPING;
+
+  if (isHydrating) {
+    return <CartPageSkeleton />;
+  }
+
+  if (!itemCount) {
     return (
-        <main className="min-h-screen pt-24 pb-5 lg:pb-12 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 overflow-x-hidden">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-            <section className="flex-1 space-y-8 min-w-0 w-full overflow-x-hidden">
-                <header className="space-y-2">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-outline-variant/40 bg-surface-container-low px-3 py-1 text-xs text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[15px] text-secondary">shopping_bag</span>
-                        Cart overview
-                    </div>
-                    <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-primary">
-                        Your Harvest Selection
-                    </h1>
-                    <p className="mt-2 text-on-surface-variant font-body">{itemCount} items in your cart.</p>
-                </header>
-
-                <div className="space-y-6 w-full overflow-x-hidden">
-                    {items.map((item) => (
-                        <div
-                            key={`${item.id}-${item.size}-${item.color}`}
-                            className="group w-full max-w-full overflow-hidden bg-surface-container-low rounded-2xl border border-outline-variant/20 p-4 sm:p-5 flex gap-4 sm:gap-5 items-start shadow-sm hover:shadow-md hover:border-outline-variant/40 transition-all"
-                        >
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-surface-container-highest shrink-0 relative ring-1 ring-outline-variant/20">
-                                {productHrefById[item.id] ? (
-                                    <Link href={productHrefById[item.id]} className="block w-full h-full relative" aria-label={`View ${item.name}`}>
-                                        <Image src={item.image} alt={item.name} fill unoptimized className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="96px" />
-                                    </Link>
-                                ) : (
-                                    <Image src={item.image} alt={item.name} fill unoptimized className="object-cover" sizes="96px" />
-                                )}
-                            </div>
-
-                            {(() => {
-                                const available = stockByCartKey[getCartKey(item.id, item.size, item.color || "")];
-                                const outOfStock = typeof available === "number" && available <= 0;
-                                return (
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-headline text-lg sm:text-xl text-primary font-bold leading-snug break-words">{item.name}</h3>
-                                <p className="text-on-surface-variant text-xs sm:text-sm font-label break-words mt-1">
-                                    {item.size}{item.color ? ` • ${item.color}` : ""}
-                                </p>
-                                {outOfStock ? (
-                                    <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-error/10 text-error px-2 py-1 text-[11px] font-semibold">
-                                        <span className="material-symbols-outlined text-[14px]">error</span>
-                                        Out of stock
-                                    </p>
-                                ) : null}
-
-                                <div className="grid grid-cols-1 sm:grid-cols-[auto,1fr] items-center gap-3 mt-4 min-w-0">
-                                    <div className="flex items-center bg-surface-container-high rounded-full px-2 py-1.5 gap-2 w-fit max-w-full ring-1 ring-outline-variant/20">
-                                        <button
-                                            type="button"
-                                            onClick={() => updateQty(item.id, item.size, -1, item.color)}
-                                            className="w-8 h-8 rounded-full border border-outline-variant/30 text-primary hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center"
-                                        >
-                                            <span className="material-symbols-outlined text-sm">remove</span>
-                                        </button>
-                                        <span className="font-body font-semibold text-sm min-w-8 text-center">{String(item.qty).padStart(2, "0")}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => updateQty(item.id, item.size, 1, item.color)}
-                                            disabled={outOfStock || (typeof available === "number" && item.qty >= available)}
-                                            className="w-8 h-8 rounded-full border border-outline-variant/30 text-primary hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center disabled:opacity-50"
-                                        >
-                                            <span className="material-symbols-outlined text-sm">add</span>
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-3 min-w-0 sm:justify-end">
-                                        <div className="inline-flex items-center gap-2 bg-secondary/10 rounded-full px-3 py-1.5">
-                                            <span className="material-symbols-outlined text-[16px] text-secondary">payments</span>
-                                            <span className="font-headline text-lg sm:text-xl font-bold text-secondary">
-                                                {currencySymbol}{(item.price * item.qty).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeItem(item.id, item.size, item.color)}
-                                            className="w-9 h-9 rounded-full border border-outline-variant/30 text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors flex items-center justify-center shrink-0"
-                                            aria-label={`Remove ${item.name}`}
-                                        >
-                                            <span className="material-symbols-outlined text-[18px]">delete</span>                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                                );
-                            })()}
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Order summary (right sticky) */}
-            <aside className="w-full lg:w-[420px] lg:sticky lg:top-28 self-start">
-                <div className="bg-surface-container-low border border-outline-variant/20 rounded-3xl p-6 shadow-sm">
-                    <h2 className="font-headline text-2xl text-primary font-bold">Order Summary</h2>
-                    <div className="mt-6 space-y-3">
-                        <div className="flex justify-between text-on-surface-variant">
-                            <span>Subtotal</span>
-                            <span>{currencySymbol}{subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-on-surface-variant">
-                            <span>Shipping</span>
-                            <span>{currencySymbol}{SHIPPING.toFixed(2)}</span>
-                        </div>
-                        <div className="pt-4 border-t border-outline-variant/20 flex justify-between items-baseline">
-                            <span className="font-headline text-xl font-bold text-primary">Total</span>
-                            <span className="font-headline text-2xl font-black text-secondary">{currencySymbol}{total.toFixed(2)}</span>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                router.push("/user/auth");
-                                return;
-                            }
-                            router.push("/checkout");
-                        }}
-                        disabled={!canContinue}
-                        className="mt-6 w-full bg-primary text-on-primary py-4 rounded-full font-headline text-lg font-bold tracking-wide hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-xl"
-                    >
-                        <span>{isCheckingStock ? "Verifying stock..." : hasStockIssue ? "Stock issue in cart" : "Continue"}</span>
-                        <span className="material-symbols-outlined">arrow_forward</span>
-                    </button>
-
-                    <p className="text-center text-on-surface-variant text-xs font-body mt-3">
-                        Next: delivery address & payment
-                    </p>
-                </div>
-            </aside>
-            </div>
-
-            {/* Mobile sticky bottom summary */}
-            <div className="lg:hidden fixed left-0 right-0 bottom-0 z-40 bg-surface/90 backdrop-blur border-t border-outline-variant/20">
-                <div className="max-w-[1440px] mx-auto px-4 py-3 flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                        <div className="text-[11px] text-on-surface-variant">Total</div>
-                        <div className="font-headline text-lg font-black text-secondary truncate">{totalLabel}</div>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                router.push("/user/auth");
-                                return;
-                            }
-                            router.push("/checkout");
-                        }}
-                        disabled={!canContinue}
-                        className="bg-primary text-on-primary px-6 py-3 rounded-full font-bold uppercase tracking-widest text-xs disabled:opacity-60"
-                    >
-                        
-                        Continue
-                    </button>
-                </div>
-            </div>
-        </main>
+      <main className="min-h-screen pt-5 pb-2 px-6 flex items-center justify-center bg-surface font-['Poppins']">
+        <div className="text-center max-w-md animate-fade-in">
+          <div className="relative inline-block mb-8">
+            <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl" />
+            <span className="material-symbols-outlined text-8xl text-primary/20 relative">shopping_basket</span>
+          </div>
+          <h1 className="text-4xl font-bold text-primary mb-4 tracking-tight">Your cart is empty</h1>
+          <p className="text-on-surface-variant/70 mb-10 leading-relaxed">
+            It looks like you haven't added anything to your cart yet. Discover our exclusive collection and find something you love.
+          </p>
+          <Link href="/shop" className="inline-flex items-center gap-3 px-10 py-4 bg-primary text-white rounded-2xl font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all active:scale-95">
+            <span className="material-symbols-outlined text-sm">explore</span>
+            Start Shopping
+          </Link>
+        </div>
+      </main>
     );
+  }
+
+  return (
+    <main className="min-h-screen pt-30 pb-2 px-3 sm:px-8 lg:px-16 bg-surface font-['Poppins'] max-w-[1600px] mx-auto">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 items-start">
+        
+        {/* Left Side: Items List (Height is now flexible) */}
+        <section className="w-full lg:col-span-8 space-y-10">
+          <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold text-primary tracking-tighter">Your Bag</h1>
+              <p className="mt-2 text-on-surface-variant/60 font-medium tracking-wide">
+                {itemCount} {itemCount === 1 ? 'item' : 'items'} selected for checkout
+              </p>
+            </div>
+            <Link href="/shop" className="text-sm font-bold text-primary flex items-center gap-2 hover:underline underline-offset-8">
+              <span className="material-symbols-outlined text-base">add_shopping_cart</span>
+              Add more items
+            </Link>
+          </header>
+
+          <div className="space-y-6">
+            {items.map((item) => (
+              <div 
+                key={`${item.id}-${item.size}-${item.color}`} 
+                className="group relative bg-white border border-outline-variant/30 rounded-[0.5rem] p-3 sm:p-6 flex flex-row sm:flex-row gap-3 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500"
+              >
+                {/* Product Image */}
+                <div className="w-[30vw] h-[20vh] lg:w-[15vw] lg:h-[30vh] rounded-[0.5rem] overflow-hidden bg-surface-variant/10 shrink-0 relative">
+                  <Image 
+                    src={item.image} 
+                    alt={item.name} 
+                    fill 
+                    unoptimized 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                    // sizes="(max-width: 640px) 100vw, 128px" 
+                  />
+                </div>
+
+                {/* Product Details */}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div className="flex justify-between items-start gap-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-primary mb-1 group-hover:text-primary-container transition-colors">
+                        {item.name}
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 bg-surface-variant/30 rounded-full text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                          Size: {item.size}
+                        </span>
+                        {item.color && (
+                          <span className="px-3 py-1 bg-surface-variant/30 rounded-full text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                            Color: {item.color}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeItem(item.id, item.size, item.color)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant/40 hover:bg-error/10 hover:text-error transition-all"
+                    >
+                      <span className="material-symbols-outlined text-xl leading-none">delete_sweep</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-6 sm:mt-2">
+                    {/* Quantity Controls */}
+                    <div className="flex items-center bg-surface-variant/20 rounded-2xl p-1 border border-outline-variant/10">
+                      <button
+                        onClick={() => updateQty(item.id, item.size, -1, item.color)}
+                        className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-sm text-primary transition-all disabled:opacity-30"
+                        disabled={item.qty <= 1}
+                      >
+                        <span className="material-symbols-outlined text-base">remove</span>
+                      </button>
+                      <span className="w-10 text-center font-bold text-sm text-primary">
+                        {item.qty}
+                      </span>
+                      <button
+                        onClick={() => updateQty(item.id, item.size, 1, item.color)}
+                        className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-sm text-primary transition-all"
+                      >
+                        <span className="material-symbols-outlined text-base">add</span>
+                      </button>
+                    </div>
+
+                    {/* Price */}
+                    <div className="text-right">
+                      <span className="text-xs text-on-surface-variant/50 block font-bold uppercase tracking-tighter leading-none">Subtotal</span>
+                      <span className="text-2xl font-black text-primary tracking-tighter leading-none">
+                        {currencySymbol}{(item.price * item.qty).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Right Side: Summary (Sticky) */}
+        <aside className="w-full lg:col-span-4 lg:sticky lg:top-32">
+          <div className="bg-white border border-outline-variant/30 rounded-[0.5rem] p-4 lg:p-8 shadow-2xl shadow-primary/5">
+            <h2 className="text-2xl font-bold text-primary mb-8 tracking-tight">Order Summary</h2>
+
+            <div className="space-y-5">
+              <div className="flex justify-between items-center text-on-surface-variant/70">
+                <span className="text-sm font-medium">Bag Subtotal</span>
+                <span className="font-semibold">{currencySymbol}{subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-on-surface-variant/70">
+                <span className="text-sm font-medium">Delivery Charges</span>
+                <span className="text-secondary font-bold text-[10px] uppercase tracking-[0.2em] bg-secondary/10 px-2 py-0.5 rounded">Free</span>
+              </div>
+              
+              <div className="h-px bg-outline-variant/20 my-2" />
+              
+              <div className="flex justify-between items-center py-2">
+                  <p className="text-[20px] text-on-surface-variant/80 uppercase font-black tracking-widest mb-1">Total Payable</p>
+                <div className="text-right">
+                  <p className="text-4xl font-black text-primary leading-none tracking-tighter">
+                    {currencySymbol}{total.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/checkout"
+              className="mt-10 w-full bg-primary text-white py-5 rounded-[1.5rem] font-bold text-lg hover:shadow-2xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-3 active:scale-[0.98] group"
+            >
+              Secure Checkout
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </Link>
+
+            <div className="mt-8 flex flex-col gap-4">
+               <div className="flex items-center gap-3 text-on-surface-variant/60">
+                  <span className="material-symbols-outlined text-primary/60 text-lg">verified</span>
+                  <p className="text-xs font-medium">Authenticity Guaranteed</p>
+               </div>
+               <div className="flex items-center gap-3 text-on-surface-variant/60">
+                  <span className="material-symbols-outlined text-primary/60 text-lg">local_shipping</span>
+                  <p className="text-xs font-medium">Safe & Disinfected Delivery</p>
+               </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  );
 }

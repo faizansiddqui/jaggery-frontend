@@ -2,20 +2,13 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { fetchPublicTestimonials } from "../lib/apiClient";
+import * as apiClient from "../lib/apiClient";
 
 type TestimonialItem = {
   id?: string | number;
   quote: string;
   name: string;
   role: string;
-};
-
-type PublicTestimonialRow = {
-  id: string | number;
-  quote: string;
-  name: string;
-  role?: string | null;
 };
 
 const FALLBACK_TESTIMONIALS: TestimonialItem[] = [];
@@ -30,9 +23,20 @@ function TestimonialsSection() {
   const firstCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchPublicTestimonials()
-      .then((rows: PublicTestimonialRow[]) => {
-        if (!rows.length) return;
+    // Different branches/environments may export different testimonial fetchers.
+    // We pick whichever exists and is callable to avoid runtime crashes.
+    const fetchFnUnknown =
+      (apiClient as Record<string, unknown>).fetchAdminTestimonials ??
+      (apiClient as Record<string, unknown>).fetchAdminTestimonial;
+
+    if (typeof fetchFnUnknown !== "function") return;
+
+    (fetchFnUnknown as () => Promise<unknown>)()
+      .then((rowsUnknown) => {
+        if (!Array.isArray(rowsUnknown) || rowsUnknown.length === 0) return;
+
+        type RawRow = { id: string | number; quote: string; name: string; role?: string | null };
+        const rows = rowsUnknown as RawRow[];
 
         setTestimonials(
           rows.map((row) => ({
@@ -47,7 +51,9 @@ function TestimonialsSection() {
   }, []);
 
   useEffect(() => {
-    setActiveIndex(0);
+    setTimeout(() => {
+      setActiveIndex(0);
+    }, 100);
   }, [testimonials.length]);
 
   const measure = useCallback(() => {
@@ -261,7 +267,7 @@ function TestimonialsSection() {
                   </svg>
 
                   <p className="text-on-surface text-lg md:text-xl font-headline italic mb-10 leading-relaxed">
-                    "{t.quote}"
+                    &ldquo;{t.quote}&rdquo;
                   </p>
                 </div>
 

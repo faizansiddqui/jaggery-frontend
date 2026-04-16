@@ -12,6 +12,41 @@ export async function createAdminCategory(name: string, parentId?: string) {
     });
 }
 
+// Tries a few likely backend endpoints since this project has multiple
+// "catagory/category" spellings across routes.
+export async function updateAdminCategory(categoryId: string, name: string) {
+    const payload = { name };
+    const candidates: Array<{ path: string; options: RequestInit }> = [
+        {
+            path: `/admin/update-catagory/${encodeURIComponent(categoryId)}`,
+            options: { method: 'PATCH', body: JSON.stringify(payload) },
+        },
+        {
+            path: `/admin/update-category/${encodeURIComponent(categoryId)}`,
+            options: { method: 'PATCH', body: JSON.stringify(payload) },
+        },
+        {
+            path: `/admin/update-catagory`,
+            options: { method: 'PATCH', body: JSON.stringify({ id: categoryId, name }) },
+        },
+        {
+            path: `/admin/update-category`,
+            options: { method: 'PATCH', body: JSON.stringify({ id: categoryId, name }) },
+        },
+    ];
+
+    let lastErr: unknown;
+    for (const c of candidates) {
+        try {
+            return await request(c.path, c.options);
+        } catch (err) {
+            lastErr = err;
+        }
+    }
+
+    throw lastErr instanceof Error ? lastErr : new Error('Failed to rename category.');
+}
+
 export async function deleteAdminProduct(productId: number, mongoId?: string) {
     const params = new URLSearchParams();
     if (Number.isFinite(productId) && productId > 0) {
@@ -278,6 +313,17 @@ export interface AdminBanner {
     targetUrl: string;
     width: number;
     height: number;
+    order: number;
+    isActive: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+}
+
+export interface AdminTestimonial {
+    id: string;
+    quote: string;
+    name: string;
+    role: string;
     order: number;
     isActive: boolean;
     createdAt?: string | null;
@@ -1400,6 +1446,73 @@ const mapBanner = (value: unknown): AdminBanner => {
     };
 };
 
+const mapTestimonial = (value: unknown): AdminTestimonial => {
+    const row = asRecord(value);
+    return {
+        id: String(row.id || row._id || ''),
+        quote: String(row.quote || ''),
+        name: String(row.name || ''),
+        role: String(row.role || ''),
+        order: Number(row.order || 0),
+        isActive: row.isActive !== false,
+        createdAt: row.createdAt ? String(row.createdAt) : null,
+        updatedAt: row.updatedAt ? String(row.updatedAt) : null,
+    };
+};
+
+export async function fetchAdminTestimonials(): Promise<AdminTestimonial[]> {
+    const data = await request('/admin/testimonials');
+    const rows = Array.isArray(data.testimonials) ? data.testimonials : [];
+    return rows.map((entry) => mapTestimonial(entry));
+}
+
+export async function fetchAdminTestimonial(): Promise<AdminTestimonial[]> {
+    return fetchAdminTestimonials();
+}
+
+export async function fetchPublicTestimonials(): Promise<AdminTestimonial[]> {
+    const data = await request('/admin/testimonials/public');
+    const rows = Array.isArray(data.testimonials) ? data.testimonials : [];
+    return rows.map((entry) => mapTestimonial(entry));
+}
+
+export async function createAdminTestimonial(payload: {
+    quote: string;
+    name: string;
+    role?: string;
+    order?: number;
+    isActive?: boolean;
+}) {
+    const data = await request('/admin/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    return mapTestimonial(data.testimonial);
+}
+
+export async function updateAdminTestimonial(
+    id: string,
+    payload: Partial<{
+        quote: string;
+        name: string;
+        role: string;
+        order: number;
+        isActive: boolean;
+    }>
+) {
+    const data = await request(`/admin/testimonials/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    });
+    return mapTestimonial(data.testimonial);
+}
+
+export async function deleteAdminTestimonial(id: string) {
+    return request(`/admin/testimonials/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+    });
+}
+
 export async function fetchAdminBanners(): Promise<AdminBanner[]> {
     const data = await request('/admin/banners');
     const rows = Array.isArray(data.banners) ? data.banners : [];
@@ -1407,17 +1520,9 @@ export async function fetchAdminBanners(): Promise<AdminBanner[]> {
 }
 
 export async function fetchPublicBanners(): Promise<AdminBanner[]> {
-    const { cached } = await import('@/app/lib/clientCache');
-    return cached<AdminBanner[]>(
-        'banners:public',
-        5 * 60 * 1000,
-        async () => {
-            const data = await request('/admin/banners/public');
-            const rows = Array.isArray(data.banners) ? data.banners : [];
-            return rows.map((entry) => mapBanner(entry));
-        },
-        { allowStaleOnError: true }
-    );
+    const data = await request('/admin/banners/public');
+    const rows = Array.isArray(data.banners) ? data.banners : [];
+    return rows.map((entry) => mapBanner(entry));
 }
 
 export async function createAdminBanner(payload: {
@@ -1483,74 +1588,6 @@ export async function updateAdminBanner(
 
 export async function deleteAdminBanner(id: string) {
     return request(`/admin/banners/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-    });
-}
-
-export interface AdminTestimonial {
-    id: string;
-    quote: string;
-    name: string;
-    role: string;
-    order: number;
-    isActive: boolean;
-    createdAt: string | null;
-    updatedAt: string | null;
-}
-
-const mapTestimonial = (value: unknown): AdminTestimonial => {
-    const row = asRecord(value);
-    return {
-        id: String(row.id || row._id || ''),
-        quote: String(row.quote || ''),
-        name: String(row.name || ''),
-        role: String(row.role || ''),
-        order: Number(row.order || 0),
-        isActive: row.isActive !== false,
-        createdAt: row.createdAt ? String(row.createdAt) : null,
-        updatedAt: row.updatedAt ? String(row.updatedAt) : null,
-    };
-};
-
-export async function fetchPublicTestimonials(): Promise<AdminTestimonial[]> {
-    const data = await request('/admin/testimonials/public');
-    const rows = Array.isArray(data.testimonials) ? data.testimonials : [];
-    return rows.map((entry) => mapTestimonial(entry));
-}
-
-export async function fetchAdminTestimonials(): Promise<AdminTestimonial[]> {
-    const data = await request('/admin/testimonials');
-    const rows = Array.isArray(data.testimonials) ? data.testimonials : [];
-    return rows.map((entry) => mapTestimonial(entry));
-}
-
-export async function createAdminTestimonial(payload: {
-    quote: string;
-    name: string;
-    role?: string;
-    order?: number;
-    isActive?: boolean;
-}) {
-    const data = await request('/admin/testimonials', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-    });
-    return mapTestimonial(asRecord(data).testimonial);
-}
-
-export async function updateAdminTestimonial(
-    id: string,
-    payload: Partial<{ quote: string; name: string; role: string; order: number; isActive: boolean }>
-) {
-    const data = await request(`/admin/testimonials/${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        body: JSON.stringify(payload),
-    });
-    return mapTestimonial(asRecord(data).testimonial);
-}
-
-export async function deleteAdminTestimonial(id: string) {
-    return request(`/admin/testimonials/${encodeURIComponent(id)}`, {
         method: 'DELETE',
     });
 }

@@ -57,7 +57,7 @@ export default function ProductPageClient({ id, name }: { id: string; name?: str
 
 
   return (
-    <div className="pt-24 pb-12 px-2 sm:px-2 lg:px-12 max-w-screen-2xl mx-auto selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
+    <div className="pt-24 pb-12 px-2 sm:px-2 lg:px-12 max-w-screen-2xl mx-auto selection:bg-secondary-container selection:text-on-secondary-container">
       <ProductHeader product={product} />
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-0">
         <NutritionFacts product={product} />

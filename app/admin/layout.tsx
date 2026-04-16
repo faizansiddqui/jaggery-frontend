@@ -52,7 +52,7 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 border-r border-outline/10 flex flex-col fixed h-full bg-surface z-50">
         <div className="p-8 border-b border-outline/10">
-          {settings.logoUrl ? (
+          {/* {settings.logoUrl ? (
             <div className="mb-4 flex items-center">
               <Image
                 src={settings.logoUrl}
@@ -63,7 +63,7 @@ export default function AdminLayout({
                 className="h-10 w-auto object-contain"
               />
             </div>
-          ) : null}
+          ) : null} */}
           <h1 className="font-brand text-3xl tracking-tighter text-primary">{settings.siteName || 'Amila Gold'}</h1>
           <p className="font-headline text-[9px] tracking-[0.3em] opacity-40 mt-1">Management Portal</p>
         </div>

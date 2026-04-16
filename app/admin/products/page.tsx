@@ -9,6 +9,7 @@ import {
     fetchAdminProductsLite,
     fetchAdminCategoriesTree,
     createAdminCategory,
+    updateAdminCategory,
     deleteAdminProduct,
     createAdminProduct,
     updateAdminProduct,
@@ -116,6 +117,20 @@ const parseCategoryId = (value: ProductItem['catagory_id']) => {
     return value._id || '';
 };
 
+const findCategoryNameById = (nodes: CategoryNode[], categoryId: string): string | null => {
+    if (!categoryId) return null;
+    for (const node of nodes) {
+        if (String(node._id || node.id || '') === String(categoryId)) {
+            return node.name || null;
+        }
+        if (Array.isArray(node.children) && node.children.length) {
+            const found = findCategoryNameById(node.children, categoryId);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
 const formatCurrency = (value?: number) => {
     const n = Number(value || 0);
     return Number.isFinite(n) ? n.toFixed(2) : '0.00';
@@ -188,6 +203,33 @@ function flattenCategoryPaths(nodes: CategoryNode[], path: string[] = []): strin
     return all;
 }
 
+function renameCategoryInTree(nodes: CategoryNode[], categoryId: string, nextName: string): CategoryNode[] {
+    return nodes.map((node) => {
+        const currentId = String(node._id || node.id || '');
+        const updatedChildren = Array.isArray(node.children)
+            ? renameCategoryInTree(node.children, categoryId, nextName)
+            : [];
+        if (currentId === categoryId) {
+            return { ...node, name: nextName, children: updatedChildren };
+        }
+        return { ...node, children: updatedChildren };
+    });
+}
+
+function flattenCategoriesForSelect(nodes: CategoryNode[], depth = 0): Array<{ id: string; label: string }> {
+    const rows: Array<{ id: string; label: string }> = [];
+    nodes.forEach((node) => {
+        const id = String(node._id || node.id || '');
+        if (!id) return;
+        const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
+        rows.push({ id, label: `${prefix}${node.name}` });
+        if (Array.isArray(node.children) && node.children.length) {
+            rows.push(...flattenCategoriesForSelect(node.children, depth + 1));
+        }
+    });
+    return rows;
+}
+
 // function findPathToCategory(nodes: CategoryNode[], targetId: string): string[] {
 //     if (!targetId) return [];
 //     const paths = flattenCategoryPaths(nodes);
@@ -255,6 +297,7 @@ export default function AdminProductsPage() {
 
     // const [category, setCategory] = useState('');
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [renameCategoryName, setRenameCategoryName] = useState('');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [highlights, setHighlights] = useState('');
@@ -279,6 +322,7 @@ export default function AdminProductsPage() {
         () => variants.reduce((acc, v) => acc + Number(v.stock || 0), 0),
         [variants]
     );
+    const categoryOptions = useMemo(() => flattenCategoriesForSelect(categories), [categories]);
 
     const filteredProducts = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -298,6 +342,7 @@ export default function AdminProductsPage() {
         setStep(1);
         setEditingProductId(null);
         setNewCategoryName('');
+        setRenameCategoryName('');
         setName('');
         setDescription('');
         setHighlights('');
@@ -310,6 +355,14 @@ export default function AdminProductsPage() {
         lastValidDescriptionHtmlRef.current = '';
         setError('');
     };
+
+    useEffect(() => {
+        const currentName = findCategoryNameById(categories, selectedCategoryId);
+        // Only prefill when renaming is not being actively typed (keeps user edits intact).
+        if (currentName && renameCategoryName.trim() === '') {
+            setRenameCategoryName(currentName);
+        }
+    }, [categories, selectedCategoryId]); 
 
     const syncDescriptionFromEditor = () => {
         const html = descriptionEditorRef.current?.innerHTML || '';
@@ -598,6 +651,28 @@ export default function AdminProductsPage() {
         }
     };
 
+    const renameSelectedCategory = async () => {
+        const nextName = renameCategoryName.trim();
+        if (!selectedCategoryId) {
+            setError('Select a category.');
+            return;
+        }
+        if (!nextName) {
+            setError('Enter a new category name.');
+            return;
+        }
+
+        try {
+            setError('');
+            await updateAdminCategory(selectedCategoryId, nextName);
+            setCategories((prev) => renameCategoryInTree(prev, selectedCategoryId, nextName));
+            await loadData();
+            // Keep the new value visible even after refresh.
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Category rename failed.');
+        }
+    };
+
     const validateStep = (currentStep: number) => {
         if (currentStep === 1) {
             if (!selectedCategoryId) return 'Select a category.';
@@ -660,10 +735,18 @@ export default function AdminProductsPage() {
             }));
             form.append('variants', JSON.stringify(backendVariants));
             
-            // Send per-variant images
-            variants.forEach((v) => {
-                if (v.image) form.append('variantImages', v.image);
+            // Send per-variant images along with their source variant indexes
+            // so backend can map files to the correct variant rows.
+            const variantImageIndexes: number[] = [];
+            variants.forEach((v, index) => {
+                if (v.image) {
+                    form.append('variantImages', v.image);
+                    variantImageIndexes.push(index);
+                }
             });
+            if (variantImageIndexes.length > 0) {
+                form.append('variantImageIndexes', JSON.stringify(variantImageIndexes));
+            }
 
             if (editingProductId) {
                 await updateAdminProduct(editingProductId, form);
@@ -691,8 +774,8 @@ export default function AdminProductsPage() {
                 className="w-full bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs tracking-widest outline-none focus:border-secondary"
             >
                 <option value="">Select category</option>
-                {categories.map(cat => (
-                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                {categoryOptions.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
                 ))}
             </select>
         </div>
@@ -770,6 +853,23 @@ export default function AdminProductsPage() {
                                 <div className="pt-6 space-y-6">
                                     <h3 className="font-brand text-3xl">Select Category</h3>
                                     {renderCategoryDropdown()}
+                                    {selectedCategoryId ? (
+                                        <div className="flex flex-col md:flex-row gap-3">
+                                            <input
+                                                value={renameCategoryName}
+                                                onChange={(e) => setRenameCategoryName(e.target.value)}
+                                                placeholder="Rename selected category"
+                                                className="flex-1 bg-[#ffffff]/5 border border-primary px-4 py-3 font-headline text-xs tracking-widest outline-none focus:border-[#b90c1b]"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={renameSelectedCategory}
+                                                className="px-5 py-3 bg-primary text-on-primary font-headline text-xs tracking-widest hover:opacity-90 transition-opacity rounded"
+                                            >
+                                                Rename Category
+                                            </button>
+                                        </div>
+                                    ) : null}
                                     <div className="flex flex-col md:flex-row gap-3">
                                         <input
                                             value={newCategoryName}
@@ -962,7 +1062,7 @@ export default function AdminProductsPage() {
                                                             next[variantIndex] = { ...next[variantIndex], weightUnit: e.target.value as WeightUnit };
                                                             setVariants(next);
                                                         }}
-                                                        className="w-full bg-[#2a2929] text-[#fcf8f8] border border-primary/10 px-3 py-2 font-headline text-xs tracking-widest outline-none focus:border-[#b90c1b]"
+                                                        className="w-full bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-xs tracking-widest outline-none focus:border-[#b90c1b]"
                                                     >
                                                         {WEIGHT_UNIT_OPTIONS.map((unit) => (
                                                             <option key={unit} value={unit}>{unit}</option>
@@ -1028,7 +1128,13 @@ export default function AdminProductsPage() {
                                                     onChange={(e) => {
                                                         const file = e.target.files?.[0] || null;
                                                         const next = [...variants];
-                                                        next[variantIndex] = { ...next[variantIndex], image: file };
+                                                        // If user selects a new image, treat it as replacement:
+                                                        // clear the existing image reference so backend can overwrite.
+                                                        next[variantIndex] = {
+                                                            ...next[variantIndex],
+                                                            image: file,
+                                                            existingImage: file ? '' : next[variantIndex].existingImage,
+                                                        };
                                                         setVariants(next);
                                                     }}
                                                     className="w-full bg-[#ffffff]/5 border border-primary/10 px-3 py-2 font-headline text-[10px]"
@@ -1044,6 +1150,27 @@ export default function AdminProductsPage() {
                                                         {!variant.image && variant.existingImage && (
                                                             <div className="relative inline-block border border-primary/10">
                                                                 <Image src={variant.existingImage} alt="Existing" width={192} height={192} unoptimized className="w-48 h-48 object-cover" />
+                                                            </div>
+                                                        )}
+
+                                                        {(variant.existingImage || variant.image) && (
+                                                            <div className="flex items-center mt-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const next = [...variants];
+                                                                        next[variantIndex] = {
+                                                                            ...next[variantIndex],
+                                                                            existingImage: '',
+                                                                            image: null,
+                                                                        };
+                                                                        setVariants(next);
+                                                                    }}
+                                                                    className="flex items-center px-3 py-2 border border-primary/15 font-headline text-[10px] tracking-widest hover:border-[#b90c1b]"
+                                                                >
+                                                                    <span className="material-symbols-outlined align-[-3px] mr-1 text-sm">delete</span>
+                                                                    Remove Image
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1062,7 +1189,7 @@ export default function AdminProductsPage() {
 
                                     <button
                                         onClick={() => setVariants((prev) => [...prev, createEmptyVariant()])}
-                                        className="px-4 py-2 border border-[#ffffff]/20 font-headline text-xs tracking-widest hover:border-[#b90c1b]"
+                                        className="px-4 py-2 bg-primary text-on-primary border border-primary/10 font-headline text-xs tracking-widest hover:border-primary"
                                     >
                                         Add Weight Variant
                                     </button>
@@ -1091,7 +1218,7 @@ export default function AdminProductsPage() {
                                     <button
                                         onClick={saveProduct}
                                         disabled={isSubmitting}
-                                        className="px-8 py-3 bg-[#b90c1b] font-brand text-2xl disabled:opacity-60 hover:opacity-90"
+                                        className="px-8 py-3 bg-primary text-on-primary border border-primary/10 font-brand text-2xl disabled:opacity-60 hover:opacity-90"
                                     >
                                         {isSubmitting ? 'Publishing...' : editingProductId ? 'Update Product' : 'Publish Product'}
                                     </button>

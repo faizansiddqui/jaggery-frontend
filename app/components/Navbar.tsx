@@ -77,6 +77,7 @@ export default function Navbar() {
         {/* Sidebar Panel: Slick bounce-out effect */}
         <aside
           className={`absolute left-0 top-0 h-full w-[85vw] max-w-[380px] bg-white flex flex-col shadow-[25px_0_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+          data-lenis-prevent
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-8">
@@ -95,7 +96,7 @@ export default function Navbar() {
           </div>
 
           {/* Navigation with staggered animation */}
-          <nav className="flex-1 px-4 overflow-y-auto custom-scrollbar">
+          <nav className="flex-1 px-4 overflow-y-auto custom-scrollbar" data-lenis-prevent>
             <div className="space-y-1.5">
               {NAV_LINKS.map((link, i) => {
                 const isExternal = 'external' in link;

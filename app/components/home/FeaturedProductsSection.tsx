@@ -16,6 +16,7 @@ export default function FeaturedProductsSection() {
   const { settings } = useSiteSettings();
   const currencySymbol = settings.currencySymbol || "₹";
   const mobileTrackRef = useRef<HTMLDivElement | null>(null);
+  const desktopTrackRef = useRef<HTMLDivElement | null>(null);
   const pauseUntilRef = useRef<number>(0);
   const intervalRef = useRef<number | null>(null);
   const [mobileReady, setMobileReady] = useState(false);
@@ -96,6 +97,17 @@ export default function FeaturedProductsSection() {
     };
   }, [mobileReady, products.length]);
 
+  const scrollDesktopTrack = (direction: "prev" | "next") => {
+    const el = desktopTrackRef.current;
+    if (!el) return;
+    const first = el.querySelector<HTMLElement>("[data-feature-desktop-card]");
+    const step = (first?.offsetWidth ?? 0) + 32;
+    el.scrollBy({
+      left: direction === "next" ? step : -step,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <section className="py-16 lg:py-24 bg-[#fcfcfd] overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
@@ -141,11 +153,41 @@ export default function FeaturedProductsSection() {
               </div>
             </div>
 
-            {/* Desktop/Tablet Grid */}
-            <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} currency={currencySymbol} />
-              ))}
+            {/* Desktop/Tablet Horizontal Rail */}
+            <div className="hidden md:block">
+              <div className="flex items-center justify-end gap-3 mb-6">
+                <button
+                  type="button"
+                  onClick={() => scrollDesktopTrack("prev")}
+                  className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                  aria-label="Scroll featured products left"
+                >
+                  <span className="material-symbols-outlined">west</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollDesktopTrack("next")}
+                  className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                  aria-label="Scroll featured products right"
+                >
+                  <span className="material-symbols-outlined">east</span>
+                </button>
+              </div>
+
+              <div
+                ref={desktopTrackRef}
+                className="hide-scrollbar flex gap-8 lg:gap-10 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
+              >
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    data-feature-desktop-card
+                    className="snap-start min-w-[340px] md:min-w-[calc(50%-16px)] lg:min-w-[calc(33.333%-27px)]"
+                  >
+                    <ProductCard product={product} currency={currencySymbol} />
+                  </div>
+                ))}
+              </div>
             </div>
           </>
         )}
@@ -183,7 +225,7 @@ function ProductCard({ product, currency }: { product: Product; currency: string
             src={product.image}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-1000 group-hover:scale-110"
+            className="object-cover transition-transform aspect-square duration-1000 group-hover:scale-110"
             sizes="(max-width: 768px) 85vw, 33vw"
           />
         )}

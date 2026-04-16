@@ -5,7 +5,7 @@ export default function AdminSearchRoute() {
   return (
     <div data-scroll-section>
       <Comp1 />
-<Comp2 />
+      <Comp2 />
     </div>
   );
 }
