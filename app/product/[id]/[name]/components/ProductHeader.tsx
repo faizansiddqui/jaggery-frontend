@@ -18,7 +18,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const [selectedSize, setSelectedSize] = useState<string>(firstSize);
   const productId = product?.id ?? 0;
 
-  const { addItem, isVariantInCart, updateQty } = useCart();
+  const { isVariantInCart } = useCart();
   const inCart = isVariantInCart(productId, selectedSize, "");
   const inWishlist = isInWishlist(productId);
 
@@ -35,6 +35,24 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const displayImage = selectedVariant?.image
     ?? (product?.images && product.images.length > 0 ? product.images[0] : product?.image)
     ?? '';
+
+  // Calculate available stock for selected variant/size
+  const availableStock = useMemo(() => {
+    if (!product) return 0;
+    // Check variant stock first
+    if (selectedVariant?.stock !== undefined) {
+      return selectedVariant.stock;
+    }
+    // Check stockByVariant
+    if (product.stockByVariant && selectedSize) {
+      return product.stockByVariant[selectedSize] ?? 0;
+    }
+    // Check stockBySize
+    if (product.stockBySize && selectedSize) {
+      return product.stockBySize[selectedSize] ?? 0;
+    }
+    return 0;
+  }, [product, selectedVariant, selectedSize]);
 
   const [qty, setQty] = useState<number>(1);
   const [isStickyVisible, setIsStickyVisible] = useState(false);
@@ -89,8 +107,8 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const handleBuyNow = () => {
     if (!product || productId <= 0) return;
 
-    // First add to cart
-    addItem({
+    // Save Buy Now item to localStorage (doesn't affect cart)
+    const buyNowItem = {
       id: productId,
       name: product?.name ?? 'Product',
       price: displayPrice,
@@ -98,17 +116,13 @@ export default function ProductHeader({ product }: { product?: Product | null })
       size: selectedSize,
       image: displayImage,
       collection: product?.collection ?? 'SHOP',
-    });
+      qty: qty,
+    };
 
-    // Set quantity if more than 1
-    if (qty > 1) {
-      try {
-        updateQty(productId, selectedSize, qty - 1);
-      } catch { /* ignore */ }
-    }
+    localStorage.setItem('sr_buy_now_item', JSON.stringify(buyNowItem));
 
     // Navigate to checkout
-    router.push("/checkout");
+    router.push("/checkout?buyNow=true");
   };
 
   return (
@@ -229,7 +243,11 @@ export default function ProductHeader({ product }: { product?: Product | null })
                   <span className="material-symbols-outlined">remove</span>
                 </button>
                 <span className="px-4 font-headline font-bold text-xl">{qty}</span>
-                <button onClick={() => setQty((q) => q + 1)} className="w-10 h-10 flex items-center justify-center hover:text-primary transition-colors">
+                <button
+                  onClick={() => setQty((q) => Math.min(availableStock > 0 ? availableStock : 999, q + 1))}
+                  disabled={availableStock > 0 && qty >= availableStock}
+                  className="w-10 h-10 flex items-center justify-center hover:text-primary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
                   <span className="material-symbols-outlined">add</span>
                 </button>
               </div>

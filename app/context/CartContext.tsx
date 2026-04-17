@@ -20,7 +20,7 @@ interface CartContextType {
   isVariantInCart: (id: number, size: string, color?: string) => boolean;
   removeItem: (id: number, size: string, color?: string) => void;
   updateQty: (id: number, size: string, delta: number, color?: string) => void;
-  clearCart: () => void;
+  clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
   isHydrating: boolean;
   isSyncing: boolean;
@@ -247,25 +247,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
       });
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     setIsSyncing(true);
     setSyncError('');
 
-    clearCartItems()
-      .then((serverItems) => {
-        if (Array.isArray(serverItems)) {
-          setItems(normalizeServerItems(serverItems));
-          return;
-        }
-
+    try {
+      const serverItems = await clearCartItems();
+      if (Array.isArray(serverItems)) {
+        setItems(normalizeServerItems(serverItems));
+      } else {
         setItems([]);
-      })
-      .catch(() => {
-        setSyncError('Could not clear cart.');
-      })
-      .finally(() => {
-        setIsSyncing(false);
-      });
+      }
+    } catch {
+      setSyncError('Could not clear cart.');
+      setItems([]);
+    } finally {
+      setIsSyncing(false);
+    }
   };
   const total = items.reduce((acc, i) => acc + i.price * i.qty, 0);
   const itemCount = items.reduce((acc, i) => acc + i.qty, 0);

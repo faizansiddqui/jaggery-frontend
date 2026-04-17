@@ -94,8 +94,22 @@ function CheckoutSummarySkeleton() {
   );
 }
 
+type BuyNowItem = {
+  id: number;
+  name: string;
+  price: number;
+  color: string;
+  size: string;
+  image: string;
+  collection: string;
+  qty: number;
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isBuyNow = searchParams?.get('buyNow') === 'true';
+
   const { items, itemCount, clearCart, isHydrating } = useCart();
   const { isAuthenticated, user, isLoading: isAuthLoading } = useAuth();
   const { settings, isLoading: isSettingsLoading } = useSiteSettings();
@@ -103,6 +117,7 @@ export default function CheckoutPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [buyNowItem, setBuyNowItem] = useState<BuyNowItem | null>(null);
 
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
@@ -112,9 +127,27 @@ export default function CheckoutPage() {
   const [addressError, setAddressError] = useState("");
   const [newAddress, setNewAddress] = useState<UserAddressInput>(createEmptyAddress());
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  // Use buyNowItem if present (Buy Now flow), otherwise use cart items
+  const checkoutItems = buyNowItem ? [buyNowItem] : items;
+  const checkoutItemCount = buyNowItem ? buyNowItem.qty : itemCount;
+
+  const subtotal = checkoutItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const total = subtotal + SHIPPING;
   const isPageLoading = isHydrating || isAuthLoading || isSettingsLoading;
+
+  // Load buyNowItem from localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = localStorage.getItem('sr_buy_now_item');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setBuyNowItem(parsed);
+      } catch {
+        localStorage.removeItem('sr_buy_now_item');
+      }
+    }
+  }, []);
 
   const persistSelectedAddressId = (value: number | null) => {
     if (typeof window === "undefined") return;
@@ -231,7 +264,7 @@ export default function CheckoutPage() {
   };
 
   const handlePayment = async () => {
-    if (!itemCount || isProcessing) return;
+    if (!checkoutItemCount || isProcessing) return;
     if (!selectedAddressId) {
       setPaymentError("Please select a delivery address.");
       return;
@@ -246,7 +279,7 @@ export default function CheckoutPage() {
 
     try {
       const data = (await createBackendOrder(
-        items.map((item) => ({
+        checkoutItems.map((item) => ({
           product_id: item.id,
           quantity: item.qty,
           size: item.size,
@@ -268,7 +301,7 @@ export default function CheckoutPage() {
         amount: Number(data.amount || Math.round(total * 100)),
         currency: String(data.currency || "INR"),
         name: settings.siteName || "Amila Gold",
-        description: `${itemCount} items`,
+        description: `${checkoutItemCount} item${checkoutItemCount > 1 ? 's' : ''}`,
         order_id: orderId,
         prefill: {
           name: selectedAddress?.FullName || "",
@@ -282,7 +315,7 @@ export default function CheckoutPage() {
               razorpay_order_id: String(paymentResponse.razorpay_order_id || ""),
               razorpay_payment_id: String(paymentResponse.razorpay_payment_id || ""),
               razorpay_signature: String(paymentResponse.razorpay_signature || ""),
-              items: items.map((item) => ({
+              items: checkoutItems.map((item) => ({
                 product_id: item.id,
                 quantity: item.qty,
                 size: item.size,
@@ -294,7 +327,14 @@ export default function CheckoutPage() {
             })) as Record<string, unknown>;
 
             if (verifyData.status) {
-              clearCart();
+              // Clear buyNowItem from localStorage
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('sr_buy_now_item');
+              }
+              // Only clear cart for normal checkout (not Buy Now)
+              if (!buyNowItem) {
+                clearCart();
+              }
               router.push(`/order/success?order_id=${encodeURIComponent(String(verifyData.order_id || localOrderId || ""))}`);
             } else {
               router.push(`/order/failed?error=${encodeURIComponent(String(verifyData.message || "Payment verification failed"))}`);
@@ -313,13 +353,13 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!isPageLoading && !itemCount) {
+  if (!isPageLoading && !checkoutItemCount) {
     return (
       <main className="min-h-screen pt-20 pb-2 px-3 max-w-6xl mx-auto flex items-center justify-center">
         <div className="text-center space-y-6">
           <span className="material-symbols-outlined text-7xl text-secondary opacity-30">shopping_cart</span>
           <h1 className="font-headline text-4xl text-primary font-bold">Your cart is empty</h1>
-          <p className="text-on-surface-variant">Add products before checkout.</p>
+          <p className="text-on-surface-variant">{buyNowItem ? 'Buy Now item expired. Please try again.' : 'Add products before checkout.'}</p>
           <Link href="/shop" className="inline-block mt-6 px-8 py-3 bg-primary text-white rounded-full font-bold hover:opacity-90 transition-opacity">
             Continue Shopping
           </Link>
@@ -362,7 +402,7 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <div
-                  className="space-y-4 max-h-[430px] overflow-y-auto hide-scrollbar overscroll-contain pr-1"
+                  className="space-y-4 max-h-[330px] overflow-y-auto hide-scrollbar overscroll-contain pr-1"
                   data-lenis-prevent="true"
                   onWheel={(event) => event.stopPropagation()}
                   onTouchMove={(event) => event.stopPropagation()}
@@ -426,7 +466,36 @@ export default function CheckoutPage() {
           ) : (
             <div className="bg-surface-container-low border border-outline-variant/20 rounded-3xl p-6 shadow-sm">
               <h2 className="font-headline text-2xl text-primary font-bold">Order Summary</h2>
-              <div className="mt-6 space-y-3">
+
+              {/* Products List */}
+              <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {checkoutItems.map((item) => (
+                  <div key={`${item.id}-${item.size}`} className="flex gap-4 p-3 bg-white rounded-2xl border border-outline-variant/10">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-variant/20 shrink-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                        // unoptimized
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-primary text-sm truncate">{item.name}</h3>
+                      {item.size && (
+                        <span className="text-[10px] text-on-surface-variant uppercase tracking-wider">Size: {item.size}</span>
+                      )}
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-xs text-on-surface-variant">Qty: {item.qty}</span>
+                        <span className="font-bold text-secondary text-sm">{currencySymbol}{(item.price * item.qty).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-outline-variant/20 space-y-3">
                 <div className="flex justify-between text-on-surface-variant">
                   <span>Subtotal</span>
                   <span>{currencySymbol}{subtotal.toFixed(2)}</span>
