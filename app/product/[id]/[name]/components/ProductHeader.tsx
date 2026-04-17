@@ -18,7 +18,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const [selectedSize, setSelectedSize] = useState<string>(firstSize);
   const productId = product?.id ?? 0;
 
-  const { isVariantInCart } = useCart();
+  const { addItem, isVariantInCart, updateQty } = useCart();
   const inCart = isVariantInCart(productId, selectedSize, "");
   const inWishlist = isInWishlist(productId);
 
