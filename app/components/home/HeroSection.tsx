@@ -53,7 +53,7 @@ export default function HeroSection() {
 
   return (
     // Note the mt-16 md:mt-20 exactly offsets the Navbar height to prevent overlap!
-    <section className="relative h-[40vh] sm:h-[70vh] md:h-[80vh] mt-16 md:mt-20 w-full overflow-hidden bg-stone-900">
+    <section className="relative h-[30vh] sm:h-[70vh] md:h-[80vh] mt-16 md:mt-20 w-full overflow-hidden bg-stone-900">
       {banners.map((slide, index) => (
         <div
           key={slide.id}
@@ -112,7 +112,7 @@ export default function HeroSection() {
       ))}
 
       {/* Modern Navigation Controls (Dots & Arrows) */}
-      <div className="absolute bottom-3 md:bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 sm:px-6 sm:py-3 shadow-2xl">
+      <div className="absolute bottom-3 md:bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2 py-0 sm:px-6 sm:py-3 shadow-2xl">
         <button
           onClick={() => handleSlide("prev")}
           className="text-white hover:text-amber-400 transition-colors p-1"
