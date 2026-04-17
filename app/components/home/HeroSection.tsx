@@ -53,7 +53,7 @@ export default function HeroSection() {
 
   return (
     // Note the mt-16 md:mt-20 exactly offsets the Navbar height to prevent overlap!
-    <section className="relative h-[65vh] sm:h-[70vh] md:h-[80vh] mt-16 md:mt-20 w-full overflow-hidden bg-stone-900">
+    <section className="relative h-[40vh] sm:h-[70vh] md:h-[80vh] mt-16 md:mt-20 w-full overflow-hidden bg-stone-900">
       {banners.map((slide, index) => (
         <div
           key={slide.id}
@@ -87,7 +87,7 @@ export default function HeroSection() {
                   {slide.subtitle}
                 </span>
                 
-                <h1 className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] sm:leading-[1.1] transition-all duration-1000 delay-500 drop-shadow-xl ${
+                <h1 className={`text-2xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] sm:leading-[1.1] transition-all duration-1000 delay-500 drop-shadow-xl ${
                   activeIndex === index ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                 }`}>
                   {slide.title}
@@ -98,7 +98,7 @@ export default function HeroSection() {
                 }`}>
                   <Link
                     href={slide.href}
-                    className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-amber-500 px-6 py-3 md:px-8 md:py-4 font-bold text-stone-900 shadow-[0_4px_20px_rgba(245,158,11,0.3)] transition-all hover:bg-amber-400 hover:shadow-[0_4px_25px_rgba(245,158,11,0.5)] active:scale-95"
+                    className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-amber-500 px-4 py-2 md:px-8 md:py-4 font-bold text-stone-900 shadow-[0_4px_20px_rgba(245,158,11,0.3)] transition-all hover:bg-amber-400 hover:shadow-[0_4px_25px_rgba(245,158,11,0.5)] active:scale-95"
                   >
                     <ShoppingBag size={18} className="md:w-5 md:h-5" strokeWidth={2.5} />
                     <span className="uppercase tracking-wide text-xs sm:text-sm">Shop Collection</span>
@@ -112,7 +112,7 @@ export default function HeroSection() {
       ))}
 
       {/* Modern Navigation Controls (Dots & Arrows) */}
-      <div className="absolute bottom-6 md:bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 sm:px-6 sm:py-3 shadow-2xl">
+      <div className="absolute bottom-3 md:bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 sm:px-6 sm:py-3 shadow-2xl">
         <button
           onClick={() => handleSlide("prev")}
           className="text-white hover:text-amber-400 transition-colors p-1"

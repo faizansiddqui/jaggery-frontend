@@ -157,50 +157,69 @@ export default function ReviewsAndSimilar({ product }: { product?: Product | nul
         onSubmit={handleSubmitReview}
       />
       {/* Customer Reviews */}
-      <section className="mt-10 lg:mt-24">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-          <div className="space-y-4">
-            <h3 className="font-headline text-4xl font-bold text-primary">Customer Stories</h3>
-            <div className="flex items-center gap-4">
-              <div className="flex text-secondary">{renderStars(Math.round(averageRating || 0))}</div>
-              <span className="font-bold text-on-surface">{(averageRating || 0).toFixed(1)} / 5.0</span>
-              <span className="text-on-surface-variant text-sm font-label">({reviews.length} Reviews)</span>
-            </div>
+     <section className="mt-12 lg:mt-24 px-4 md:px-0">
+  <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+    <div className="space-y-3">
+      <h3 className="font-headline text-3xl md:text-4xl font-extrabold text-primary tracking-tight">Customer Stories</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex text-secondary text-lg">{renderStars(Math.round(averageRating || 0))}</div>
+        <div className="flex items-baseline gap-2">
+          <span className="font-bold text-on-surface text-lg md:text-xl">{(averageRating || 0).toFixed(1)} / 5.0</span>
+          <span className="text-on-surface-variant text-sm font-medium">({reviews.length} Reviews)</span>
+        </div>
+      </div>
+    </div>
+    <button
+      onClick={() => setShowReviewModal(true)}
+      className="w-full md:w-auto px-8 py-3.5 bg-secondary text-on-secondary rounded-full font-semibold text-sm uppercase tracking-wide hover:opacity-90 hover:shadow-lg transition-all shadow-md active:scale-95 flex justify-center items-center gap-2"
+    >
+      <span className="material-symbols-outlined text-sm">edit_square</span>
+      Write a Review
+    </button>
+  </div>
+
+  <div 
+    className="flex gap-4 md:gap-8 overflow-x-auto pb-8 pt-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0" 
+    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+  >
+    {reviews.map((review) => (
+      <div 
+        key={review.id} 
+        className="bg-surface-container-low p-6 md:p-8 rounded-[2rem] border border-outline-variant/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-[85vw] sm:w-[320px] md:w-[400px] snap-center md:snap-start flex-shrink-0 flex flex-col justify-between group"
+      >
+        <div className="space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="flex text-secondary text-base">{renderStars(review.rating)}</div>
+            <span className="material-symbols-outlined text-outline-variant/20 text-4xl leading-none group-hover:text-secondary/20 transition-colors">format_quote</span>
           </div>
-          <button
-            onClick={() => setShowReviewModal(true)}
-            className="px-8 py-3 bg-secondary text-on-secondary rounded-full font-bold text-sm uppercase tracking-widest hover:opacity-90 transition-all shadow-md active:scale-95">
-            Write a Review
-          </button>
+          
+          {/* Yahan Line Clamp ka use karke Word Limit lagayi hai */}
+          <p className="font-headline text-on-surface text-base md:text-lg leading-relaxed line-clamp-4 md:line-clamp-5">
+            {review.content}
+          </p>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {reviews.map((review) => (
-            <div key={review.id} className="bg-surface-container-low p-8 rounded-3xl space-y-6 border border-outline-variant/10 shadow-sm hover:shadow-md transition-all w-[400px] md:w-[700px] snap-start flex-shrink-0">
-              <div className="flex justify-between items-start">
-                <div className="flex text-secondary text-sm">{renderStars(review.rating)}</div>
-              </div>
-              <p className="font-headline italic text-lg leading-snug">
-                {review.content}
-              </p>
-              <div className="flex items-center gap-4 pt-2">
-                <div className="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden shadow-inner flex items-center justify-center">
-                  <span className="material-symbols-outlined text-on-surface-variant">person</span>
-                </div>
-                <div>
-                  <div className="font-bold text-sm">{review.author}</div>
-                  <div className="text-[10px] text-on-surface-variant uppercase tracking-tighter mt-0.5">{review.date}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-          {reviews.length === 0 && (
-            <div className="bg-surface-container-low p-8 rounded-3xl border border-outline-variant/10 w-[400px] md:w-[700px] snap-start flex-shrink-0">
-              <p className="text-on-surface-variant text-sm">No reviews yet for this product.</p>
-            </div>
-          )}
+        <div className="flex items-center gap-4 pt-6 mt-auto border-t border-outline-variant/10">
+          <div className="w-12 h-12 rounded-full bg-surface-container-highest overflow-hidden shadow-sm flex items-center justify-center border border-outline-variant/20">
+            <span className="material-symbols-outlined text-on-surface-variant text-xl">person</span>
+          </div>
+          <div>
+            <div className="font-bold text-on-surface text-sm md:text-base">{review.author}</div>
+            <div className="text-[11px] text-on-surface-variant uppercase tracking-wider font-medium mt-0.5">{review.date}</div>
+          </div>
         </div>
-      </section>
+      </div>
+    ))}
+
+    {/* Fallback state when there are no reviews - Fully Responsive */}
+    {reviews.length === 0 && (
+      <div className="bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/10 w-[85vw] md:w-[700px] snap-start flex-shrink-0 flex flex-col items-center justify-center min-h-[250px] text-center">
+        <span className="material-symbols-outlined text-4xl text-outline-variant/30 mb-3">rate_review</span>
+        <p className="text-on-surface-variant font-medium">No reviews yet for this product.</p>
+      </div>
+    )}
+  </div>
+</section>
 
       {/* Frequently Bought Together / Cross-Sell */}
       <section className=" px-3 pt-10 lg:pt-24 border-t border-outline-variant/30">

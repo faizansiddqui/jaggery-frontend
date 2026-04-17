@@ -93,6 +93,7 @@ const WEIGHT_UNIT_OPTIONS: WeightUnit[] = ['GM', 'KG'];
 const DESCRIPTION_MAX_LENGTH = 1200;
 const INGREDIENTS_COUNT = 3;
 const NUTRITIONS_COUNT = 5;
+const ITEMS_PER_PAGE = 10;
 // const SKU_PATTERN = /^[A-Z]{2}-\d{3}$/;
 
 
@@ -290,6 +291,7 @@ export default function AdminProductsPage() {
     const [error, setError] = useState('');
 
     const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState(1);
@@ -338,6 +340,12 @@ export default function AdminProductsPage() {
         });
     }, [products, search]);
 
+    const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+    const paginatedProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [currentPage, filteredProducts]);
+
     const resetEditor = () => {
         setStep(1);
         setEditingProductId(null);
@@ -363,6 +371,14 @@ export default function AdminProductsPage() {
             setRenameCategoryName(currentName);
         }
     }, [categories, selectedCategoryId]); 
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
+
+    useEffect(() => {
+        setCurrentPage((prev) => Math.min(prev, totalProductPages));
+    }, [totalProductPages]);
 
     const syncDescriptionFromEditor = () => {
         const html = descriptionEditorRef.current?.innerHTML || '';
@@ -782,10 +798,10 @@ export default function AdminProductsPage() {
     );
 
     return (
-        <main className="p-3 md:p-10 bg-surface text-on-surface" onKeyDown={handleEnterToProceed}>
+        <main className="p-3 md:p-10 bg-surface text-primary" onKeyDown={handleEnterToProceed}>
             <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-outline/20 pb-6">
                 <div className='text-left'>
-                    <p className="font-headline text-[10px] tracking-[0.35em] text-secondary text-left">Admin Products</p>
+                    <p className="font-headline text-[10px] tracking-[0.35em] text-primary/70 text-left">Admin Products</p>
                     <h1 className="font-brand text-5xl md:text-7xl tracking-tight leading-none mt-2 text-left text-primary">Inventory Control</h1>
                 </div>
                 <div className="flex items-center flex-col gap-3 w-full md:w-auto">
@@ -801,8 +817,8 @@ export default function AdminProductsPage() {
 
             {error && <p className="mt-4 text-[#ffb5bc] font-headline text-xs tracking-widest">{error}</p>}
 
-            <section className="mt-8 border border-outline/20 overflow-hidden bg-surface-container rounded-xl">
-                <div className="grid grid-cols-12 gap-3 p-4 bg-surface-container-high font-headline text-[10px] tracking-widest opacity-60">
+            <section className="mt-8 border border-outline/20 overflow-hidden bg-surface-container rounded-xl text-primary">
+                <div className="grid grid-cols-12 gap-3 p-4 bg-surface-container-high font-headline text-[10px] tracking-widest text-primary/70">
                     <div className="col-span-2">Product ID</div>
                     <div className="col-span-3">Name</div>
                     <div className="col-span-2">Category</div>
@@ -813,19 +829,19 @@ export default function AdminProductsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="p-8 font-headline text-xs tracking-widest opacity-50">Loading...</div>
+                    <div className="p-8 font-headline text-xs tracking-widest text-primary/60">Loading...</div>
                 ) : filteredProducts.length === 0 ? (
-                    <div className="p-8 font-headline text-xs tracking-widest opacity-50">No products found.</div>
+                    <div className="p-8 font-headline text-xs tracking-widest text-primary/60">No products found.</div>
                 ) : (
-                    filteredProducts.map((product) => {
+                    paginatedProducts.map((product) => {
                         const categoryName = typeof product.catagory_id === 'object' ? product.catagory_id?.name || '-' : '-';
                         return (
-                            <div key={product.product_id} className="grid grid-cols-12 gap-3 p-4 border-t border-outline/10 items-center hover:bg-surface-container-high">
+                            <div key={product.product_id} className="grid grid-cols-12 gap-3 p-4 border-t border-outline/10 items-center hover:bg-surface-container-high text-primary">
                                 <div className="col-span-2 font-headline text-xs">{product.product_code || product.product_id}</div>
                                 <div className="col-span-3 font-brand text-xl leading-none text-primary">{product.name}</div>
-                                <div className="col-span-2 font-headline text-[11px] opacity-70">{categoryName}</div>
+                                <div className="col-span-2 font-headline text-[11px] text-primary/70">{categoryName}</div>
                                 <div className="col-span-1 font-headline text-xs">{product.quantity || 0}</div>
-                                <div className="col-span-1 font-headline text-xs text-secondary">{currency}{formatCurrency(product.selling_price ?? product.price)}</div>
+                                <div className="col-span-1 font-headline text-xs text-primary">{currency}{formatCurrency(product.selling_price ?? product.price)}</div>
                                 <div className="col-span-1 font-headline text-[10px]">{product.status || 'draft'}</div>
                                 <div className="col-span-2 flex justify-end gap-2">
                                     <button onClick={() => openEdit(product)} className="px-3 py-2 border border-outline/15 font-headline text-[10px] tracking-widest hover:border-primary">Edit</button>
@@ -837,10 +853,39 @@ export default function AdminProductsPage() {
                 )}
             </section>
 
+            {!loading && filteredProducts.length > 0 && (
+                <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-t border-primary/20 pt-5 text-primary">
+                    <p className="font-headline text-[10px] tracking-[0.25em] text-primary/70">
+                        SHOWING {paginatedProducts.length} OF {filteredProducts.length} PRODUCTS
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-primary/20 font-headline text-[10px] tracking-widest text-primary disabled:opacity-40 hover:border-primary"
+                        >
+                            Prev
+                        </button>
+                        <span className="min-w-[110px] text-center font-headline text-[10px] tracking-[0.25em] text-primary/80">
+                            PAGE {currentPage} / {totalProductPages}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalProductPages))}
+                            disabled={currentPage === totalProductPages}
+                            className="px-4 py-2 border border-primary/20 font-headline text-[10px] tracking-widest text-primary disabled:opacity-40 hover:border-primary"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {isEditorOpen && (
-                <section className="fixed inset-0 bg-surface z-50 overflow-hidden p-2 md:p-6 overscroll-none">
+                <section className="fixed inset-0 bg-surface z-50 overflow-hidden p-2 md:p-6 overscroll-none text-primary">
                     <div className="max-w-7xl mx-auto h-full overflow-hidden">
-                        <div className="bg-surface border border-primary p-6 md:p-8 h-full max-h-[96vh] overflow-y-auto overscroll-y-contain">
+                        <div className="bg-surface border border-primary p-6 md:p-8 h-full max-h-[96vh] overflow-y-auto overscroll-y-contain text-primary">
                             <div className="flex justify-between items-start gap-4 border-b border-primary/10 pb-4">
                                 <div>
                                     <p className="font-headline text-[10px] tracking-[0.3em] text-[#b90c1b]">Step {step}/3</p>

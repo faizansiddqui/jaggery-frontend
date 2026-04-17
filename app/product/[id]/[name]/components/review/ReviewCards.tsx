@@ -20,7 +20,7 @@ export default function ReviewCards({ sortedReviews, reviewSlides, onOpenSlide }
             {sortedReviews.map((review) => {
                 const hasImages = Boolean(review.images && review.images.length > 0);
                 return (
-                    <div key={review.id} className="min-w-[88%] sm:min-w-[72%] md:min-w-[56%] lg:min-w-[44%] xl:min-w-[36%] 2xl:min-w-[32%] max-w-[520px] snap-start flex flex-col gap-4 border-l-4 border-[#1c1b1b]/20 hover:border-red-600 pl-6 bg-white/70 p-5 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-md">
+                    <div key={review.id} className="w-[20%] md:w-[26%] snap-start flex flex-col gap-4 border-l-4 border-[#1c1b1b]/20 hover:border-red-600 pl-6 bg-white/70 p-5 md:p-6 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1">
                         <div className="flex items-center justify-between gap-3">
                             <div className="flex text-[#b90c1b]">{[1, 2, 3, 4, 5].map((star) => <span key={star} className="material-symbols-outlined text-sm" style={{ fontVariationSettings: star <= review.rating ? "'FILL' 1" : "'FILL' 0" }}>grade</span>)}</div>
                             {!hasImages && (
