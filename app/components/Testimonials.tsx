@@ -126,7 +126,7 @@ function TestimonialsSection() {
   const currentOffset = Math.min(activeIndex * step, maxOffset);
 
   return (
-    <section className="py-20 lg:py-32 bg-surface overflow-hidden">
+    <section className="py-10 lg:py-32 bg-surface overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-8 md:mb-16">
           <div className="max-w-2xl">

@@ -103,7 +103,7 @@ export default function CartPage() {
 
   if (!itemCount) {
     return (
-      <main className="min-h-screen pt-5 pb-2 px-6 flex items-center justify-center bg-surface font-['Poppins']">
+      <main className="min-h-screen pt-3 pb-2 px-6 flex items-center justify-center bg-surface font-['Poppins']">
         <div className="text-center max-w-md animate-fade-in">
           <div className="relative inline-block mb-8">
             <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl" />

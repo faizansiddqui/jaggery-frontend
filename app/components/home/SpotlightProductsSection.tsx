@@ -90,7 +90,7 @@ export default function SpotlightProductsSection() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-6">
-            {spotlight.map((product) => {
+            {spotlight.map((product, index) => {
               const primary =
                 Array.isArray(product.variants) && product.variants.length > 0
                   ? product.variants[0]
@@ -106,7 +106,9 @@ export default function SpotlightProductsSection() {
               return (
                 <div
                   key={product.id}
-                  className="group relative flex flex-col bg-white border border-slate-100 rounded-[1.5rem] lg:rounded-[2rem] p-2 lg:p-3 transition-all duration-300 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1"
+                  className={`group relative flex flex-col bg-white border border-slate-100 rounded-[1.5rem] lg:rounded-[2rem] p-2 lg:p-3 transition-all duration-300 hover:shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 ${
+                    index === 4 ? "hidden lg:flex" : ""
+                  }`}
                 >
                   {/* Image Container - Kept Square for Compact Height */}
                   <Link

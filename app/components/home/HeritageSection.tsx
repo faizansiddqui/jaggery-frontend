@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function HeritageSection() {
   return (
-    <section className="relative py-16 lg:py-28 overflow-hidden bg-white">
+    <section className="relative py-6 lg:py-28 overflow-hidden bg-white">
       {/* Subtle Background Decorative Element */}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[500px] h-[500px] bg-amber-50 rounded-full blur-3xl opacity-60" />
       

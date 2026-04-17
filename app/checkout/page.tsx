@@ -27,6 +27,7 @@ declare global {
 
 const SHIPPING = 0;
 const SELECTED_ADDRESS_STORAGE_KEY = "checkout:selected-address-id";
+const LOGIN_RETURN_TO = "/checkout";
 
 const createEmptyAddress = (): UserAddressInput => ({
   FullName: "",
@@ -236,7 +237,7 @@ export default function CheckoutPage() {
       return;
     }
     if (!isAuthenticated) {
-      router.push("/user/auth");
+      router.push(`/user/auth?returnTo=${encodeURIComponent(LOGIN_RETURN_TO)}`);
       return;
     }
 
@@ -345,9 +346,9 @@ export default function CheckoutPage() {
           {isPageLoading ? (
             <CheckoutAddressSkeleton />
           ) : !isAuthenticated ? (
-            <div className="flex items-center bg-surface-container-low border border-outline-variant/20 rounded-3xl p-8 text-center">
+            <div className="flex items-center flex-col bg-surface-container-low border border-outline-variant/20 rounded-3xl p-8 text-center">
               <p className="text-on-surface-variant mb-4">Please login to continue</p>
-              <Link href="/user/auth" className="inline-block bg-primary text-on-primary px-8 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
+              <Link href={`/user/auth?returnTo=${encodeURIComponent(LOGIN_RETURN_TO)}`} className="inline-block bg-primary text-on-primary px-8 py-3 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">
                 Login
               </Link>
             </div>

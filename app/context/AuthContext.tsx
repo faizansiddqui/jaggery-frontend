@@ -4,6 +4,31 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { getUserSession, setUserSession, clearUserSession, UserSession } from '@/app/lib/session';
 import { fetchUserProfile, sendOtp, verifyOtp } from '@/app/lib/apiClient';
 
+const DEFAULT_RETURN_URL = '/user/profile';
+const AUTH_RETURN_URL_STORAGE_KEY = 'auth:return-url';
+
+function normalizeReturnUrl(url: string | null | undefined) {
+  if (!url || typeof url !== 'string') return DEFAULT_RETURN_URL;
+  if (!url.startsWith('/')) return DEFAULT_RETURN_URL;
+  if (url.startsWith('//') || url.startsWith('/user/auth')) return DEFAULT_RETURN_URL;
+  return url;
+}
+
+function persistReturnUrl(url: string) {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(AUTH_RETURN_URL_STORAGE_KEY, normalizeReturnUrl(url));
+}
+
+function readPersistedReturnUrl() {
+  if (typeof window === 'undefined') return DEFAULT_RETURN_URL;
+  return normalizeReturnUrl(window.localStorage.getItem(AUTH_RETURN_URL_STORAGE_KEY));
+}
+
+function clearPersistedReturnUrl() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(AUTH_RETURN_URL_STORAGE_KEY);
+}
+
 interface AuthContextType {
   user: UserSession | null;
   isLoading: boolean;
@@ -27,12 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loginStep, setLoginStep] = useState<'email' | 'otp'>('email');
   const [loginEmail, setLoginEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [returnUrl, setReturnUrl] = useState('/user/profile');
+  const [returnUrlState, setReturnUrlState] = useState(DEFAULT_RETURN_URL);
 
   useEffect(() => {
     const session = getUserSession();
     setUser(session);
+    setReturnUrlState(readPersistedReturnUrl());
     setIsLoading(false);
+  }, []);
+
+  const setReturnUrl = useCallback((url: string) => {
+    const nextUrl = normalizeReturnUrl(url);
+    setReturnUrlState(nextUrl);
+    persistReturnUrl(nextUrl);
   }, []);
 
   useEffect(() => {
@@ -87,21 +119,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session);
       setLoginStep('email');
       setLoginEmail('');
-      // Redirect to return URL or profile page
-      window.location.href = returnUrl;
+      const targetUrl = readPersistedReturnUrl();
+      clearPersistedReturnUrl();
+      setReturnUrlState(DEFAULT_RETURN_URL);
+      window.location.href = targetUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid OTP');
     } finally {
       setIsLoading(false);
     }
-  }, [loginEmail, returnUrl]);
+  }, [loginEmail]);
 
   const logout = useCallback(() => {
     clearUserSession();
+    clearPersistedReturnUrl();
     setUser(null);
     setLoginStep('email');
     setLoginEmail('');
     setError(null);
+    setReturnUrlState(DEFAULT_RETURN_URL);
     window.location.href = '/';
   }, []);
 
@@ -118,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginStep,
     loginEmail,
     error,
-    returnUrl,
+    returnUrl: returnUrlState,
     setReturnUrl,
     sendLoginOtp,
     verifyLoginOtp,
@@ -142,13 +178,16 @@ export function useRequireAuth(redirectPath = '/user/auth') {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && typeof window !== 'undefined') {
-      // Store current page as return URL before redirecting to login
-      const currentPath = window.location.pathname;
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       if (currentPath !== redirectPath && !currentPath.startsWith('/user/auth')) {
         setReturnUrl(currentPath);
       }
       if (window.location.pathname !== redirectPath) {
-        window.location.replace(redirectPath);
+        const authUrl = new URL(redirectPath, window.location.origin);
+        if (currentPath !== redirectPath && !currentPath.startsWith('/user/auth')) {
+          authUrl.searchParams.set('returnTo', normalizeReturnUrl(currentPath));
+        }
+        window.location.replace(authUrl.toString());
       }
     }
   }, [isAuthenticated, isLoading, redirectPath, setReturnUrl]);
@@ -158,13 +197,29 @@ export function useRequireAuth(redirectPath = '/user/auth') {
 
 // Hook to prevent logged-in users from accessing auth pages
 export function useRedirectIfAuth(redirectPath = '/user/profile') {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, setReturnUrl } = useAuth();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && typeof window !== 'undefined') {
-      window.location.replace(redirectPath);
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryReturnTo = normalizeReturnUrl(searchParams.get('returnTo'));
+      const nextUrl = queryReturnTo !== DEFAULT_RETURN_URL
+        ? queryReturnTo
+        : readPersistedReturnUrl();
+      clearPersistedReturnUrl();
+      setReturnUrl(DEFAULT_RETURN_URL);
+      window.location.replace(nextUrl || redirectPath);
+      return;
     }
-  }, [isAuthenticated, isLoading, redirectPath]);
+
+    if (!isLoading && !isAuthenticated && typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryReturnTo = searchParams.get('returnTo');
+      if (queryReturnTo) {
+        setReturnUrl(queryReturnTo);
+      }
+    }
+  }, [isAuthenticated, isLoading, redirectPath, setReturnUrl]);
 
   return { isAuthenticated, isLoading };
 }

@@ -108,7 +108,7 @@ export default function FeaturedProductsSection() {
   };
 
   return (
-    <section className="py-16 lg:py-24 bg-[#fcfcfd] overflow-hidden">
+    <section className="py-6 lg:py-24 bg-[#fcfcfd] overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
@@ -122,7 +122,7 @@ export default function FeaturedProductsSection() {
           </div>
           <Link
             href="/shop"
-            className="text-sm font-bold uppercase tracking-widest text-primary border-b-2 border-primary/20 hover:border-primary transition-all pb-1 w-fit"
+            className="hidden text-sm font-bold uppercase tracking-widest text-primary border-b-2 border-primary/20 hover:border-primary transition-all pb-1 w-fit md:block"
           >
             View All Collection
           </Link>
@@ -136,23 +136,32 @@ export default function FeaturedProductsSection() {
           <>
             {/* Mobile Carousel */}
             <div className="md:hidden -mx-4 px-4">
-              <div className="flex items-center justify-end gap-3 mb-6">
-                <button
-                  type="button"
-                  onClick={() => scrollMobileTrack("prev")}
-                  className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                  aria-label="Scroll featured products left"
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <Link
+                  href="/shop"
+                  className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary border-b-2 border-primary/20 hover:border-primary transition-all pb-1 shrink-0"
                 >
-                  <span className="material-symbols-outlined">west</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollMobileTrack("next")}
-                  className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                  aria-label="Scroll featured products right"
-                >
-                  <span className="material-symbols-outlined">east</span>
-                </button>
+                  View All Collection
+                </Link>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => scrollMobileTrack("prev")}
+                    className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                    aria-label="Scroll featured products left"
+                  >
+                    <span className="material-symbols-outlined">west</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollMobileTrack("next")}
+                    className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                    aria-label="Scroll featured products right"
+                  >
+                    <span className="material-symbols-outlined">east</span>
+                  </button>
+                </div>
               </div>
 
               <div

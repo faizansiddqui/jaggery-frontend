@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@/app/context/AuthContext";
+import { useAuth, useRequireAuth } from "@/app/context/AuthContext";
 import {
   fetchUserProfile,
   updateUserProfile,
@@ -17,6 +17,7 @@ import { ProfileSkeleton } from "@/app/components/Skeletons";
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useRequireAuth("/user/auth");
   const [profile, setProfile] = useState({ name: "", email: user?.email || "", phone: "", gender: "" });
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +41,8 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const loadData = async () => {
       try {
         const [profileData, addressesData] = await Promise.all([
@@ -63,7 +66,7 @@ export default function ProfilePage() {
       }
     };
     loadData();
-  }, [user?.email]);
+  }, [isAuthenticated, user?.email]);
 
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -157,7 +160,8 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading) return <ProfileSkeleton />;
+  if (authLoading || isLoading) return <ProfileSkeleton />;
+  if (!isAuthenticated) return null;
 
 
   return (
