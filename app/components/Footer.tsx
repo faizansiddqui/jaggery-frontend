@@ -209,6 +209,9 @@ export default function Footer() {
               Ethically Sourced
             </span>
           </div>
+          <p className="text-[10px] md:text-xs tracking-[0.15em] uppercase text-[#F7F5F0]/40 text-center lg:text-left">
+            Developed by <span className="text-[#F7F5F0]/60 font-bold">Akamify</span>
+          </p>
         </div>
       </div>
     </footer>
