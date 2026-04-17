@@ -207,6 +207,31 @@ export function OrderListSkeleton() {
   );
 }
 
+export function TestimonialsGridSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div className="flex gap-6 md:gap-8 overflow-hidden">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="[flex:0_0_85%] md:[flex:0_0_45%] lg:[flex:0_0_30%] shrink-0 p-8 md:p-10 bg-surface-container-low rounded-[2rem] flex flex-col justify-between animate-pulse"
+        >
+          <div className="space-y-6">
+            <div className="w-10 h-10 bg-surface-container-high rounded-lg" />
+            <div className="h-24 bg-surface-container-high rounded-xl w-full" />
+          </div>
+          <div className="flex items-center gap-4 border-t border-primary/10 pt-6 mt-auto">
+            <div className="w-12 h-12 rounded-full bg-surface-container-high shrink-0" />
+            <div className="space-y-2">
+              <div className="h-4 bg-surface-container-high rounded-lg w-24" />
+              <div className="h-3 bg-surface-container-high rounded-lg w-16" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function OrderDetailSkeleton() {
   return (
     <div className="flex-1 w-full max-w-screen-2xl mx-auto flex flex-col pb-4 pt-24">

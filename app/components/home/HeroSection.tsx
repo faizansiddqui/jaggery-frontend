@@ -87,7 +87,7 @@ export default function HeroSection() {
                   {slide.subtitle}
                 </span>
                 
-                <h1 className={`text-2xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] sm:leading-[1.1] transition-all duration-1000 delay-500 drop-shadow-xl ${
+                <h1 className={`text-2xl sm:text-6xl md:text-7xl lg:text-6xl font-black text-white leading-[1.05] sm:leading-[1.1] transition-all duration-1000 delay-500 drop-shadow-xl ${
                   activeIndex === index ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
                 }`}>
                   {slide.title}
@@ -112,7 +112,7 @@ export default function HeroSection() {
       ))}
 
       {/* Modern Navigation Controls (Dots & Arrows) */}
-      <div className="absolute bottom-3 md:bottom-10 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2 py-0 sm:px-6 sm:py-3 shadow-2xl">
+      <div className="absolute bottom-3 md:bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:gap-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2 py-0 sm:px-6 sm:py-3 shadow-2xl">
         <button
           onClick={() => handleSlide("prev")}
           className="text-white hover:text-amber-400 transition-colors p-1"
