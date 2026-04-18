@@ -64,6 +64,8 @@ export default function AdminBannersPage() {
   const resetForm = () => {
     setForm(initialForm);
     setEditingId('');
+    setError('');
+    setMessage('');
   };
 
   const validateForm = () => {
@@ -101,10 +103,10 @@ export default function AdminBannersPage() {
 
       if (editingId) {
         await updateAdminBanner(editingId, payload);
-        setMessage('Banner updated.');
+        setMessage('Banner updated successfully.');
       } else {
         await createAdminBanner(payload);
-        setMessage('Banner created.');
+        setMessage('New banner published.');
       }
 
       await load();
@@ -129,9 +131,11 @@ export default function AdminBannersPage() {
       isActive: item.isActive !== false,
       imageFile: null,
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const onDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this banner?')) return;
     try {
       setDeletingId(id);
       setError('');
@@ -139,7 +143,7 @@ export default function AdminBannersPage() {
       await deleteAdminBanner(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
       if (editingId === id) resetForm();
-      setMessage('Banner deleted.');
+      setMessage('Banner removed.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete banner.');
     } finally {
@@ -148,121 +152,233 @@ export default function AdminBannersPage() {
   };
 
   return (
-    <div className="space-y-8 text-slate-100">
-      <div>
-        <h1 className="font-brand text-4xl tracking-tight">Banners</h1>
-        <p className="mt-2 text-on-surface-variant text-sm">Manage homepage hero banners.</p>
+    <div className="max-w-6xl mx-auto space-y-10 py-8 px-4 text-slate-100 animate-in fade-in duration-500">
+      {/* --- Header Section --- */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="font-brand text-5xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-500 bg-clip-text text-transparent">
+            Banners
+          </h1>
+          <p className="mt-2 text-slate-400 text-sm font-medium tracking-wide">
+            Design and manage your homepage hero experience.
+          </p>
+        </div>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-800 to-transparent hidden md:block mb-4 mx-8" />
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-primary font-bold bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+          Live Editor
+        </div>
+      </header>
+
+      {/* --- Form Section --- */}
+      <section className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+        <form 
+          onSubmit={onSubmit} 
+          className="relative grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-[#0d0d0f] border border-white/10 rounded-2xl shadow-2xl"
+        >
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Banner Title</label>
+            <input
+              value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              placeholder="Summer Collection 2026"
+              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Subtitle / Description</label>
+            <input
+              value={form.subtitle}
+              onChange={(e) => setForm((p) => ({ ...p, subtitle: e.target.value }))}
+              placeholder="Up to 50% off on all items"
+              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Redirect Link</label>
+            <input
+              value={form.targetUrl}
+              onChange={(e) => setForm((p) => ({ ...p, targetUrl: e.target.value }))}
+              placeholder="/collections/new-arrivals"
+              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm font-mono"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Display Order</label>
+            <input
+              type="number"
+              value={form.order}
+              onChange={(e) => setForm((p) => ({ ...p, order: e.target.value }))}
+              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">External Image URL</label>
+            <input
+              value={form.imageUrl}
+              onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
+              placeholder="https://images.com/banner.jpg"
+              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Upload New Asset</label>
+            <div className="relative group/file">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setForm((p) => ({ ...p, imageFile: e.target.files?.[0] || null }))}
+                className="w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-widest file:bg-white/5 file:text-white hover:file:bg-white/10 transition-all cursor-pointer bg-black/50 border border-white/5 py-1.5 px-2 rounded-xl"
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2 flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4">
+            <label className="flex items-center gap-3 cursor-pointer group/check w-fit">
+              <div className="relative flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
+                  className="peer appearance-none w-5 h-5 border border-white/20 rounded-md checked:bg-primary checked:border-primary transition-all"
+                />
+                <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-slate-400 group-hover/check:text-white transition-colors">Visible on Homepage</span>
+            </label>
+
+            <div className="flex items-center gap-3">
+              {editingId && (
+                <button 
+                  type="button" 
+                  onClick={resetForm} 
+                  className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors"
+                >
+                  Discard
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-8 py-3 bg-white text-black font-bold text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-primary hover:text-white transition-all disabled:opacity-50 shadow-lg shadow-white/5 active:scale-95 flex items-center gap-2"
+              >
+                {saving ? (
+                  <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : null}
+                {editingId ? 'Update Asset' : 'Publish Banner'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      {/* --- Feedback Messages --- */}
+      <div className="empty:hidden">
+        {error && (
+          <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs animate-shake">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            {error}
+          </div>
+        )}
+        {message && (
+          <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs animate-in slide-in-from-top-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {message}
+          </div>
+        )}
       </div>
 
-      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-outline/20 p-6 bg-[#0a0a0b]">
-        <input
-          value={form.title}
-          onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-          placeholder="Title"
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-          required
-        />
-        <input
-          value={form.subtitle}
-          onChange={(event) => setForm((prev) => ({ ...prev, subtitle: event.target.value }))}
-          placeholder="Subtitle"
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-          required
-        />
-        <input
-          value={form.targetUrl}
-          onChange={(event) => setForm((prev) => ({ ...prev, targetUrl: event.target.value }))}
-          placeholder="Target URL (e.g. /shop)"
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-          required
-        />
-        <input
-          value={form.imageUrl}
-          onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
-          placeholder="Image URL (optional if file uploaded)"
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(event) => setForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-        />
-        <input
-          type="number"
-          value={form.order}
-          onChange={(event) => setForm((prev) => ({ ...prev, order: event.target.value }))}
-          placeholder="Order"
-          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
-        />
-        <label className="md:col-span-2 flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={form.isActive}
-            onChange={(event) => setForm((prev) => ({ ...prev, isActive: event.target.checked }))}
-          />
-          Active
-        </label>
-        <div className="md:col-span-2 flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="px-4 py-2 bg-primary text-on-primary text-xs tracking-widest disabled:opacity-60"
-          >
-            {saving ? 'Saving...' : editingId ? 'Update Banner' : 'Create Banner'}
-          </button>
-          {editingId ? (
-            <button type="button" onClick={resetForm} className="px-4 py-2 border border-outline/30 text-xs tracking-widest">
-              Cancel Edit
-            </button>
-          ) : null}
+      {/* --- List Section --- */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <h2 className="text-sm font-bold uppercase tracking-[0.3em] text-slate-500">Live Inventory</h2>
+          <div className="h-px flex-1 bg-white/5" />
         </div>
-      </form>
 
-      {error ? <p className="text-error text-sm">{error}</p> : null}
-      {message ? <p className="text-secondary text-sm">{message}</p> : null}
+        {loading ? (
+          <div className="grid grid-cols-1 gap-4">
+            {[1, 2].map((n) => (
+              <div key={n} className="h-32 bg-white/5 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {items.map((item) => (
+              <div 
+                key={item.id} 
+                className={`group flex flex-col md:flex-row items-center gap-6 p-4 rounded-2xl border transition-all duration-300 ${
+                  editingId === item.id 
+                    ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/20' 
+                    : 'bg-[#0d0d0f]/50 border-white/5 hover:border-white/20'
+                }`}
+              >
+                <div className="relative w-full md:w-60 h-32 rounded-xl overflow-hidden bg-black ring-1 ring-white/10 group-hover:ring-white/30 transition-all">
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-700 uppercase tracking-widest italic">No Preview</div>
+                  )}
+                  {!item.isActive && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40 rotate-12 border-2 border-white/20 px-4 py-1">Disabled</span>
+                    </div>
+                  )}
+                </div>
 
-      {loading ? (
-        <div className="text-sm text-on-surface-variant">Loading banners...</div>
-      ) : (
-        <div className="space-y-3">
-          {items.map((item) => (
-            <div key={item.id} className="border border-outline/20 p-4 bg-[#0a0a0b] flex flex-col md:flex-row md:items-center gap-4">
-              <div className="w-full md:w-52 h-24 bg-[#0a0a0b]-container-high overflow-hidden">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                ) : null}
+                <div className="flex-1 space-y-1 text-center md:text-left min-w-0">
+                  <div className="flex items-center justify-center md:justify-start gap-3">
+                    <h3 className="font-headline text-lg font-bold tracking-tight text-white">{item.title}</h3>
+                    <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded border border-white/10 text-slate-400 font-mono">Pos: {item.order}</span>
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium">{item.subtitle}</p>
+                  <p className="text-[11px] text-primary/60 font-mono truncate hover:text-primary transition-colors cursor-default">{item.targetUrl}</p>
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <button
+                    onClick={() => beginEdit(item)}
+                    className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 hover:border-white/20 text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(item.id)}
+                    disabled={deletingId === item.id}
+                    className="flex-1 md:flex-none px-5 py-2.5 rounded-xl border border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest disabled:opacity-30 active:scale-95"
+                  >
+                    {deletingId === item.id ? '...' : 'Remove'}
+                  </button>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-headline text-sm tracking-widest">{item.title}</p>
-                <p className="text-xs text-on-surface-variant">{item.subtitle}</p>
-                <p className="text-[11px] text-on-surface-variant mt-1 truncate">{item.targetUrl}</p>
-                <p className="text-[10px] tracking-widest opacity-50 mt-1">Order: {item.order} • {item.isActive ? 'Active' : 'Inactive'}</p>
+            ))}
+
+            {items.length === 0 && (
+              <div className="py-20 text-center rounded-2xl border-2 border-dashed border-white/5">
+                <p className="text-slate-500 text-sm font-medium tracking-widest uppercase">The gallery is currently empty</p>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => beginEdit(item)}
-                  className="px-3 py-2 border border-outline/30 text-xs tracking-widest"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(item.id)}
-                  disabled={deletingId === item.id}
-                  className="px-3 py-2 border border-error text-error text-xs tracking-widest disabled:opacity-60"
-                >
-                  {deletingId === item.id ? 'Deleting...' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          ))}
-          {items.length === 0 ? (
-            <div className="text-sm text-on-surface-variant">No banners yet.</div>
-          ) : null}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
+
+      <style jsx global>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-4px); }
+          75% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.4s ease-in-out; }
+      `}</style>
     </div>
   );
 }

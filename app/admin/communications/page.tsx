@@ -132,154 +132,207 @@ export default function AdminCommunicationsPage() {
     }, [contacts, contactQuery, contactStatusFilter, contactSort]);
 
     return (
-        <div className="flex flex-col gap-10 text-slate-100">
-            <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">COMMUNICATION CONTROL</span>
-                <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Subscribers & Contact Desk</h2>
+        <div className="flex flex-col gap-8 max-w-[1400px] mx-auto p-4 md:p-8 text-slate-100 animate-in fade-in duration-700">
+            {/* --- HEADER --- */}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
+                        <span className="font-headline text-[10px] md:text-xs tracking-[0.5em] text-primary uppercase font-black">
+                            Communication Control
+                        </span>
+                    </div>
+                    <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent italic">
+                        Desk Manager
+                    </h2>
+                </div>
+                <button
+                    onClick={onRefresh}
+                    disabled={loading}
+                    className="group relative px-6 py-3 bg-[#0d0d0f] border border-white/10 overflow-hidden rounded-xl transition-all active:scale-95"
+                >
+                    <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                    <span className="relative font-headline text-[10px] tracking-[0.2em] font-bold">
+                        {loading ? 'SYNCING DATA...' : 'REFRESH ENGINE'}
+                    </span>
+                </button>
             </header>
 
-            {error && (
-                <div className="border border-primary bg-[#0a0a0b] px-4 py-3">
-                    <p className="font-headline text-[10px] tracking-widest text-[#ff929d]">{error}</p>
-                </div>
-            )}
-
-            {message && (
-                <div className="border border-green-500/30 bg-green-500/10 px-4 py-3">
-                    <p className="font-headline text-[10px] tracking-widest text-green-300">{message}</p>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50">Total Subscribers</p>
-                    <p className="font-brand text-4xl mt-4">{stats.totalSubs}</p>
-                </div>
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50">Active Subscribers</p>
-                    <p className="font-brand text-4xl mt-4">{stats.activeSubs}</p>
-                </div>
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50">Open Queries</p>
-                    <p className="font-brand text-4xl mt-4 text-[#ff929d]">{stats.open}</p>
-                </div>
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50">Solved Queries</p>
-                    <p className="font-brand text-4xl mt-4 text-green-300">{stats.solved}</p>
-                </div>
+            {/* --- FEEDBACK ALERTS --- */}
+            <div className="space-y-3 empty:hidden">
+                {error && (
+                    <div className="border-l-4 border-red-500 bg-red-500/5 px-6 py-4 rounded-r-2xl animate-shake">
+                        <p className="font-headline text-[11px] tracking-widest text-red-400 font-bold uppercase italic">{error}</p>
+                    </div>
+                )}
+                {message && (
+                    <div className="border-l-4 border-emerald-500 bg-emerald-500/5 px-6 py-4 rounded-r-2xl animate-in slide-in-from-left">
+                        <p className="font-headline text-[11px] tracking-widest text-emerald-400 font-bold uppercase italic">{message}</p>
+                    </div>
+                )}
             </div>
 
-            <section className="bg-[#0a0a0b] border border-primary p-6 md:p-8 flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3 border-b border-primary pb-4">
+            {/* --- STATS GRID --- */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { label: 'Total Subscribers', value: stats.totalSubs, color: 'text-white' },
+                    { label: 'Active Status', value: stats.activeSubs, color: 'text-primary' },
+                    { label: 'Open Queries', value: stats.open, color: 'text-[#ff929d]' },
+                    { label: 'Solved Archive', value: stats.solved, color: 'text-emerald-400' }
+                ].map((stat, i) => (
+                    <div key={i} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-primary/50 transition-all duration-500">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <p className="font-headline text-[10px] tracking-[0.3em] uppercase text-white/40 font-bold">{stat.label}</p>
+                        <p className={`font-brand text-5xl mt-6 tracking-tighter ${stat.color}`}>{stat.value}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* --- MAIN INTERFACE --- */}
+            <section className="bg-[#0d0d0f] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                {/* TABS */}
+                <div className="flex flex-col md:flex-row border-b border-white/5 bg-black/20">
                     <button
                         onClick={() => setActiveTab('subscribers')}
-                        className={`px-4 py-2 font-headline text-[10px] tracking-widest border ${activeTab === 'subscribers' ? 'border-primary text-white bg-primary/40' : 'border-primary text-white/80 hover:text-white'}`}
+                        className={`flex-1 px-8 py-6 font-headline text-[11px] tracking-[0.3em] uppercase font-black transition-all ${
+                            activeTab === 'subscribers' 
+                            ? 'text-primary bg-primary/5 border-b-2 border-primary' 
+                            : 'text-white/40 hover:text-white hover:bg-white/5 border-b-2 border-transparent'
+                        }`}
                     >
-                        Newsletter Subscribers
+                        Newsletter Engine
                     </button>
                     <button
                         onClick={() => setActiveTab('contacts')}
-                        className={`px-4 py-2 font-headline text-[10px] tracking-widest border ${activeTab === 'contacts' ? 'border-primary text-white bg-primary/40' : 'border-primary text-white/80 hover:text-white'}`}
+                        className={`flex-1 px-8 py-6 font-headline text-[11px] tracking-[0.3em] uppercase font-black transition-all ${
+                            activeTab === 'contacts' 
+                            ? 'text-primary bg-primary/5 border-b-2 border-primary' 
+                            : 'text-white/40 hover:text-white hover:bg-white/5 border-b-2 border-transparent'
+                        }`}
                     >
-                        Contact Submissions
-                    </button>
-                    <button
-                        onClick={onRefresh}
-                        className="ml-auto px-4 py-2 font-headline text-[10px] tracking-widest border border-secondary text-white/80 hover:border-primary"
-                        disabled={loading}
-                    >
-                        {loading ? 'Refreshing...' : 'Refresh'}
+                        Contact Inbound
                     </button>
                 </div>
 
-                {activeTab === 'subscribers' ? (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-wrap gap-3 items-center">
-                            <input
-                                value={subscriberQuery}
-                                onChange={(e) => setSubscriberQuery(e.target.value)}
-                                placeholder="Search email"
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
-                            />
-                            <select
-                                value={subscriberStatusFilter}
-                                onChange={(e) => setSubscriberStatusFilter(e.target.value as typeof subscriberStatusFilter)}
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
-                            <select
-                                value={subscriberSort}
-                                onChange={(e) => setSubscriberSort(e.target.value as typeof subscriberSort)}
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
-                            >
-                                <option value="recent">Recent</option>
-                                <option value="email">Email</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                        {loading ? (
-                            <p className="font-headline text-[10px] tracking-widest opacity-50">Loading subscribers...</p>
-                        ) : filteredSubscribers.length === 0 ? (
-                            <p className="font-headline text-[10px] tracking-widest opacity-50">No subscribers match the current filters.</p>
-                        ) : <SubscribersTable subscribers={filteredSubscribers} />}
-                    </div>
-                ) : null}
+                <div className="p-6 md:p-10 space-y-8">
+                    {/* FILTERS TOOLBAR */}
+                    <div className="flex flex-wrap gap-4 items-center justify-between">
+                        <div className="flex flex-wrap gap-3 items-center w-full lg:w-auto">
+                            <div className="relative w-full md:w-80">
+                                <input
+                                    value={activeTab === 'subscribers' ? subscriberQuery : contactQuery}
+                                    onChange={(e) => activeTab === 'subscribers' ? setSubscriberQuery(e.target.value) : setContactQuery(e.target.value)}
+                                    placeholder={activeTab === 'subscribers' ? "Search by email address..." : "Search by name or email..."}
+                                    className="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl font-headline text-[10px] tracking-widest uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+                                />
+                            </div>
 
-                {activeTab === 'contacts' ? (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-wrap gap-3 items-center">
-                            <input
-                                value={contactQuery}
-                                onChange={(e) => setContactQuery(e.target.value)}
-                                placeholder="Search name or email"
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest w-full md:w-72 focus:outline-none focus:border-[#b90c1b]"
-                            />
                             <select
-                                value={contactStatusFilter}
-                                onChange={(e) => setContactStatusFilter(e.target.value as typeof contactStatusFilter)}
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                value={activeTab === 'subscribers' ? subscriberStatusFilter : contactStatusFilter}
+                                onChange={(e) => activeTab === 'subscribers' 
+                                    ? setSubscriberStatusFilter(e.target.value as any) 
+                                    : setContactStatusFilter(e.target.value as any)
+                                }
+                                className="bg-black/40 border border-white/10 px-4 py-3 rounded-xl font-headline text-[10px] tracking-widest uppercase focus:outline-none transition-all cursor-pointer hover:bg-black/60"
                             >
-                                <option value="all">All Status</option>
-                                <option value="open">Open</option>
-                                <option value="solved">Solved</option>
+                                <option value="all">Status: All</option>
+                                {activeTab === 'subscribers' ? (
+                                    <>
+                                        <option value="active">Active Only</option>
+                                        <option value="inactive">Inactive Only</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value="open">Status: Open</option>
+                                        <option value="solved">Status: Solved</option>
+                                    </>
+                                )}
                             </select>
+
                             <select
-                                value={contactSort}
-                                onChange={(e) => setContactSort(e.target.value as typeof contactSort)}
-                                className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                                value={activeTab === 'subscribers' ? subscriberSort : contactSort}
+                                onChange={(e) => activeTab === 'subscribers'
+                                    ? setSubscriberSort(e.target.value as any)
+                                    : setContactSort(e.target.value as any)
+                                }
+                                className="bg-black/40 border border-white/10 px-4 py-3 rounded-xl font-headline text-[10px] tracking-widest uppercase focus:outline-none transition-all cursor-pointer hover:bg-black/60"
                             >
-                                <option value="recent">Recent</option>
-                                <option value="status">Status</option>
-                                <option value="name">Name</option>
+                                <option value="recent">Sort: Newest</option>
+                                {activeTab === 'subscribers' ? (
+                                    <>
+                                        <option value="email">Sort: Alphabetical</option>
+                                        <option value="status">Sort: Vitality</option>
+                                    </>
+                                ) : (
+                                    <>
+                                        <option value="status">Sort: Status</option>
+                                        <option value="name">Sort: Name</option>
+                                    </>
+                                )}
                             </select>
                         </div>
+                    </div>
+
+                    {/* CONTENT AREA */}
+                    <div className="min-h-[400px]">
                         {loading ? (
-                            <p className="font-headline text-[10px] tracking-widest opacity-50">Loading contact requests...</p>
-                        ) : filteredContacts.length === 0 ? (
-                            <p className="font-headline text-[10px] tracking-widest opacity-50">No contact submissions match the current filters.</p>
+                            <div className="flex flex-col items-center justify-center py-32 gap-4 animate-pulse">
+                                <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                <span className="font-headline text-[10px] tracking-[0.4em] uppercase text-white/20">Syncing with Server...</span>
+                            </div>
+                        ) : activeTab === 'subscribers' ? (
+                            <div className="animate-in slide-in-from-bottom-4 duration-500">
+                                {filteredSubscribers.length === 0 ? (
+                                    <EmptyState message="No subscribers detected in this frequency." />
+                                ) : (
+                                    <div className="rounded-2xl overflow-hidden border border-white/5">
+                                        <SubscribersTable subscribers={filteredSubscribers} />
+                                    </div>
+                                )}
+                            </div>
                         ) : (
-                            <div className="flex flex-col gap-4">
-                                {filteredContacts.map((contact) => (
-                                    <ContactSubmissionCard
-                                        key={contact.id}
-                                        contact={contact}
-                                        draftValue={resolutionDrafts[contact.id] || ''}
-                                        busy={processingId === contact.id}
-                                        onDraftChange={(value) =>
-                                            setResolutionDrafts((prev) => ({ ...prev, [contact.id]: value }))
-                                        }
-                                        onMarkSolved={() => onMarkSolved(contact.id)}
-                                    />
-                                ))}
+                            <div className="animate-in slide-in-from-bottom-4 duration-500">
+                                {filteredContacts.length === 0 ? (
+                                    <EmptyState message="Inbound signals are currently silent." />
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-6">
+                                        {filteredContacts.map((contact) => (
+                                            <div key={contact.id} className="transition-all duration-300 hover:-translate-y-1">
+                                                <ContactSubmissionCard
+                                                    contact={contact}
+                                                    draftValue={resolutionDrafts[contact.id] || ''}
+                                                    busy={processingId === contact.id}
+                                                    onDraftChange={(value) =>
+                                                        setResolutionDrafts((prev) => ({ ...prev, [contact.id]: value }))
+                                                    }
+                                                    onMarkSolved={() => onMarkSolved(contact.id)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                ) : null}
-
+                </div>
             </section>
+
+            <style jsx global>{`
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
+                }
+                .animate-shake { animation: shake 0.4s ease-in-out; }
+            `}</style>
+        </div>
+    );
+}
+
+function EmptyState({ message }: { message: string }) {
+    return (
+        <div className="flex flex-col items-center justify-center py-32 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
+            <p className="font-headline text-[11px] tracking-[0.3em] uppercase text-white/30 font-bold italic">{message}</p>
         </div>
     );
 }

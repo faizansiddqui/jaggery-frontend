@@ -213,7 +213,7 @@ export default function OrdersManagement() {
   );
 
   return (
-    <div className="flex flex-col gap-10 pb-20">
+    <div className="flex flex-col gap-10 pb-20 py-5">
       
       {/* Header Section */}
       <header className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import {
   X,
@@ -182,24 +183,45 @@ export default function OrderDetailsModal({ order, currency, onClose, onUpdated 
                   {lineItems.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-4 rounded-xl border border-slate-50 bg-white p-4 shadow-sm transition-hover hover:border-slate-200"
+                      className="grid gap-4 rounded-xl border border-slate-50 bg-white p-4 shadow-sm transition-hover hover:border-slate-200 sm:grid-cols-[72px_1fr_auto]"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-50 text-[10px] font-black text-slate-400">
-                        {item.quantity}x
+                      <div className="h-20 w-full overflow-hidden rounded-2xl bg-slate-50 sm:h-20 sm:w-20">
+                        {item.product_image ? (
+                          <Image
+                            src={item.product_image}
+                            alt={item.product_name || `Product ${item.product_id}`}
+                            width={80}
+                            height={80}
+                            className="h-full w-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-slate-400">
+                            <Package size={24} />
+                          </div>
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0">
                         <p className="truncate text-xs font-black uppercase tracking-tight text-slate-900">
                           {item.product_name || `Product ${item.product_id}`}
                         </p>
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                          ID: {item.product_id} • Size: {item.size || 'N/A'} • Color:{' '}
-                          {item.color || 'N/A'}
+                        {(item.size || item.color) ? (
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                            {item.size ? `Variant: ${item.size}` : ''}
+                            {item.size && item.color ? ' • ' : ''}
+                            {item.color ? `Color: ${item.color}` : ''}
+                          </p>
+                        ) : null}
+                        <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                          Quantity: {Number(item.quantity || 0)}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-black text-slate-900">
-                          {currency}
-                          {Number(item.price).toFixed(2)}
+                          {currency}{Number(item.price).toFixed(2)}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-widest text-slate-400 mt-1">
+                          Total: {currency}{(Number(item.quantity || 0) * Number(item.price || 0)).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -246,7 +268,7 @@ export default function OrderDetailsModal({ order, currency, onClose, onUpdated 
               </div>
             </div>
 
-            <div className="space-y-6 lg:col-span-5">
+            <div className="lg:sticky space-y-6 lg:col-span-5">
               <div className="rounded-2xl border border-slate-100 p-6">
                 <SectionTitle icon={MapPin} title="Shipping Registry" />
                 <p className="text-xs font-bold leading-relaxed text-slate-600">
@@ -274,9 +296,8 @@ export default function OrderDetailsModal({ order, currency, onClose, onUpdated 
                       Payment Status
                     </span>
                     <span
-                      className={`text-[10px] font-black uppercase ${
-                        order.payment_status === 'paid' ? 'text-emerald-600' : 'text-amber-500'
-                      }`}
+                      className={`text-[10px] font-black uppercase ${order.payment_status === 'paid' ? 'text-emerald-600' : 'text-amber-500'
+                        }`}
                     >
                       {order.payment_status || 'PENDING'}
                     </span>

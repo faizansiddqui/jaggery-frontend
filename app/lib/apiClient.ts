@@ -966,18 +966,22 @@ export async function fetchAdminOrders(): Promise<AdminOrder[]> {
             const mapped = asRecord(item);
             const product = asRecord(mapped.product);
             const productImages = Array.isArray(product.product_image) ? product.product_image : [];
+            const imageFromItem = typeof mapped.product_image === 'string' && mapped.product_image.trim() ? mapped.product_image : undefined;
+            const imageFromProduct = typeof productImages[0] === 'string' ? productImages[0] : undefined;
             return {
                 product_id: Number(mapped.product_id || 0),
                 quantity: Number(mapped.quantity || 0),
                 price: Number(mapped.price || 0),
-                color: typeof mapped.color === 'string' ? mapped.color : undefined,
-                size: typeof mapped.size === 'string' ? mapped.size : undefined,
-                product_name: typeof product.title === 'string'
-                    ? product.title
-                    : typeof product.name === 'string'
-                        ? product.name
-                        : undefined,
-                product_image: typeof productImages[0] === 'string' ? productImages[0] : undefined,
+                color: typeof mapped.color === 'string' && mapped.color.trim() ? mapped.color : undefined,
+                size: typeof mapped.size === 'string' && mapped.size.trim() ? mapped.size : undefined,
+                product_name: typeof mapped.product_name === 'string' && mapped.product_name.trim()
+                    ? mapped.product_name
+                    : typeof product.title === 'string'
+                        ? product.title
+                        : typeof product.name === 'string'
+                            ? product.name
+                            : undefined,
+                product_image: imageFromItem || imageFromProduct,
             };
         });
         const explicitAmount = Number(row.amount || 0);

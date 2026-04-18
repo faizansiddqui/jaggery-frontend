@@ -67,7 +67,7 @@ export default function AdminReviewsPage() {
     }, [reviews, search]);
 
     const onDeleteReview = async (reviewId: string) => {
-        const confirmDelete = window.confirm('Delete this review permanently?');
+        const confirmDelete = window.confirm('Are you sure you want to delete this review? This action cannot be undone.');
         if (!confirmDelete) return;
 
         try {
@@ -78,6 +78,7 @@ export default function AdminReviewsPage() {
             setReviews((prev) => prev.filter((item) => item.id !== reviewId));
             setStats((prev) => ({ ...prev, totalReviews: Math.max(0, prev.totalReviews - 1) }));
             setMessage('Review deleted successfully.');
+            setTimeout(() => setMessage(''), 3000);
         } catch (deleteError) {
             setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete review.');
         } finally {
@@ -86,164 +87,197 @@ export default function AdminReviewsPage() {
     };
 
     return (
-        <div className="flex flex-col gap-10 text-slate-100">
-            <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">REVIEWS CONTROL</span>
-                <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Reviews Management</h2>
-                <p className="font-headline text-[11px] tracking-widest opacity-60">
-                    Check all reviews, user contribution counts, reviewed products and delete spam reviews.
-                </p>
+        <div className="min-h-screen p-4 md:p-8 flex flex-col gap-8 bg-[#050505] text-slate-200">
+            {/* Header Section */}
+            <header className="relative py-6">
+                <div className="flex flex-col gap-2 relative z-10">
+                    <span className="flex items-center gap-2 font-headline text-[10px] md:text-xs tracking-[0.3em] text-primary font-bold uppercase">
+                        <span className="w-8 h-[1px] bg-primary/50"></span>
+                        Management Console
+                    </span>
+                    <h2 className="font-brand text-4xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
+                        Reviews Feed
+                    </h2>
+                    <p className="max-w-2xl text-sm md:text-base text-slate-400 font-light leading-relaxed">
+                        Monitor community feedback, track user contributions, and maintain quality control across your product catalog.
+                    </p>
+                </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[120px] rounded-full -z-0" />
             </header>
 
-            {error && (
-                <div className="border border-[#b90c1b]/30 bg-[#b90c1b]/10 px-4 py-3">
-                    <p className="font-headline text-[10px] tracking-widest text-[#ff929d]">{error}</p>
-                </div>
-            )}
-
-            {message && (
-                <div className="border border-green-500/30 bg-green-500/10 px-4 py-3">
-                    <p className="font-headline text-[10px] tracking-widest text-green-300">{message}</p>
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">reviews</span>
-                        Total Reviews
-                    </p>
-                    <p className="font-brand text-4xl mt-4">{stats.totalReviews}</p>
-                </div>
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">group</span>
-                        Unique Users
-                    </p>
-                    <p className="font-brand text-4xl mt-4">{stats.totalUsers}</p>
-                </div>
-                <div className="bg-[#0a0a0b] border border-primary p-5">
-                    <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">inventory_2</span>
-                        Reviewed Products
-                    </p>
-                    <p className="font-brand text-4xl mt-4">{stats.totalProducts}</p>
-                </div>
+            {/* Notifications */}
+            <div className="fixed bottom-10 right-10 z-50 flex flex-col gap-3 max-w-sm">
+                {error && (
+                    <div className="flex items-center gap-3 bg-red-950/40 backdrop-blur-xl border border-red-500/30 p-4 rounded-xl shadow-2xl animate-in slide-in-from-right">
+                        <span className="material-symbols-outlined text-red-400">error</span>
+                        <p className="text-xs font-medium text-red-200">{error}</p>
+                    </div>
+                )}
+                {message && (
+                    <div className="flex items-center gap-3 bg-emerald-950/40 backdrop-blur-xl border border-emerald-500/30 p-4 rounded-xl shadow-2xl animate-in slide-in-from-right">
+                        <span className="material-symbols-outlined text-emerald-400">check_circle</span>
+                        <p className="text-xs font-medium text-emerald-200">{message}</p>
+                    </div>
+                )}
             </div>
 
-            <section className="bg-[#0a0a0b] border border-primary p-6 md:p-8 flex flex-col gap-6">
-                <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-                    <h3 className="font-brand text-3xl tracking-widest">Review Feed</h3>
-                    <div className="relative w-full md:w-[380px]">
-                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-base">search</span>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                    { label: 'Total Reviews', value: stats.totalReviews, icon: 'reviews', color: 'text-primary' },
+                    { label: 'Unique Users', value: stats.totalUsers, icon: 'group', color: 'text-blue-400' },
+                    { label: 'Reviewed Products', value: stats.totalProducts, icon: 'inventory_2', color: 'text-emerald-400' },
+                ].map((stat, idx) => (
+                    <div key={idx} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-primary/30 transition-all duration-300">
+                        <div className="flex justify-between items-start">
+                            <p className="font-headline text-[11px] tracking-widest text-slate-500 uppercase font-bold">{stat.label}</p>
+                            <span className={`material-symbols-outlined ${stat.color} opacity-80 group-hover:scale-110 transition-transform`}>{stat.icon}</span>
+                        </div>
+                        <p className="font-brand text-5xl mt-4 font-black">{stat.value.toLocaleString()}</p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Main Content Area */}
+            <section className="bg-[#0d0d0f] border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row gap-6 md:items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center flex-row gap-4">
+                        <h3 className="font-brand text-2xl font-bold tracking-tight">Active Reviews</h3>
+                        <span className="flex items-center flex-col px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-widest">
+                            {filteredReviews.length} ENTRIES
+                        </span>
+                    </div>
+                    <div className="relative w-full md:w-[400px]">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/20">search</span>
                         <input
                             value={search}
-                            onChange={(event) => setSearch(event.target.value)}
-                            placeholder="Search user, product, text"
-                            className="w-full bg-[#0a0a0b] border border-primary pl-10 pr-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search user, product, or keywords..."
+                            className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-white/20"
                         />
                     </div>
                 </div>
 
-                {loading ? (
-                    <p className="font-headline text-[10px] tracking-widest opacity-50">Loading reviews...</p>
-                ) : filteredReviews.length === 0 ? (
-                    <p className="font-headline text-[10px] tracking-widest opacity-50">No reviews found.</p>
-                ) : (
-                    <div className="flex flex-col gap-4">
-                        {filteredReviews.map((review) => (
-                            <article key={review.id} className="border border-primary p-4 md:p-5 grid grid-cols-1 xl:grid-cols-12 gap-4">
-                                <div className="xl:col-span-7 flex flex-col gap-3">
-                                    <div className="flex flex-wrap gap-2 items-center">
-                                        <span className="font-headline text-[9px] tracking-widest px-2 py-1 border border-primary flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-xs">person</span>
-                                            {review.user_name}
-                                        </span>
-                                        <span className="font-headline text-[9px] tracking-widest px-2 py-1 border border-primary flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-xs">star</span>
-                                            {review.review_rate}/5
-                                        </span>
-                                        <span className="font-headline text-[9px] tracking-widest px-2 py-1 border border-primary flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-xs">schedule</span>
-                                            {formatDateTime(review.createdAt)}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex flex-col gap-1">
-                                        <p className="font-brand text-2xl leading-none">{review.product?.product_name || `PRODUCT ${review.product_id}`}</p>
-                                        <p className="font-headline text-[10px] tracking-widest opacity-60">
-                                            {review.product?.product_code || `PID-${review.product_id}`}
-                                        </p>
-                                    </div>
-
-                                    {review.review_title ? (
-                                        <p className="font-headline text-[10px] tracking-widest text-[#ff929d]">{review.review_title}</p>
-                                    ) : null}
-                                    <p className="font-headline text-xs leading-6 opacity-90 whitespace-pre-wrap">{review.review_text || '-'}</p>
-
-                                    {review.review_images.length > 0 && (
-                                        <div className="flex gap-2 overflow-x-auto">
-                                            {review.review_images.map((src, index) => (
-                                                <Image
-                                                    key={`${review.id}-${index}`}
-                                                    src={src}
-                                                    alt={`Review image ${index + 1}`}
-                                                    width={120}
-                                                    height={90}
-                                                    unoptimized
-                                                    className="w-[120px] h-[90px] object-cover border border-primary/10"
-                                                />
-                                            ))}
+                <div className="p-6 md:p-8 min-h-[400px]">
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
+                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                            <p className="font-headline text-xs tracking-widest uppercase italic">Loading database...</p>
+                        </div>
+                    ) : filteredReviews.length === 0 ? (
+                        <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-2xl opacity-40">
+                            <p className="font-headline text-sm tracking-widest uppercase">No matching records found</p>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-6">
+                            {filteredReviews.map((review) => (
+                                <article key={review.id} className="group relative bg-white/[0.01] hover:bg-white/[0.03] border border-white/5 rounded-2xl p-5 md:p-6 transition-all duration-300 grid grid-cols-1 xl:grid-cols-12 gap-8">
+                                    
+                                    <div className="xl:col-span-8 flex flex-col gap-5">
+                                        {/* Review Meta */}
+                                        <div className="flex flex-wrap gap-3 items-center">
+                                            <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                                                <span className="material-symbols-outlined text-primary text-sm">person</span>
+                                                <span className="text-[11px] font-bold tracking-wide uppercase">{review.user_name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-lg border border-yellow-500/10">
+                                                <span className="material-symbols-outlined text-sm">star</span>
+                                                <span className="text-[11px] font-black">{review.review_rate}/5</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-slate-500 ml-2">
+                                                <span className="material-symbols-outlined text-xs">calendar_today</span>
+                                                <span className="text-[10px] font-medium uppercase tracking-tighter">{formatDateTime(review.createdAt)}</span>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="xl:col-span-5 flex flex-col gap-4">
-                                    <div className="border border-primary p-3">
-                                        <p className="font-headline text-[9px] tracking-widest opacity-60 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">insights</span>
-                                            User Review Stats
-                                        </p>
-                                        <p className="font-brand text-3xl mt-3">{review.user_stats.totalReviews}</p>
-                                        <p className="font-headline text-[9px] tracking-widest opacity-60">Total reviews by this user</p>
-                                    </div>
-
-                                    <div className="border border-primary p-3">
-                                        <p className="font-headline text-[9px] tracking-widest opacity-60 mb-2 flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-sm">inventory</span>
-                                            Reviewed Products By User
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {review.user_stats.reviewedProducts.map((product) => (
-                                                <Link
-                                                    key={`${review.id}-${product.product_id}`}
-                                                    href={createProductHref({
-                                                        id: product.product_id,
-                                                        publicId: product.product_code || undefined,
-                                                        name: product.product_name || `Product ${product.product_id}`,
-                                                    })}
-                                                    target="_blank"
-                                                    className="font-headline text-[9px] tracking-widest px-2 py-1 border border-primary hover:border-secondary"
-                                                >
-                                                    {product.product_name || `PRODUCT ${product.product_id}`}
-                                                </Link>
-                                            ))}
+                                        {/* Product Info */}
+                                        <div>
+                                            <h4 className="font-brand text-2xl font-bold group-hover:text-primary transition-colors duration-300">
+                                                {review.product?.product_name || `Product ID: ${review.product_id}`}
+                                            </h4>
+                                            <p className="text-[10px] tracking-[0.2em] text-slate-500 uppercase font-bold mt-1">
+                                                {review.product?.product_code || `PID-${review.product_id}`}
+                                            </p>
                                         </div>
+
+                                        {/* Review Content */}
+                                        <div className="space-y-2">
+                                            {review.review_title && (
+                                                <p className="text-primary font-bold text-xs uppercase tracking-wider">{review.review_title}</p>
+                                            )}
+                                            <p className="text-slate-300 text-sm leading-relaxed font-light bg-black/20 p-4 rounded-xl border border-white/5">
+                                                {review.review_text || 'No description provided.'}
+                                            </p>
+                                        </div>
+
+                                        {/* Images */}
+                                        {review.review_images.length > 0 && (
+                                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                                                {review.review_images.map((src, index) => (
+                                                    <div key={index} className="relative min-w-[140px] h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary/50 transition-colors">
+                                                        <Image
+                                                            src={src}
+                                                            alt="Review attachment"
+                                                            fill
+                                                            className="object-cover"
+                                                            unoptimized
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <button
-                                        onClick={() => onDeleteReview(review.id)}
-                                        disabled={deletingId === review.id}
-                                        className="bg-[#0a0a0b] text-primary border border-primary py-3 font-headline text-[10px] tracking-widest hover:bg-[#0a0a0b]/50 disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">delete</span>
-                                        {deletingId === review.id ? 'Deleting...' : 'Delete Review'}
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                )}
+                                    {/* Sidebar Info & Actions */}
+                                    <div className="xl:col-span-4 flex flex-col gap-4 justify-between border-l border-white/5 xl:pl-8">
+                                        <div className="space-y-4">
+                                            <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                                                <p className="text-[9px] tracking-widest text-slate-500 uppercase font-black mb-3 flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-xs">analytics</span> User History
+                                                </p>
+                                                <p className="text-3xl font-brand font-black">{review.user_stats.totalReviews}</p>
+                                                <p className="text-[9px] text-slate-500 mt-1 uppercase tracking-tight font-medium">Lifetime Reviews Contributed</p>
+                                            </div>
+
+                                            <div className="p-2">
+                                                <p className="text-[9px] tracking-widest text-slate-500 uppercase font-black mb-3">Other Reviews</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {review.user_stats.reviewedProducts.map((product) => (
+                                                        <Link
+                                                            key={`${review.id}-${product.product_id}`}
+                                                            href={createProductHref({
+                                                                id: product.product_id,
+                                                                publicId: product.product_code || undefined,
+                                                                name: product.product_name || `Product ${product.product_id}`,
+                                                            })}
+                                                            target="_blank"
+                                                            className="text-[9px] font-bold uppercase tracking-tighter px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-md hover:bg-primary/20 hover:border-primary/40 transition-all"
+                                                        >
+                                                            {product.product_name || 'Item'}
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => onDeleteReview(review.id)}
+                                            disabled={deletingId === review.id}
+                                            className="group/btn w-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white py-4 rounded-xl border border-red-500/20 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50"
+                                        >
+                                            <span className="material-symbols-outlined text-lg group-hover/btn:rotate-12 transition-transform">
+                                                {deletingId === review.id ? 'sync' : 'delete_forever'}
+                                            </span>
+                                            <span className="text-[10px] font-black tracking-[0.2em] uppercase">
+                                                {deletingId === review.id ? 'Processing...' : 'Purge Review'}
+                                            </span>
+                                        </button>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </section>
         </div>
     );
