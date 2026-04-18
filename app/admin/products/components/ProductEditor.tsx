@@ -66,7 +66,7 @@ function StepBadge({ active, done, label }: StepProps) {
           ? 'border-slate-900 bg-slate-900 text-white'
           : done
           ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-          : 'border-slate-200 bg-[#0a0a0b] text-slate-500'
+          : 'border-slate-200 bg-slate-50 text-slate-500'
       }`}
     >
       <span className="font-semibold">{label}</span>
@@ -412,23 +412,23 @@ export default function ProductEditor({
   ];
 
   return (
-    <section className="fixed inset-0 z-50 overflow-y-auto bg-[#0a0a0b] p-2 backdrop-blur-md sm:p-4 md:p-6">
+    <section className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-2 backdrop-blur-md sm:p-4 md:p-6">
       <div className="mx-auto min-h-full max-w-7xl">
-        <div className="flex min-h-[calc(100vh-1rem)] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-[#0a0a0b] shadow-2xl shadow-black/25 sm:min-h-[calc(100vh-2rem)]">
-          <div className="sticky top-0 z-10 border-b border-slate-200 bg-[#0a0a0b]/95 px-4 py-4 backdrop-blur sm:px-6 md:px-7">
+        <div className="flex min-h-[calc(100vh-1rem)] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-2xl shadow-black/25 sm:min-h-[calc(100vh-2rem)]">
+          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 md:px-7">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">
                   Step {step}/3
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-5xl">
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl md:text-5xl">
                   {editingProductId ? 'Edit Product' : 'Create Product'}
                 </h2>
               </div>
 
               <button
                 onClick={onClose}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-[#0a0a0b] px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-[#0a0a0b]"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Close
               </button>
@@ -445,7 +445,7 @@ export default function ProductEditor({
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white">
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
                     Select Category
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
@@ -453,14 +453,14 @@ export default function ProductEditor({
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-[#0a0a0b] p-4 shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                     Category
                   </label>
                   <select
                     value={selectedCategoryId}
                     onChange={(e) => setSelectedCategoryId(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                   >
                     <option value="">Select category</option>
                     {categories.map((cat) => (
@@ -474,7 +474,7 @@ export default function ProductEditor({
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-[#0a0a0b] p-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                     Add New Category
                   </label>
@@ -483,7 +483,7 @@ export default function ProductEditor({
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Add new category"
-                      className="flex-1 rounded-xl border border-slate-200 bg-[#0a0a0b] px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                      className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
                     />
                     <button
                       onClick={addChildCategory}
@@ -499,7 +499,7 @@ export default function ProductEditor({
             {step === 2 && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white">
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
                     Core Info + Specs
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
@@ -508,18 +508,18 @@ export default function ProductEditor({
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 bg-[#0a0a0b] p-4 shadow-sm">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                       Product Name
                     </label>
                     <input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-[#0a0a0b] p-4 shadow-sm">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                       SKU Code
                     </label>
@@ -527,12 +527,12 @@ export default function ProductEditor({
                       value={sku}
                       onChange={(e) => setSku(normalizeSkuInput(e.target.value))}
                       maxLength={6}
-                      className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-4 py-3 text-sm tracking-widest outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-widest outline-none transition focus:border-slate-400 focus:bg-white"
                     />
                     <p className="mt-2 text-xs text-slate-500">Format: AB-123</p>
                   </div>
 
-                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-[#0a0a0b] p-4 shadow-sm">
+                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                     <div className="mb-3 flex items-end justify-between gap-4">
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
@@ -554,20 +554,20 @@ export default function ProductEditor({
                     </div>
 
                     <div className="overflow-hidden rounded-2xl border border-slate-200">
-                      <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-[#0a0a0b] p-2">
+                      <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-2">
                         {toolbarActions.map((item) => (
                           <button
                             key={item.label}
                             type="button"
                             onMouseDown={keepEditorSelectionOnToolbarMouseDown}
                             onClick={item.onClick}
-                            className="rounded-lg border border-slate-200 bg-[#0a0a0b] px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-[#0a0a0b]"
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                           >
                             {item.label}
                           </button>
                         ))}
 
-                        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-[#0a0a0b] px-3 py-1.5 text-xs font-semibold text-slate-700">
+                        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
                           Color
                           <input
                             type="color"
@@ -596,9 +596,9 @@ export default function ProductEditor({
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                  <div className="rounded-3xl border border-slate-200 bg-[#0a0a0b] p-5 shadow-sm">
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
-                      <h4 className="text-xl font-semibold tracking-tight text-white">
+                      <h4 className="text-xl font-semibold tracking-tight text-slate-900">
                         Ingredients
                       </h4>
                       <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
@@ -617,7 +617,7 @@ export default function ProductEditor({
                               setIngredients(next);
                             }}
                             placeholder="Ingredient name"
-                            className="col-span-12 rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b] sm:col-span-5"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
                           />
                           <input
                             value={ingredient.value}
@@ -627,16 +627,16 @@ export default function ProductEditor({
                               setIngredients(next);
                             }}
                             placeholder="Details"
-                            className="col-span-12 rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b] sm:col-span-7"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
                           />
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-[#0a0a0b] p-5 shadow-sm">
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div className="mb-4 flex items-center justify-between">
-                      <h4 className="text-xl font-semibold tracking-tight text-white">
+                      <h4 className="text-xl font-semibold tracking-tight text-slate-900">
                         Nutrition Facts
                       </h4>
                       <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
@@ -655,7 +655,7 @@ export default function ProductEditor({
                               setNutritions(next);
                             }}
                             placeholder="Nutrient"
-                            className="col-span-12 rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b] sm:col-span-5"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
                           />
                           <input
                             value={nutrition.value}
@@ -665,7 +665,7 @@ export default function ProductEditor({
                               setNutritions(next);
                             }}
                             placeholder="Value"
-                            className="col-span-12 rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b] sm:col-span-7"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
                           />
                         </div>
                       ))}
@@ -678,7 +678,7 @@ export default function ProductEditor({
             {step === 3 && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-2xl font-semibold tracking-tight text-white">
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
                     Weight Variants + Pricing + Stock
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
@@ -690,10 +690,10 @@ export default function ProductEditor({
                   {variants.map((variant, variantIndex) => (
                     <div
                       key={variantIndex}
-                      className="rounded-3xl border border-slate-200 bg-[#0a0a0b] p-5 shadow-sm"
+                      className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
                     >
                       <div className="mb-5 flex items-center justify-between">
-                        <h4 className="text-xl font-semibold tracking-tight text-white">
+                        <h4 className="text-xl font-semibold tracking-tight text-slate-900">
                           Variant #{variantIndex + 1}
                         </h4>
                         <button
@@ -704,7 +704,7 @@ export default function ProductEditor({
                               prev.length === 1 ? prev : prev.filter((_, i) => i !== variantIndex)
                             );
                           }}
-                          className="rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-[#0a0a0b]"
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                           Remove
                         </button>
@@ -724,7 +724,7 @@ export default function ProductEditor({
                               setVariants(next);
                             }}
                             placeholder="e.g., 250, 500, 1"
-                            className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           />
                         </div>
 
@@ -742,7 +742,7 @@ export default function ProductEditor({
                               };
                               setVariants(next);
                             }}
-                            className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           >
                             {WEIGHT_UNIT_OPTIONS.map((unit) => (
                               <option key={unit} value={unit}>
@@ -767,7 +767,7 @@ export default function ProductEditor({
                               setVariants(next);
                             }}
                             placeholder="Original price"
-                            className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           />
                         </div>
 
@@ -787,7 +787,7 @@ export default function ProductEditor({
                               setVariants(next);
                             }}
                             placeholder="Selling price"
-                            className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                           />
                         </div>
                       </div>
@@ -808,7 +808,7 @@ export default function ProductEditor({
                             setVariants(next);
                           }}
                           placeholder="Available stock"
-                          className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-[#0a0a0b]"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
                         />
                       </div>
 
@@ -825,7 +825,7 @@ export default function ProductEditor({
                             next[variantIndex] = { ...next[variantIndex], image: file };
                             setVariants(next);
                           }}
-                          className="w-full rounded-xl border border-slate-200 bg-[#0a0a0b] px-3 py-2 text-sm outline-none"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none"
                         />
 
                         {(variant.existingImage || variant.image) && (
@@ -851,11 +851,11 @@ export default function ProductEditor({
                       </div>
 
                       {variant.weight && (
-                        <div className="mt-4 rounded-2xl bg-[#0a0a0b] p-4">
+                        <div className="mt-4 rounded-2xl bg-slate-50 p-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                             Full Weight Label
                           </p>
-                          <p className="mt-2 text-2xl font-semibold tracking-tight text-white">
+                          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
                             {variant.weight}
                             {variant.weightUnit}
                           </p>
@@ -868,7 +868,7 @@ export default function ProductEditor({
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={() => setVariants((prev) => [...prev, createEmptyVariant()])}
-                    className="rounded-xl border border-slate-200 bg-[#0a0a0b] px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-[#0a0a0b]"
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     Add Weight Variant
                   </button>
@@ -881,12 +881,12 @@ export default function ProductEditor({
             )}
           </div>
 
-          <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-slate-200 bg-[#0a0a0b]/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7">
+          <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7">
             <div className="flex gap-3">
               <button
                 onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
                 disabled={step === 1}
-                className="rounded-2xl border border-slate-200 bg-[#0a0a0b] px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[#0a0a0b]"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
               >
                 Back
               </button>

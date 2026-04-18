@@ -149,8 +149,8 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0b] py-6 text-slate-100">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 py-6 text-slate-900">
+      <div className="mx-auto max-w-7xl p-4">
         <ProductHeader
           search={search}
           onSearchChange={setSearch}

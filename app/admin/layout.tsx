@@ -5,9 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard, Package, ShoppingCart, Users, MessageSquare,
-  MonitorPlay, Quote, Mail, BarChart3, Settings, LogOut, Menu, X
+import { 
+  LayoutDashboard, Package, ShoppingCart, Users, MessageSquare, 
+  MonitorPlay, Quote, Mail, BarChart3, Settings, LogOut, Menu, X 
 } from 'lucide-react';
 import { clearAdminSession, getAdminUsername } from '@/app/lib/adminSession';
 import { useRequireAdminSession } from '@/app/lib/guards';
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!ready) return <div className="min-h-screen bg-[#0a0a0b]" />;
 
   const handleLogout = async () => {
-    try { await adminLogout(); } catch { }
+    try { await adminLogout(); } catch {} 
     finally {
       clearAdminSession();
       window.location.href = '/admin/login';
@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Image src={settings.logoUrl} alt="Logo" width={140} height={40} unoptimized className="mb-4 h-8 w-auto object-contain brightness-0 invert" />
         )} */}
         <h1 className="text-xl font-black tracking-tighter italic uppercase text-white">
-          {settings.siteName || 'AMILA'}<span className="text-primary">.</span>CORE
+          {settings.siteName || 'AMILA'}<span className="text-red-600">.</span>CORE
         </h1>
         <p className="text-[9px] tracking-[0.4em] uppercase text-slate-500 font-bold mt-1">Admin Uplink</p>
       </div>
@@ -69,9 +69,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               key={item.href}
               href={item.href}
               className={`flex items-center gap-4 px-4 py-3 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all duration-200 group
-                ${isActive ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                ${isActive ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
             >
-              <span className={`${isActive ? 'text-white' : 'text-slate-500 group-hover:text-primary'}`}>{item.icon}</span>
+              <span className={`${isActive ? 'text-white' : 'text-slate-500 group-hover:text-red-500'}`}>{item.icon}</span>
               {item.name}
             </Link>
           );
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <div className="p-4 border-t border-white/5 bg-black/20">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center font-bold text-xs">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center font-bold text-xs">
             {username.substring(0, 2).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
@@ -96,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b] text-slate-100 flex overflow-hidden">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0a0a0b] text-slate-900 dark:text-slate-100 flex overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-72 flex-col fixed h-full z-50">
         <SidebarContent />
@@ -124,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <main className="flex-1 p-6 md:p-12 max-w-[1600px] mx-auto w-full">
           {children}
-
+          
           <footer className="mt-20 pt-8 border-t border-slate-200 dark:border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 opacity-40 text-[9px] font-bold tracking-[0.2em] uppercase">
             <span>© 2026 {settings.siteName} Management Protocol</span>
             <div className="flex gap-6">

@@ -11,9 +11,9 @@ import {
 } from '@/app/lib/apiClient';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import CustomerRow from './components/CustomerRow';
-import {
-    Search, RefreshCw, Users, Activity, TrendingUp,
-    AlertCircle, X, Clock, ShoppingBag, Heart, DollarSign
+import { 
+    Search, RefreshCw, Users, Activity, TrendingUp, 
+    AlertCircle, X, Clock, ShoppingBag, Heart, DollarSign 
 } from 'lucide-react';
 
 type SegmentFilter = 'ALL' | 'VIP' | 'ACTIVE' | 'NEW' | 'DORMANT' | 'BLOCKED';
@@ -135,27 +135,27 @@ export default function CustomersManagement() {
     };
 
     return (
-        <div className="flex flex-col gap-8 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500 text-slate-100">
+        <div className="flex flex-col gap-8 max-w-[1600px] mx-auto w-full animate-in fade-in duration-500">
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-bold tracking-widest text-primary uppercase">User Segments</span>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Customer Analytics</h2>
+                    <span className="text-xs font-bold tracking-widest text-[#b90c1b] uppercase">User Segments</span>
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white-900 tracking-tight">Customer Analytics</h2>
                 </div>
-
+                
                 <div className="flex items-center gap-3 w-full md:w-auto">
                     <div className="relative w-full md:w-80">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
                         <input
                             value={query}
                             onChange={(event) => setQuery(event.target.value)}
                             placeholder="Search name or email..."
-                            className="w-full pl-9 pr-4 py-2.5 bg-[#0a0a0b] border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#b90c1b]/20 focus:border-[#b90c1b] transition-all shadow-sm"
+                            className="w-full pl-9 pr-4 py-2.5 bg-white text-black border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#b90c1b]/20 focus:border-[#b90c1b] transition-all shadow-sm"
                         />
                     </div>
-                    <button
-                        onClick={loadCustomers}
-                        className="p-2.5 bg-[#0a0a0b] border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm shrink-0"
+                    <button 
+                        onClick={loadCustomers} 
+                        className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm shrink-0"
                         title="Refresh Data"
                     >
                         <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin text-[#b90c1b]' : ''}`} />
@@ -179,9 +179,9 @@ export default function CustomersManagement() {
                 {stats.map((stat, idx) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={idx} className="bg-[#0a0a0b] border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-4 bg-[#0a0a0b]">
-                                <div className={"p-3 bg-[#0a0a0b] rounded-xl"}>
+                        <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={`p-3 rounded-xl ${stat.bg}`}>
                                     <Icon className={`w-6 h-6 ${stat.color}`} />
                                 </div>
                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${stat.trend === 'Live' || stat.trend === 'Healthy' || stat.trend === 'Stable' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
@@ -189,7 +189,7 @@ export default function CustomersManagement() {
                                 </span>
                             </div>
                             <div>
-                                <h3 className="text-3xl font-bold text-white-900">{stat.value}</h3>
+                                <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
                                 <p className="text-sm font-medium text-slate-500 mt-1">{stat.label}</p>
                             </div>
                         </div>
@@ -203,10 +203,11 @@ export default function CustomersManagement() {
                     <button
                         key={entry}
                         onClick={() => setSegment(entry)}
-                        className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all whitespace-nowrap border ${segment === entry
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wide transition-all whitespace-nowrap border ${
+                            segment === entry
                                 ? 'bg-slate-900 border-slate-900 text-white shadow-md'
-                                : 'bg-[#0a0a0b] border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                            }`}
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
                     >
                         {entry}
                     </button>
@@ -214,11 +215,11 @@ export default function CustomersManagement() {
             </div>
 
             {/* Data Table Area */}
-            <div className="bg-[#0a0a0b] border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
                 <div className="overflow-x-auto">
                     {/* Minimum width ensures grid doesn't collapse on phones */}
-                    <div className="min-w-[900px]">
-                        <div className="grid grid-cols-12 gap-6 p-4 md:p-6 bg-[#0a0a0b] border-b border-slate-200 text-xs font-bold text-white-500 uppercase tracking-wider">
+                    <div className="min-w-[900px]"> 
+                        <div className="grid grid-cols-12 gap-6 p-4 md:p-6 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
                             <div className="col-span-1 pl-2">Rank</div>
                             <div className="col-span-4">Customer Profile</div>
                             <div className="col-span-2">Orders</div>
@@ -265,10 +266,10 @@ export default function CustomersManagement() {
             {/* Activity Modal Overlay */}
             {(loadingActivity || activity) && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="w-full max-w-5xl max-h-[90vh] bg-[#0a0a0b] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-
+                    <div className="w-full max-w-5xl max-h-[90vh] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100 bg-[#0a0a0b] z-10 shrink-0">
+                        <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-100 bg-white z-10 shrink-0">
                             <div>
                                 <p className="text-xs font-bold tracking-widest text-[#b90c1b] uppercase mb-1">Customer Overview</p>
                                 <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900">
@@ -281,8 +282,8 @@ export default function CustomersManagement() {
                                     </p>
                                 )}
                             </div>
-                            <button
-                                onClick={closeActivity}
+                            <button 
+                                onClick={closeActivity} 
                                 className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-full transition-colors self-start"
                             >
                                 <X className="w-6 h-6" />
@@ -298,32 +299,32 @@ export default function CustomersManagement() {
                                 </div>
                             ) : activity && (
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
+                                    
                                     {/* Sidebar Stats */}
                                     <div className="lg:col-span-4 flex flex-col gap-4">
                                         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
-                                            <div className="bg-[#0a0a0b] p-3 rounded-xl shadow-sm"><Activity className="w-5 h-5 text-blue-600" /></div>
+                                            <div className="bg-white p-3 rounded-xl shadow-sm"><Activity className="w-5 h-5 text-blue-600" /></div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Sessions</p>
                                                 <p className="text-2xl font-bold text-slate-900">{activity.summary.activeSessions}</p>
                                             </div>
                                         </div>
                                         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
-                                            <div className="bg-[#0a0a0b] p-3 rounded-xl shadow-sm"><ShoppingBag className="w-5 h-5 text-emerald-600" /></div>
+                                            <div className="bg-white p-3 rounded-xl shadow-sm"><ShoppingBag className="w-5 h-5 text-emerald-600" /></div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Orders</p>
                                                 <p className="text-2xl font-bold text-slate-900">{activity.summary.ordersCount}</p>
                                             </div>
                                         </div>
                                         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
-                                            <div className="bg-[#0a0a0b] p-3 rounded-xl shadow-sm"><Heart className="w-5 h-5 text-rose-500" /></div>
+                                            <div className="bg-white p-3 rounded-xl shadow-sm"><Heart className="w-5 h-5 text-rose-500" /></div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Wishlist Items</p>
                                                 <p className="text-2xl font-bold text-slate-900">{activity.summary.wishlistCount}</p>
                                             </div>
                                         </div>
                                         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg">
-                                            <div className="bg-[#0a0a0b]/10 p-3 rounded-xl"><DollarSign className="w-5 h-5 text-emerald-400" /></div>
+                                            <div className="bg-white/10 p-3 rounded-xl"><DollarSign className="w-5 h-5 text-emerald-400" /></div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lifetime Value</p>
                                                 <p className="text-2xl font-bold">{formatMoney(activity.summary.totalSpent, currency)}</p>
@@ -334,7 +335,7 @@ export default function CustomersManagement() {
                                     {/* Timeline */}
                                     <div className="lg:col-span-8">
                                         <h4 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
-                                            <Clock className="w-5 h-5 text-slate-400" />
+                                            <Clock className="w-5 h-5 text-slate-400" /> 
                                             Activity Timeline
                                         </h4>
                                         <div className="space-y-4 pr-2">
@@ -345,8 +346,8 @@ export default function CustomersManagement() {
                                             ) : (
                                                 activity.timeline.map((entry, index) => (
                                                     <div key={`${entry.type}-${entry.occurredAt || index}`} className="relative pl-6 border-l-2 border-slate-100 group hover:border-[#b90c1b] transition-colors pb-4 last:pb-0">
-                                                        <div className="absolute -left-[9px] top-1.5 w-4 h-4 bg-[#0a0a0b] border-2 border-slate-200 rounded-full group-hover:border-[#b90c1b] transition-colors" />
-                                                        <div className="bg-[#0a0a0b] border border-slate-100 hover:border-slate-200 rounded-xl p-4 shadow-sm group-hover:shadow-md transition-all">
+                                                        <div className="absolute -left-[9px] top-1.5 w-4 h-4 bg-white border-2 border-slate-200 rounded-full group-hover:border-[#b90c1b] transition-colors" />
+                                                        <div className="bg-white border border-slate-100 hover:border-slate-200 rounded-xl p-4 shadow-sm group-hover:shadow-md transition-all">
                                                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                                                                 <p className="text-sm font-bold text-slate-800">{entry.title}</p>
                                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">

@@ -54,13 +54,13 @@ export default function ProductHeader({
       <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="h-px w-8 bg-primary" />
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">
+            <span className="h-px w-8 bg-red-600" />
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-red-600">
               Inventory Protocol
             </p>
           </div>
           <h1 className="text-5xl font-black italic tracking-tighter uppercase md:text-7xl">
-            Stock <span className="text-primary-600">Control</span>
+            Stock <span className="text-red-600">Control</span>
           </h1>
           <p className="max-w-xl text-[11px] font-bold uppercase tracking-widest text-slate-500">
             Systemized management and deployment of global inventory assets.
@@ -75,14 +75,14 @@ export default function ProductHeader({
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="SEARCH CATALOGUE..."
-              className="w-full rounded-xl border border-white/5 bg-[#0f1115] py-4 pl-12 pr-4 text-[10px] font-black tracking-widest text-white outline-none transition-all placeholder:text-slate-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
+              className="w-full rounded-xl border border-white/5 bg-[#0f1115] py-4 pl-12 pr-4 text-[10px] font-black tracking-widest text-white outline-none transition-all placeholder:text-slate-600 focus:border-red-600/50 focus:ring-1 focus:ring-red-600/20"
             />
           </div>
 
           {/* New Product Button */}
           <button
             onClick={onNewProduct}
-            className="flex items-center justify-center gap-3 rounded-xl bg-primary px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-1 hover:bg-primary/80 active:scale-95"
+            className="flex items-center justify-center gap-3 rounded-xl bg-red-600 px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-red-600/20 transition-all hover:-translate-y-1 hover:bg-red-500 active:scale-95"
           >
             <Plus size={16} strokeWidth={3} />
             Initialize Product
