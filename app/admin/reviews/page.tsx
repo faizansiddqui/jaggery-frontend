@@ -86,9 +86,9 @@ export default function AdminReviewsPage() {
     };
 
     return (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-10 text-slate-100">
             <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">REVIEWS CONTROL</span>
+                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">REVIEWS CONTROL</span>
                 <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Reviews Management</h2>
                 <p className="font-headline text-[11px] tracking-widest opacity-60">
                     Check all reviews, user contribution counts, reviewed products and delete spam reviews.
@@ -108,21 +108,21 @@ export default function AdminReviewsPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-[#ffffff] border border-primary p-5">
+                <div className="bg-[#0a0a0b] border border-primary p-5">
                     <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">reviews</span>
                         Total Reviews
                     </p>
                     <p className="font-brand text-4xl mt-4">{stats.totalReviews}</p>
                 </div>
-                <div className="bg-[#ffffff] border border-primary p-5">
+                <div className="bg-[#0a0a0b] border border-primary p-5">
                     <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">group</span>
                         Unique Users
                     </p>
                     <p className="font-brand text-4xl mt-4">{stats.totalUsers}</p>
                 </div>
-                <div className="bg-[#ffffff] border border-primary p-5">
+                <div className="bg-[#0a0a0b] border border-primary p-5">
                     <p className="font-headline text-[9px] tracking-widest opacity-50 flex items-center gap-2">
                         <span className="material-symbols-outlined text-sm">inventory_2</span>
                         Reviewed Products
@@ -131,7 +131,7 @@ export default function AdminReviewsPage() {
                 </div>
             </div>
 
-            <section className="bg-[#ffffff] border border-primary p-6 md:p-8 flex flex-col gap-6">
+            <section className="bg-[#0a0a0b] border border-primary p-6 md:p-8 flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
                     <h3 className="font-brand text-3xl tracking-widest">Review Feed</h3>
                     <div className="relative w-full md:w-[380px]">
@@ -140,7 +140,7 @@ export default function AdminReviewsPage() {
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Search user, product, text"
-                            className="w-full bg-[#ffffff] border border-primary pl-10 pr-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
+                            className="w-full bg-[#0a0a0b] border border-primary pl-10 pr-3 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b]"
                         />
                     </div>
                 </div>
@@ -234,7 +234,7 @@ export default function AdminReviewsPage() {
                                     <button
                                         onClick={() => onDeleteReview(review.id)}
                                         disabled={deletingId === review.id}
-                                        className="bg-[#ffffff] text-primary border border-primary py-3 font-headline text-[10px] tracking-widest hover:bg-[#ffffff]/50 disabled:opacity-50 flex items-center justify-center gap-2"
+                                        className="bg-[#0a0a0b] text-primary border border-primary py-3 font-headline text-[10px] tracking-widest hover:bg-[#0a0a0b]/50 disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
                                         <span className="material-symbols-outlined text-sm">delete</span>
                                         {deletingId === review.id ? 'Deleting...' : 'Delete Review'}

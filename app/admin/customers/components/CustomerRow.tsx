@@ -37,7 +37,7 @@ export default function CustomerRow({
                 </div>
             </div>
             <div className="col-span-2 font-brand text-3xl">{customer.ordersCount}</div>
-            <div className="col-span-2 font-brand text-3xl text-[#b90c1b]">{lifetimeValue}</div>
+            <div className="col-span-2 font-brand text-3xl text-primary">{lifetimeValue}</div>
             <div className="col-span-1 flex justify-end">
                 <span className={`px-4 py-1 font-headline text-[8px] tracking-widest font-black ${statusClass}`}>{normalizedStatus}</span>
             </div>

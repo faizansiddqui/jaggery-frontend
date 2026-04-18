@@ -3,7 +3,7 @@ import Comp2 from "./components/Comp2";
 
 export default function AdminSearchRoute() {
   return (
-    <div data-scroll-section>
+    <div className="text-slate-100" data-scroll-section>
       <Comp1 />
       <Comp2 />
     </div>

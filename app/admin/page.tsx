@@ -82,7 +82,7 @@ export default function AdminDashboard() {
          ]);
          setOrders(orderRows); setProducts(productRows);
          setConversionRate(Number(customerOverview.stats.conversionRate || 0));
-      } catch (err) { setError('Telemetry synchronization failed.'); } 
+      } catch (err) { setError('Telemetry synchronization failed.'); }
       finally { setIsLoading(false); }
    };
 
@@ -91,13 +91,13 @@ export default function AdminDashboard() {
    const stats = useMemo(() => {
       const totalRevenue = orders.reduce((sum, o) => sum + normalizeOrderAmount(o), 0);
       const active = orders.filter(o => ['pending', 'processing', 'shipped', 'in transit'].includes(toStatus(o.status))).length;
-      const recent = products.filter(p => (toDate(p.createdAt)?.getTime() || 0) >= (Date.now() - 30*24*60*60*1000)).length;
+      const recent = products.filter(p => (toDate(p.createdAt)?.getTime() || 0) >= (Date.now() - 30 * 24 * 60 * 60 * 1000)).length;
 
       return [
-         { label: 'Gross Revenue', value: `${currency}${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`, sub: 'Total Volume', icon: <Zap size={16}/>, color: 'text-red-600' },
-         { label: 'Active Pipeline', value: String(active), sub: 'Orders in Flight', icon: <Truck size={16}/>, color: 'text-blue-500' },
-         { label: 'Inventory Growth', value: String(recent), sub: 'Last 30 Days', icon: <Package size={16}/>, color: 'text-amber-500' },
-         { label: 'Conversion', value: `${conversionRate.toFixed(2)}%`, sub: 'Active Sessions', icon: <Activity size={16}/>, color: 'text-emerald-500' },
+         { label: 'Gross Revenue', value: `${currency}${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: 'Total Volume', icon: <Zap size={16} />, color: 'text-red-600' },
+         { label: 'Active Pipeline', value: String(active), sub: 'Orders in Flight', icon: <Truck size={16} />, color: 'text-blue-500' },
+         { label: 'Inventory Growth', value: String(recent), sub: 'Last 30 Days', icon: <Package size={16} />, color: 'text-amber-500' },
+         { label: 'Conversion', value: `${conversionRate.toFixed(2)}%`, sub: 'Active Sessions', icon: <Activity size={16} />, color: 'text-emerald-500' },
       ];
    }, [orders, products, conversionRate, currency]);
 
@@ -112,20 +112,20 @@ export default function AdminDashboard() {
    );
 
    return (
-      <div className="space-y-12">
+      <div className="space-y-12 text-slate-100">
          <header className="space-y-2">
             <div className="flex items-center gap-2">
-               <span className="w-8 h-px bg-red-600" />
-               <span className="text-[10px] font-black tracking-[0.4em] text-red-600 uppercase">System Overview</span>
+               <span className="w-8 h-px bg-primary" />
+               <span className="text-[10px] font-black tracking-[0.4em] text-primary uppercase">System Overview</span>
             </div>
             <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic dark:text-white">Command Center</h2>
          </header>
 
          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {stats.map((stat, idx) => (
-               <motion.div 
+               <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
-                  key={idx} className="bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-sm hover:border-red-600/50 transition-all group relative overflow-hidden"
+                  key={idx} className="bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-sm hover:border-primary transition-all group relative overflow-hidden"
                >
                   <div className="flex justify-between items-start mb-6">
                      <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">{stat.label}</span>
@@ -135,7 +135,7 @@ export default function AdminDashboard() {
                      <span className="text-3xl font-black block tracking-tight dark:text-white">{stat.value}</span>
                      <span className="text-[9px] font-bold tracking-widest text-slate-500 uppercase mt-1 block">{stat.sub}</span>
                   </div>
-                  <div className="absolute -bottom-4 -right-4 text-slate-100 dark:text-white/[0.02] group-hover:text-red-600/[0.05] transition-colors"><TrendingUp size={100}/></div>
+                  <div className="absolute -bottom-4 -right-4 text-slate-100 dark:text-white/[0.02] group-hover:text-red-600/[0.05] transition-colors"><TrendingUp size={100} /></div>
                </motion.div>
             ))}
          </div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
                      {(['weekly', 'monthly', 'yearly'] as TrendRange[]).map((opt) => (
-                        <button key={opt} onClick={() => setRange(opt)} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${range === opt ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>{opt}</button>
+                        <button key={opt} onClick={() => setRange(opt)} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${range === opt ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>{opt}</button>
                      ))}
                   </div>
                </div>
@@ -160,14 +160,14 @@ export default function AdminDashboard() {
                   <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
                      {[...Array(5)].map((_, i) => <div key={i} className="border-t border-slate-300 dark:border-slate-700 w-full" />)}
                   </div>
-                  
+
                   {chartPoints.map((p, i) => {
                      const height = Math.max(4, (p.value / maxChartValue) * 100);
                      return (
                         <div key={i} className="flex-1 group relative flex flex-col justify-end h-full">
-                           <motion.div 
+                           <motion.div
                               initial={{ height: 0 }} animate={{ height: `${height}%` }}
-                              className="w-full bg-gradient-to-t from-red-600 to-red-400 rounded-t-sm group-hover:from-red-500 group-hover:to-red-300 transition-all relative"
+                              className="w-full bg-gradient-to-t from-primary to-primary/50 rounded-t-sm group-hover:from-primary/70 group-hover:to-primary/30 transition-all relative"
                            >
                               <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                                  {currency}{p.value.toFixed(0)}
@@ -184,13 +184,13 @@ export default function AdminDashboard() {
             <div className="lg:col-span-4 space-y-8">
                <div className="bg-[#0f1115] text-white rounded-3xl p-8 border border-white/5 shadow-xl">
                   <div className="flex items-center gap-3 mb-8">
-                     <Calendar size={18} className="text-red-600" />
+                     <Calendar size={18} className="text-primary" />
                      <h3 className="text-lg font-black tracking-tighter uppercase italic">Real-Time Feed</h3>
                   </div>
                   <div className="space-y-6">
                      {orders.slice(0, 5).map((order, i) => (
                         <div key={i} className="flex gap-4 group">
-                           <div className="w-1 h-10 bg-white/10 rounded-full group-hover:bg-red-600 transition-colors" />
+                           <div className="w-1 h-10 bg-white/10 rounded-full group-hover:bg-primary transition-colors" />
                            <div>
                               <p className="text-[10px] font-black tracking-wider uppercase text-slate-300">
                                  {order.order_code || `ORD-${order.order_id}`}

@@ -42,12 +42,12 @@ export default function ContactSubmissionCard({
                     placeholder="Resolution note (optional)"
                     disabled={contact.status === 'solved'}
                     rows={4}
-                    className="bg-[#ffffff] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b] disabled:opacity-50"
+                    className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b] disabled:opacity-50"
                 />
                 <button
                     onClick={onMarkSolved}
                     disabled={contact.status === 'solved' || busy}
-                    className="bg-[#b90c1b] text-white py-3 font-headline text-[10px] tracking-widest hover:bg-[#d21628] disabled:opacity-40"
+                    className="bg-primary text-white py-3 font-headline text-[10px] tracking-widest hover:bg-primary/80 disabled:opacity-40"
                 >
                     {contact.status === 'solved' ? 'Solved' : busy ? 'Updating...' : 'Mark Solved'}
                 </button>

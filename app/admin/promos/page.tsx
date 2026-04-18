@@ -208,7 +208,7 @@ export default function AdminPromosPage() {
   };
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-8 text-slate-100">
       <header className="border-b border-[#ffffff]/10 pb-6">
         <h1 className="font-brand text-5xl tracking-tight">Promo Codes</h1>
         <p className="font-headline text-[10px] tracking-[0.25em] opacity-60 mt-2">
@@ -434,9 +434,8 @@ export default function AdminPromosPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-headline text-[10px] tracking-widest px-2 py-1 ${
-                          promo.isActive ? 'bg-green-700/30 text-green-200' : 'bg-[#ffffff]/10 opacity-70'
-                        }`}
+                        className={`font-headline text-[10px] tracking-widest px-2 py-1 ${promo.isActive ? 'bg-green-700/30 text-green-200' : 'bg-[#ffffff]/10 opacity-70'
+                          }`}
                       >
                         {promo.isActive ? 'ACTIVE' : 'INACTIVE'}
                       </span>

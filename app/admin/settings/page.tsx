@@ -378,9 +378,9 @@ export default function AdminSettings() {
     const activeLogoPreview = logoPreviewUrl || settings.logoUrl || '';
 
     return (
-        <div className="flex flex-col gap-12">
+        <div className="flex flex-col gap-12 text-slate-100">
             <header className="flex flex-col gap-2">
-                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-[#b90c1b] font-black">SYSTEM PARAMETERS</span>
+                <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">SYSTEM PARAMETERS</span>
                 <h2 className="font-brand text-5xl md:text-7xl leading-none tracking-tighter">Portal Settings</h2>
             </header>
 
@@ -398,7 +398,7 @@ export default function AdminSettings() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 lg:items-start gap-12">
                 <div className="lg:col-span-8 flex flex-col gap-12">
-                    <section className="flex flex-col gap-8 bg-[#ffffff] border border-primary/10 p-10">
+                    <section className="flex flex-col gap-8 bg-[#0a0a0b] border border-primary/10 p-10">
                         <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Global Branding</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <label className="flex flex-col gap-2">
@@ -423,7 +423,7 @@ export default function AdminSettings() {
                                     value={form.footerDescription}
                                     onChange={(e) => updateField('footerDescription', e.target.value)}
                                     rows={3}
-                                    className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary"
+                                    className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary"
                                 />
                             </label>
                             <label className="md:col-span-2 flex flex-col gap-2">
@@ -432,7 +432,7 @@ export default function AdminSettings() {
                                     value={form.companyAddress}
                                     onChange={(e) => updateField('companyAddress', e.target.value)}
                                     rows={3}
-                                    className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary"
+                                    className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary"
                                 />
                             </label>
                             <label className="flex flex-col gap-2">
@@ -441,7 +441,7 @@ export default function AdminSettings() {
                                     autoComplete="off"
                                     value={form.companyEmail}
                                     onChange={(e) => updateField('companyEmail', e.target.value)}
-                                    className="bg-transparent border-b-2 border-primary/10 py-3 font-headline text-xs tracking-widest focus:border-[#b90c1b] outline-none"
+                                    className="bg-[#0a0a0b] border-b-2 border-primary/10 py-3 font-headline text-xs tracking-widest focus:border-[#b90c1b] outline-none"
                                 />
                             </label>
                             <label className="flex flex-col gap-2">
@@ -450,7 +450,7 @@ export default function AdminSettings() {
                                     autoComplete="off"
                                     value={form.companyPhone}
                                     onChange={(e) => updateField('companyPhone', e.target.value)}
-                                    className="bg-transparent border-b-2 border-primary/10 py-3 font-headline text-xs tracking-widest focus:border-[#b90c1b] outline-none"
+                                    className="bg-[#0a0a0b] border-b-2 border-primary/10 py-3 font-headline text-xs tracking-widest focus:border-[#b90c1b] outline-none"
                                 />
                             </label>
                         </div>
@@ -458,7 +458,7 @@ export default function AdminSettings() {
                         <div className="border border-primary/10 p-6 flex flex-col gap-4">
                             <p className="font-headline text-[9px] tracking-[0.25em] opacity-50">Brand Logo</p>
                             <div className="grid grid-cols-1 md:grid-cols-[140px_1fr_auto] gap-4 items-end">
-                                <div className="w-[140px] h-[140px] border border-outline/10 bg-surface-container flex items-center justify-center overflow-hidden">
+                                <div className="w-[140px] h-[140px] border border-outline/10 bg-[#0a0a0b] flex items-center justify-center overflow-hidden">
                                     {activeLogoPreview ? (
                                         <Image src={activeLogoPreview} alt={form.siteName || 'brand logo'} width={240} height={120} unoptimized className="max-w-full max-h-full object-contain" />
                                     ) : (
@@ -473,7 +473,7 @@ export default function AdminSettings() {
                                             type="file"
                                             accept="image/*"
                                             onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
-                                            className="bg-surface-container border border-outline/15 px-2 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
+                                            className="bg-[#0a0a0b] border border-outline/15 px-2 py-3 font-headline text-[10px] tracking-widest focus:outline-none focus:border-primary"
                                         />
                                     </label>
                                     <button
@@ -489,26 +489,26 @@ export default function AdminSettings() {
                         </div>
                     </section>
 
-                    <section className="flex flex-col gap-8 bg-[#ffffff] border border-primary/10 p-10">
+                    <section className="flex flex-col gap-8 bg-[#0a0a0b] border border-primary/10 p-10">
                         <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Social URLs</h3>
                         <div className="grid grid-cols-1 gap-4">
                             <label htmlFor="instagramUrl" className="font-headline text-[9px] tracking-widest opacity-40">Instagram URL</label>
-                            <input autoComplete="off" value={form.instagramUrl} onChange={(e) => updateField('instagramUrl', e.target.value)} placeholder="Instagram URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
+                            <input autoComplete="off" value={form.instagramUrl} onChange={(e) => updateField('instagramUrl', e.target.value)} placeholder="Instagram URL" className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
                             <label htmlFor="youtubeUrl" className="font-headline text-[9px] tracking-widest opacity-40">YouTube URL</label>
-                            <input autoComplete="off" value={form.youtubeUrl} onChange={(e) => updateField('youtubeUrl', e.target.value)} placeholder="YouTube URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
+                            <input autoComplete="off" value={form.youtubeUrl} onChange={(e) => updateField('youtubeUrl', e.target.value)} placeholder="YouTube URL" className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
                             <label htmlFor="facebookUrl" className="font-headline text-[9px] tracking-widest opacity-40">Facebook URL</label>
-                            <input autoComplete="off" value={form.facebookUrl} onChange={(e) => updateField('facebookUrl', e.target.value)} placeholder="Facebook URL" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
+                            <input autoComplete="off" value={form.facebookUrl} onChange={(e) => updateField('facebookUrl', e.target.value)} placeholder="Facebook URL" className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
                             <p className="font-headline text-[9px] tracking-widest opacity-40">Use secure URLs only (https://). Allowed domains: instagram.com, youtube.com/youtu.be, facebook.com</p>
                         </div>
                     </section>
                 </div>
 
                 <div className="lg:col-span-4 lg:self-start lg:sticky lg:top-10 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-2 flex flex-col gap-8">
-                    <section className="bg-[#ffffff] border border-primary/10 p-10 flex flex-col gap-6">
+                    <section className="bg-[#0a0a0b] border border-primary/10 p-10 flex flex-col gap-6">
                         <h3 className="font-brand text-3xl tracking-widest border-b border-primary/10 pb-6">Security</h3>
-                        <input autoComplete="off" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current Password" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                        <input autoComplete="off" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New Password" className="bg-surface-container border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
-                        <button onClick={onResetPassword} disabled={resettingPassword || !currentPassword || !newPassword} className="border border-[#ffffff]/20 py-3 font-headline text-[11px] tracking-widest hover:bg-[#ffffff]/10 disabled:opacity-40">
+                        <input autoComplete="off" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current Password" className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
+                        <input autoComplete="off" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New Password" className="bg-[#0a0a0b] border border-outline/15 px-4 py-3 font-headline text-xs tracking-widest focus:outline-none focus:border-primary" />
+                        <button onClick={onResetPassword} disabled={resettingPassword || !currentPassword || !newPassword} className="border border-[#ffffff]/20 py-3 font-headline text-[11px] tracking-widest hover:bg-[#0a0a0b]/10 disabled:opacity-40">
                             {resettingPassword ? 'Updating...' : 'Reset Admin Password'}
                         </button>
                         <button onClick={onLogout} className="bg-primary text-white py-3 font-headline text-[11px] tracking-widest hover:bg-primary/30">

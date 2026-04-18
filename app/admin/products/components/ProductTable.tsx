@@ -44,7 +44,7 @@ export default function ProductTable({
 }: Props) {
   if (loading) {
     return (
-      <div className="mt-8 flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-16 shadow-sm">
+      <div className="mt-8 flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-[#0a0a0b] p-16 shadow-sm">
         <div className="mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-900" />
         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">
           Syncing Inventory...
@@ -55,7 +55,7 @@ export default function ProductTable({
 
   return (
     <section className="mt-8 space-y-4">
-      <div className="hidden rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 lg:grid lg:grid-cols-12">
+      <div className="hidden rounded-2xl border border-slate-200 bg-[#0a0a0b] px-6 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 lg:grid lg:grid-cols-12">
         <div className="col-span-5">Product Details</div>
         <div className="col-span-2 text-center">Metrics</div>
         <div className="col-span-2 text-center">Value</div>
@@ -64,7 +64,7 @@ export default function ProductTable({
 
       <div className="space-y-3">
         {products.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center text-[10px] font-bold uppercase tracking-widest text-slate-500 shadow-sm">
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-[#0a0a0b] p-12 text-center text-[10px] font-bold uppercase tracking-widest text-slate-500 shadow-sm">
             No Records Found in Database
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function ProductTable({
             return (
               <article
                 key={product.product_id}
-                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg sm:p-5"
+                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-[#0a0a0b] p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg sm:p-5"
               >
                 <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-slate-200/40 blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -113,7 +113,7 @@ export default function ProductTable({
                     </div>
 
                     <div className="min-w-0 space-y-1">
-                      <h3 className="text-base font-semibold tracking-tight text-slate-900 group-hover:text-slate-700">
+                      <h3 className="text-base font-semibold tracking-tight text-white group-hover:text-slate-700">
                         {product.name}
                       </h3>
 
@@ -134,17 +134,17 @@ export default function ProductTable({
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 lg:col-span-2 lg:flex lg:flex-col lg:items-center lg:gap-2">
-                    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 lg:w-full lg:justify-center">
+                    <div className="flex items-center gap-3 rounded-2xl bg-[#0a0a0b] p-3 lg:w-full lg:justify-center">
                       <Layers size={14} className="text-slate-500" />
                       <div className="text-left lg:text-center">
                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 lg:hidden">
                           Stock
                         </p>
-                        <p className="text-sm font-black text-slate-900">{stockCount}</p>
+                        <p className="text-sm font-black text-white">{stockCount}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3 lg:w-full lg:justify-center">
+                    <div className="flex items-center gap-3 rounded-2xl bg-[#0a0a0b] p-3 lg:w-full lg:justify-center">
                       <Box size={14} className="text-slate-500" />
                       <div className="text-left lg:text-center">
                         <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 lg:hidden">
@@ -156,11 +156,11 @@ export default function ProductTable({
                   </div>
 
                   <div className="text-center lg:col-span-2">
-                    <div className="inline-block rounded-full bg-slate-50 px-4 py-2 ring-1 ring-slate-200 lg:ring-0">
+                    <div className="inline-block rounded-full bg-[#0a0a0b] px-4 py-2 ring-1 ring-slate-200 lg:ring-0">
                       <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 lg:mb-1">
                         Net Price
                       </p>
-                      <p className="text-xl font-black tracking-tight text-slate-900">
+                      <p className="text-xl font-black tracking-tight text-white">
                         {currency}
                         {formatCurrency(product.selling_price ?? product.price)}
                       </p>

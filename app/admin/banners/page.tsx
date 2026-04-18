@@ -148,52 +148,52 @@ export default function AdminBannersPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-slate-100">
       <div>
         <h1 className="font-brand text-4xl tracking-tight">Banners</h1>
         <p className="mt-2 text-on-surface-variant text-sm">Manage homepage hero banners.</p>
       </div>
 
-      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-outline/20 p-6 bg-surface">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-outline/20 p-6 bg-[#0a0a0b]">
         <input
           value={form.title}
           onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
           placeholder="Title"
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
           required
         />
         <input
           value={form.subtitle}
           onChange={(event) => setForm((prev) => ({ ...prev, subtitle: event.target.value }))}
           placeholder="Subtitle"
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
           required
         />
         <input
           value={form.targetUrl}
           onChange={(event) => setForm((prev) => ({ ...prev, targetUrl: event.target.value }))}
           placeholder="Target URL (e.g. /shop)"
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
           required
         />
         <input
           value={form.imageUrl}
           onChange={(event) => setForm((prev) => ({ ...prev, imageUrl: event.target.value }))}
           placeholder="Image URL (optional if file uploaded)"
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
         />
         <input
           type="file"
           accept="image/*"
           onChange={(event) => setForm((prev) => ({ ...prev, imageFile: event.target.files?.[0] || null }))}
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
         />
         <input
           type="number"
           value={form.order}
           onChange={(event) => setForm((prev) => ({ ...prev, order: event.target.value }))}
           placeholder="Order"
-          className="border border-outline/30 px-3 py-2 bg-background"
+          className="border border-outline/30 px-3 py-2 bg-[#0a0a0b]"
         />
         <label className="md:col-span-2 flex items-center gap-2 text-sm">
           <input
@@ -227,8 +227,8 @@ export default function AdminBannersPage() {
       ) : (
         <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.id} className="border border-outline/20 p-4 bg-surface flex flex-col md:flex-row md:items-center gap-4">
-              <div className="w-full md:w-52 h-24 bg-surface-container-high overflow-hidden">
+            <div key={item.id} className="border border-outline/20 p-4 bg-[#0a0a0b] flex flex-col md:flex-row md:items-center gap-4">
+              <div className="w-full md:w-52 h-24 bg-[#0a0a0b]-container-high overflow-hidden">
                 {item.imageUrl ? (
                   <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
                 ) : null}

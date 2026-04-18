@@ -121,11 +121,11 @@ export default function AdminTestimonialsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl">
+    <div className="flex flex-col gap-8 max-w-4xl text-slate-100">
       <header>
-        <p className="font-headline text-[10px] tracking-[0.3em] text-[#b90c1b]">Content</p>
+        <p className="font-headline text-[10px] tracking-[0.3em] text-primary">Content</p>
         <h1 className="font-brand text-4xl md:text-5xl tracking-tight mt-2">Testimonials</h1>
-        <p className="text-on-surface-variant text-sm mt-2">
+        <p className="text-white/50 text-sm mt-2">
           Manage homepage testimonial carousel. Lower order numbers appear first. Only active items show on the site.
         </p>
       </header>
@@ -137,7 +137,7 @@ export default function AdminTestimonialsPage() {
         <div className="border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-800">{message}</div>
       ) : null}
 
-      <form onSubmit={onSubmit} className="border border-outline/20 bg-surface p-6 space-y-4">
+      <form onSubmit={onSubmit} className="border border-outline/20 bg-[#0a0a0b] p-6 space-y-4">
         <h2 className="font-headline text-xs tracking-widest">{editingId ? 'Edit testimonial' : 'Add testimonial'}</h2>
         <label className="flex flex-col gap-1">
           <span className="text-[10px] tracking-widest opacity-60">Quote</span>
@@ -145,7 +145,7 @@ export default function AdminTestimonialsPage() {
             value={form.quote}
             onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
             rows={4}
-            className="bg-background border border-outline/30 rounded-lg px-3 py-2 text-sm"
+            className="bg-[#0a0a0b] border border-outline/30 rounded-lg px-3 py-2 text-sm"
             required
           />
         </label>
@@ -155,7 +155,7 @@ export default function AdminTestimonialsPage() {
             <input
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              className="bg-background border border-outline/30 rounded-lg px-3 py-2 text-sm"
+              className="bg-[#0a0a0b] border border-outline/30 rounded-lg px-3 py-2 text-sm"
               required
             />
           </label>
@@ -164,7 +164,7 @@ export default function AdminTestimonialsPage() {
             <input
               value={form.role}
               onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-              className="bg-background border border-outline/30 rounded-lg px-3 py-2 text-sm"
+              className="bg-[#0a0a0b] border border-outline/30 rounded-lg px-3 py-2 text-sm"
             />
           </label>
         </div>
@@ -175,7 +175,7 @@ export default function AdminTestimonialsPage() {
               type="number"
               value={form.order}
               onChange={(e) => setForm((f) => ({ ...f, order: e.target.value }))}
-              className="bg-background border border-outline/30 rounded-lg px-3 py-2 text-sm w-28"
+              className="bg-[#0a0a0b] border border-outline/30 rounded-lg px-3 py-2 text-sm w-28"
             />
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
@@ -203,7 +203,7 @@ export default function AdminTestimonialsPage() {
         </div>
       </form>
 
-      <section className="border border-outline/20 bg-surface p-6">
+      <section className="border border-outline/20 bg-[#0a0a0b] p-6">
         <h2 className="font-headline text-xs tracking-widest mb-4">All testimonials</h2>
         {loading ? (
           <p className="text-sm opacity-60">Loading...</p>
@@ -216,7 +216,7 @@ export default function AdminTestimonialsPage() {
                 key={item.id}
                 className={`border border-outline/15 rounded-xl p-4 flex flex-col gap-2 ${editingId === item.id ? 'ring-2 ring-primary/40' : ''}`}
               >
-                <p className="text-sm italic text-on-surface-variant line-clamp-3">&ldquo;{item.quote}&rdquo;</p>
+                <p className="text-sm italic text-white/70 line-clamp-3">&ldquo;{item.quote}&rdquo;</p>
                 <div className="flex flex-wrap justify-between gap-2 items-start">
                   <div>
                     <p className="font-bold text-sm">{item.name}</p>
