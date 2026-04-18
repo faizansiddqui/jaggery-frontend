@@ -9,11 +9,11 @@ import React, {
   type FormEventHandler,
   type MouseEventHandler,
 } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 import {
   createAdminCategory,
   createAdminProduct,
+  updateAdminCategory,
   updateAdminProduct,
 } from '@/app/lib/apiClient';
 
@@ -61,18 +61,28 @@ type ToolbarAction = {
 function StepBadge({ active, done, label }: StepProps) {
   return (
     <div
-      className={`rounded-2xl border px-4 py-3 text-sm transition ${
-        active
+      className={`rounded-2xl border px-4 py-3 text-sm transition ${active
           ? 'border-slate-900 bg-slate-900 text-white'
           : done
-          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-          : 'border-slate-200 bg-slate-50 text-slate-500'
-      }`}
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-slate-200 bg-slate-50 text-slate-500'
+        }`}
     >
       <span className="font-semibold">{label}</span>
     </div>
   );
 }
+
+const findCategoryNameById = (nodes: CategoryNode[], id: string): string | null => {
+  for (const node of nodes) {
+    if (String(node._id) === id || String(node.id || '') === id) return node.name;
+    if (Array.isArray(node.children) && node.children.length) {
+      const found = findCategoryNameById(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
 
 export default function ProductEditor({
   open,
@@ -82,7 +92,6 @@ export default function ProductEditor({
   onSaved,
   onError,
 }: Props) {
-  const router = useRouter();
   const { settings } = useSiteSettings();
   const currency = settings.currencySymbol || '$';
 
@@ -103,6 +112,10 @@ export default function ProductEditor({
   );
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [descriptionTextLength, setDescriptionTextLength] = useState(0);
+  const [renameCategoryName, setRenameCategoryName] = useState('');
+  const [renameCategoryBusy, setRenameCategoryBusy] = useState(false);
+  const [renameCategoryStatus, setRenameCategoryStatus] = useState('');
+  const [hasHydratedDescription, setHasHydratedDescription] = useState(false);
 
   const editorRef = useRef<HTMLDivElement | null>(null);
   const lastValidDescriptionHtmlRef = useRef('');
@@ -116,12 +129,19 @@ export default function ProductEditor({
     setNewCategoryName('');
     setName('');
     setDescription('');
+    setHasHydratedDescription(false);
+    if (editorRef.current) {
+      editorRef.current.innerHTML = '';
+    }
     setHighlights('');
     setVariants([createEmptyVariant()]);
     setSku('');
     setIngredients(Array.from({ length: INGREDIENTS_COUNT }, () => createEmptyIngredient()));
     setNutritions(Array.from({ length: NUTRITIONS_COUNT }, () => createEmptyNutrition()));
     setSelectedCategoryId('');
+    setRenameCategoryName('');
+    setRenameCategoryBusy(false);
+    setRenameCategoryStatus('');
     setDescriptionTextLength(0);
     lastValidDescriptionHtmlRef.current = '';
   };
@@ -131,8 +151,12 @@ export default function ProductEditor({
 
     if (product) {
       setStep(1);
+      const descriptionHtml = toEditorHtml(product.description || '');
       setName(product.name || product.title || '');
-      setDescription(toEditorHtml(product.description || ''));
+      setDescription(descriptionHtml);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = descriptionHtml;
+      }
       setSku(product.sku || '');
       setHighlights(Array.isArray(product.key_highlights) ? product.key_highlights.join('\n') : '');
       setSelectedCategoryId(parseCategoryId(product.catagory_id));
@@ -140,50 +164,51 @@ export default function ProductEditor({
       const ingredientRows =
         Array.isArray(product.ingredients) && product.ingredients.length
           ? product.ingredients.map((s: Record<string, unknown>) => ({
-              key: String(s.key || ''),
-              value: String(s.value || ''),
-            }))
+            key: String(s.key || ''),
+            value: String(s.value || ''),
+          }))
           : Array.from({ length: INGREDIENTS_COUNT }, () => createEmptyIngredient());
       setIngredients(ingredientRows);
 
       const nutritionRows =
         Array.isArray(product.nutritions) && product.nutritions.length
           ? product.nutritions.map((s: Record<string, unknown>) => ({
-              key: String(s.key || ''),
-              value: String(s.value || ''),
-            }))
+            key: String(s.key || ''),
+            value: String(s.value || ''),
+          }))
           : Array.from({ length: NUTRITIONS_COUNT }, () => createEmptyNutrition());
       setNutritions(nutritionRows);
 
       const mappedVariants: VariantRow[] =
         Array.isArray(product.variants) && product.variants.length
           ? product.variants.map((v: Record<string, unknown>) => {
-              const label = String(v.label || '');
-              let weight = '';
-              let weightUnit: WeightUnit = 'GM';
+            const label = String(v.label || '');
+            let weight = '';
+            let weightUnit: WeightUnit = 'GM';
 
-              if (label) {
-                const match = label.match(/^(\d+)([a-zA-Z]+)$/);
-                if (match) {
-                  weight = match[1];
-                  weightUnit = match[2].toUpperCase() as WeightUnit;
-                } else {
-                  weight = label;
-                }
+            if (label) {
+              const match = label.match(/^(\d+)([a-zA-Z]+)$/);
+              if (match) {
+                weight = match[1];
+                weightUnit = match[2].toUpperCase() as WeightUnit;
+              } else {
+                weight = label;
               }
+            }
 
-              return {
-                weight,
-                weightUnit,
-                price: String(v.price || ''),
-                discountedPrice: String(v.originalPrice || v.selling_price || ''),
-                stock: Number(v.stock || 0),
-                image: null,
-                existingImage: String(v.image || ''),
-              };
-            })
+            return {
+              weight,
+              weightUnit,
+              price: String(v.price || ''),
+              discountedPrice: String(v.originalPrice || v.selling_price || ''),
+              stock: Number(v.stock || 0),
+              image: null,
+              existingImage: String(v.image || ''),
+            };
+          })
           : [createEmptyVariant()];
       setVariants(mappedVariants);
+      setHasHydratedDescription(false);
 
       const textLength = stripHtmlToPlainText(toEditorHtml(product.description || '')).length;
       setDescriptionTextLength(textLength);
@@ -192,6 +217,25 @@ export default function ProductEditor({
       resetEditor();
     }
   }, [open, product]);
+
+  useEffect(() => {
+    if (!selectedCategoryId) {
+      setRenameCategoryName('');
+      setRenameCategoryStatus('');
+      return;
+    }
+    const currentName = findCategoryNameById(categories, selectedCategoryId) ?? '';
+    setRenameCategoryName(currentName);
+    setRenameCategoryStatus('');
+  }, [selectedCategoryId, categories]);
+
+  useEffect(() => {
+    if (step !== 2 || hasHydratedDescription) return;
+    if (!editorRef.current) return;
+    if (!description) return;
+    editorRef.current.innerHTML = description;
+    setHasHydratedDescription(true);
+  }, [step, description, hasHydratedDescription]);
 
   useEffect(() => {
     if (!open) return;
@@ -493,6 +537,58 @@ export default function ProductEditor({
                     </button>
                   </div>
                 </div>
+
+                {selectedCategoryId ? (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                          Rename Selected Category
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Change the currently selected category name.
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                        {findCategoryNameById(categories, selectedCategoryId) || 'Selected'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-3 md:flex-row">
+                      <input
+                        value={renameCategoryName}
+                        onChange={(e) => setRenameCategoryName(e.target.value)}
+                        placeholder="Rename selected category"
+                        className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!selectedCategoryId) return;
+                          const newName = renameCategoryName.trim();
+                          if (!newName) return;
+                          if (newName === findCategoryNameById(categories, selectedCategoryId)) return;
+                          setRenameCategoryBusy(true);
+                          setRenameCategoryStatus('');
+                          try {
+                            await updateAdminCategory(selectedCategoryId, newName);
+                            setRenameCategoryStatus('Category renamed successfully.');
+                            onSaved();
+                          } catch {
+                            setRenameCategoryStatus('Rename failed.');
+                          } finally {
+                            setRenameCategoryBusy(false);
+                          }
+                        }}
+                        disabled={renameCategoryBusy || !renameCategoryName.trim()}
+                        className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Rename
+                      </button>
+                    </div>
+                    {renameCategoryStatus ? (
+                      <p className="mt-3 text-sm text-slate-500">{renameCategoryStatus}</p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -543,11 +639,10 @@ export default function ProductEditor({
                         </p>
                       </div>
                       <p
-                        className={`text-xs font-semibold ${
-                          descriptionTextLength > DESCRIPTION_MAX_LENGTH
+                        className={`text-xs font-semibold ${descriptionTextLength > DESCRIPTION_MAX_LENGTH
                             ? 'text-rose-600'
                             : 'text-slate-500'
-                        }`}
+                          }`}
                       >
                         {descriptionTextLength}/{DESCRIPTION_MAX_LENGTH}
                       </p>
@@ -831,9 +926,12 @@ export default function ProductEditor({
                         {(variant.existingImage || variant.image) && (
                           <div className="pt-2">
                             {variant.image ? (
-                              <img
+                              <Image
                                 src={URL.createObjectURL(variant.image)}
                                 alt="New variant"
+                                width={192}
+                                height={192}
+                                unoptimized
                                 className="h-48 w-48 rounded-2xl object-cover ring-1 ring-slate-200"
                               />
                             ) : (
