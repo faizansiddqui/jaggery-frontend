@@ -285,8 +285,8 @@ export default function AdminSettings() {
             {/* Header Section */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
                 <div className="flex flex-col gap-1">
-                    <span className="flex items-center gap-2 text-primary font-bold text-xs tracking-[0.3em] uppercase">
-                        <div className="w-8 h-[2px] bg-primary"></div> Configuration
+                    <span className="flex items-center gap-2 text-red-700 font-bold text-xs tracking-[0.3em] uppercase">
+                        <div className="w-8 h-[2px] bg-red-700"></div> Configuration
                     </span>
                     <h2 className="text-5xl md:text-6xl font-black tracking-tight text-white">Site Settings</h2>
                 </div>
@@ -294,7 +294,7 @@ export default function AdminSettings() {
                      <button 
                         onClick={onSave} 
                         disabled={loading || saving || !dirty} 
-                        className="group flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold transition-all hover:bg-primary hover:text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-white/5"
+                        className="group flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold transition-all hover:bg-red-700 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-white/5"
                     >
                         <Save size={18} className={saving ? "animate-spin" : "group-hover:scale-110 transition-transform"} />
                         {saving ? 'Processing...' : 'Save Configuration'}
@@ -320,38 +320,38 @@ export default function AdminSettings() {
                     {/* Branding Section */}
                     <section className="bg-white/[0.03] border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-primary/20 rounded-lg text-primary"><Globe size={24} /></div>
+                            <div className="p-2 bg-red/20 rounded-lg text-red-700"><Globe size={24} /></div>
                             <h3 className="text-2xl font-bold text-white tracking-tight">Identity & Branding</h3>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <InputWrapper label="Store Name">
-                                <input autoComplete="off" value={form.siteName} onChange={(e) => updateField('siteName', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white placeholder:text-slate-600" placeholder="e.g. Pure Fire" />
+                                <input autoComplete="off" value={form.siteName} onChange={(e) => updateField('siteName', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white placeholder:text-slate-600" placeholder="e.g. Pure Fire" />
                             </InputWrapper>
                             <InputWrapper label="Currency Symbol">
-                                <input autoComplete="off" value={form.currencySymbol} onChange={(e) => updateField('currencySymbol', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                <input autoComplete="off" value={form.currencySymbol} onChange={(e) => updateField('currencySymbol', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                             </InputWrapper>
                             <InputWrapper label="Navbar Title">
-                                <input autoComplete="off" value={form.navbarTitle} onChange={(e) => updateField('navbarTitle', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                <input autoComplete="off" value={form.navbarTitle} onChange={(e) => updateField('navbarTitle', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                             </InputWrapper>
                             <InputWrapper label="Footer Title">
-                                <input autoComplete="off" value={form.footerTitle} onChange={(e) => updateField('footerTitle', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                <input autoComplete="off" value={form.footerTitle} onChange={(e) => updateField('footerTitle', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                             </InputWrapper>
                         </div>
 
                         <div className="space-y-6">
                             <InputWrapper label="Footer Description">
-                                <textarea value={form.footerDescription} onChange={(e) => updateField('footerDescription', e.target.value)} rows={3} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                <textarea value={form.footerDescription} onChange={(e) => updateField('footerDescription', e.target.value)} rows={3} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                             </InputWrapper>
                             <InputWrapper label="Company Address">
-                                <textarea value={form.companyAddress} onChange={(e) => updateField('companyAddress', e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                <textarea value={form.companyAddress} onChange={(e) => updateField('companyAddress', e.target.value)} rows={2} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                             </InputWrapper>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <InputWrapper label="Company Email">
-                                    <input value={form.companyEmail} onChange={(e) => updateField('companyEmail', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                    <input value={form.companyEmail} onChange={(e) => updateField('companyEmail', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                                 </InputWrapper>
                                 <InputWrapper label="Company Phone">
-                                    <input value={form.companyPhone} onChange={(e) => updateField('companyPhone', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" />
+                                    <input value={form.companyPhone} onChange={(e) => updateField('companyPhone', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" />
                                 </InputWrapper>
                             </div>
                         </div>
@@ -379,7 +379,7 @@ export default function AdminSettings() {
                                         <label htmlFor="logo-upload" className="cursor-pointer bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all border border-white/10">
                                             Choose Image
                                         </label>
-                                        <button onClick={onUploadLogo} disabled={uploadingLogo || !logoFile} className="bg-primary text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all hover:shadow-lg hover:shadow-primary/20 disabled:opacity-30">
+                                        <button onClick={onUploadLogo} disabled={uploadingLogo || !logoFile} className="bg-red-700 text-white px-6 py-2.5 rounded-full text-xs font-bold transition-all hover:shadow-lg hover:shadow-red-700/20 disabled:opacity-30">
                                             {uploadingLogo ? 'Uploading...' : 'Update Logo'}
                                         </button>
                                     </div>
@@ -396,13 +396,13 @@ export default function AdminSettings() {
                         </div>
                         <div className="grid grid-cols-1 gap-6">
                             <InputWrapper label="Instagram Profile URL">
-                                <input value={form.instagramUrl} onChange={(e) => updateField('instagramUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" placeholder="https://instagram.com/yourhandle" />
+                                <input value={form.instagramUrl} onChange={(e) => updateField('instagramUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" placeholder="https://instagram.com/yourhandle" />
                             </InputWrapper>
                             <InputWrapper label="YouTube Channel URL">
-                                <input value={form.youtubeUrl} onChange={(e) => updateField('youtubeUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" placeholder="https://youtube.com/@yourchannel" />
+                                <input value={form.youtubeUrl} onChange={(e) => updateField('youtubeUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" placeholder="https://youtube.com/@yourchannel" />
                             </InputWrapper>
                             <InputWrapper label="Facebook Page URL">
-                                <input value={form.facebookUrl} onChange={(e) => updateField('facebookUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-white" placeholder="https://facebook.com/yourpage" />
+                                <input value={form.facebookUrl} onChange={(e) => updateField('facebookUrl', e.target.value)} className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-700/50 transition-all text-white" placeholder="https://facebook.com/yourpage" />
                             </InputWrapper>
                         </div>
                     </section>
@@ -434,7 +434,7 @@ export default function AdminSettings() {
                     </section>
 
                     {/* Quick Preview Card */}
-                    <section className="bg-primary rounded-3xl p-8 text-white shadow-2xl shadow-primary/20 group">
+                    <section className="bg-red-700 rounded-3xl p-8 text-white shadow-2xl shadow-red-700/20 group">
                         <h3 className="text-xl font-bold tracking-tight mb-6 flex justify-between items-center">
                             Live Preview
                             <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -471,7 +471,7 @@ export default function AdminSettings() {
             
             {/* Bottom Floating Action (Optional if needed) */}
             <div className="fixed bottom-8 right-8 z-50 md:hidden">
-                 <button onClick={onSave} disabled={loading || saving || !dirty} className="bg-primary text-white p-5 rounded-full shadow-2xl disabled:opacity-50">
+                 <button onClick={onSave} disabled={loading || saving || !dirty} className="bg-red-700 text-white p-5 rounded-full shadow-2xl disabled:opacity-50">
                     <Save size={24} />
                  </button>
             </div>

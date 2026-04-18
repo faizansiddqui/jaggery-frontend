@@ -18,12 +18,12 @@ export default function ContactSubmissionCard({
     onMarkSolved,
 }: ContactSubmissionCardProps) {
     return (
-        <div className="border border-primary p-4 md:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div className="border border-red-700 p-4 md:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
             <div className="lg:col-span-8 flex flex-col gap-2">
                 <div className="flex flex-wrap gap-3 items-center">
                     <span className="font-headline text-[9px] tracking-widest px-2 py-1 border border-[#ffffff]/20">{contact.ticketCode}</span>
                     <span className="font-headline text-[9px] tracking-widest px-2 py-1 border border-[#ffffff]/20">{contact.department}</span>
-                    <span className={`font-headline text-[9px] tracking-widest px-2 py-1 border ${contact.status === 'solved' ? 'border-green-400/30 text-green-300' : 'border-primary text-[#ff929d]'}`}>
+                    <span className={`font-headline text-[9px] tracking-widest px-2 py-1 border ${contact.status === 'solved' ? 'border-green-400/30 text-green-300' : 'border-red-700 text-[#ff929d]'}`}>
                         {contact.status}
                     </span>
                 </div>
@@ -42,12 +42,12 @@ export default function ContactSubmissionCard({
                     placeholder="Resolution note (optional)"
                     disabled={contact.status === 'solved'}
                     rows={4}
-                    className="bg-[#0a0a0b] border border-primary px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b] disabled:opacity-50"
+                    className="bg-[#0a0a0b] border border-red-700 px-3 py-2 font-headline text-[10px] tracking-widest focus:outline-none focus:border-[#b90c1b] disabled:opacity-50"
                 />
                 <button
                     onClick={onMarkSolved}
                     disabled={contact.status === 'solved' || busy}
-                    className="bg-primary text-white py-3 font-headline text-[10px] tracking-widest hover:bg-primary/80 disabled:opacity-40"
+                    className="bg-red-700 text-white py-3 font-headline text-[10px] tracking-widest hover:bg-red-700/80 disabled:opacity-40"
                 >
                     {contact.status === 'solved' ? 'Solved' : busy ? 'Updating...' : 'Mark Solved'}
                 </button>

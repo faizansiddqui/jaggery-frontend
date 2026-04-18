@@ -164,14 +164,14 @@ export default function AdminBannersPage() {
           </p>
         </div>
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-800 to-transparent hidden md:block mb-4 mx-8" />
-        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-primary font-bold bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+        <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-red-700 font-bold bg-red-700/10 px-3 py-1 rounded-full border border-red-700/20">
           Live Editor
         </div>
       </header>
 
       {/* --- Form Section --- */}
       <section className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-red-700/20 to-blue-500/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
         <form 
           onSubmit={onSubmit} 
           className="relative grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-[#0d0d0f] border border-white/10 rounded-2xl shadow-2xl"
@@ -182,7 +182,7 @@ export default function AdminBannersPage() {
               value={form.title}
               onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
               placeholder="Summer Collection 2026"
-              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              className="w-full bg-black/50 border border-white/5 focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
               required
             />
           </div>
@@ -193,7 +193,7 @@ export default function AdminBannersPage() {
               value={form.subtitle}
               onChange={(e) => setForm((p) => ({ ...p, subtitle: e.target.value }))}
               placeholder="Up to 50% off on all items"
-              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              className="w-full bg-black/50 border border-white/5 focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
               required
             />
           </div>
@@ -204,7 +204,7 @@ export default function AdminBannersPage() {
               value={form.targetUrl}
               onChange={(e) => setForm((p) => ({ ...p, targetUrl: e.target.value }))}
               placeholder="/collections/new-arrivals"
-              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm font-mono"
+              className="w-full bg-black/50 border border-white/5 focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 px-4 py-3 rounded-xl transition-all outline-none text-sm font-mono"
               required
             />
           </div>
@@ -215,7 +215,7 @@ export default function AdminBannersPage() {
               type="number"
               value={form.order}
               onChange={(e) => setForm((p) => ({ ...p, order: e.target.value }))}
-              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              className="w-full bg-black/50 border border-white/5 focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
             />
           </div>
 
@@ -225,7 +225,7 @@ export default function AdminBannersPage() {
               value={form.imageUrl}
               onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
               placeholder="https://images.com/banner.jpg"
-              className="w-full bg-black/50 border border-white/5 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
+              className="w-full bg-black/50 border border-white/5 focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 px-4 py-3 rounded-xl transition-all outline-none text-sm"
             />
           </div>
 
@@ -248,7 +248,7 @@ export default function AdminBannersPage() {
                   type="checkbox"
                   checked={form.isActive}
                   onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-                  className="peer appearance-none w-5 h-5 border border-white/20 rounded-md checked:bg-primary checked:border-primary transition-all"
+                  className="peer appearance-none w-5 h-5 border border-white/20 rounded-md checked:bg-red-700 checked:border-red-700 transition-all"
                 />
                 <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -270,7 +270,7 @@ export default function AdminBannersPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-8 py-3 bg-white text-black font-bold text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-primary hover:text-white transition-all disabled:opacity-50 shadow-lg shadow-white/5 active:scale-95 flex items-center gap-2"
+                className="px-8 py-3 bg-white text-black font-bold text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-red-700 hover:text-white transition-all disabled:opacity-50 shadow-lg shadow-white/5 active:scale-95 flex items-center gap-2"
               >
                 {saving ? (
                   <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -318,7 +318,7 @@ export default function AdminBannersPage() {
                 key={item.id} 
                 className={`group flex flex-col md:flex-row items-center gap-6 p-4 rounded-2xl border transition-all duration-300 ${
                   editingId === item.id 
-                    ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/20' 
+                    ? 'bg-red-700/5 border-red-700/40 ring-1 ring-red-700/20' 
                     : 'bg-[#0d0d0f]/50 border-white/5 hover:border-white/20'
                 }`}
               >
@@ -341,7 +341,7 @@ export default function AdminBannersPage() {
                     <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded border border-white/10 text-slate-400 font-mono">Pos: {item.order}</span>
                   </div>
                   <p className="text-sm text-slate-400 font-medium">{item.subtitle}</p>
-                  <p className="text-[11px] text-primary/60 font-mono truncate hover:text-primary transition-colors cursor-default">{item.targetUrl}</p>
+                  <p className="text-[11px] text-red-700/60 font-mono truncate hover:text-red-700 transition-colors cursor-default">{item.targetUrl}</p>
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">

@@ -137,8 +137,8 @@ export default function AdminCommunicationsPage() {
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary-rgb),0.8)]" />
-                        <span className="font-headline text-[10px] md:text-xs tracking-[0.5em] text-primary uppercase font-black">
+                        <span className="w-2 h-2 rounded-full bg-red-700 animate-pulse shadow-[0_0_10px_rgba(var(--red-700-rgb),0.8)]" />
+                        <span className="font-headline text-[10px] md:text-xs tracking-[0.5em] text-red-700 uppercase font-black">
                             Communication Control
                         </span>
                     </div>
@@ -151,7 +151,7 @@ export default function AdminCommunicationsPage() {
                     disabled={loading}
                     className="group relative px-6 py-3 bg-[#0d0d0f] border border-white/10 overflow-hidden rounded-xl transition-all active:scale-95"
                 >
-                    <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                    <div className="absolute inset-0 bg-red-700/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                     <span className="relative font-headline text-[10px] tracking-[0.2em] font-bold">
                         {loading ? 'SYNCING DATA...' : 'REFRESH ENGINE'}
                     </span>
@@ -176,12 +176,12 @@ export default function AdminCommunicationsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Total Subscribers', value: stats.totalSubs, color: 'text-white' },
-                    { label: 'Active Status', value: stats.activeSubs, color: 'text-primary' },
+                    { label: 'Active Status', value: stats.activeSubs, color: 'text-red-700' },
                     { label: 'Open Queries', value: stats.open, color: 'text-[#ff929d]' },
                     { label: 'Solved Archive', value: stats.solved, color: 'text-emerald-400' }
                 ].map((stat, i) => (
-                    <div key={i} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-primary/50 transition-all duration-500">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div key={i} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-red-700/50 transition-all duration-500">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-red-700/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                         <p className="font-headline text-[10px] tracking-[0.3em] uppercase text-white/40 font-bold">{stat.label}</p>
                         <p className={`font-brand text-5xl mt-6 tracking-tighter ${stat.color}`}>{stat.value}</p>
                     </div>
@@ -196,7 +196,7 @@ export default function AdminCommunicationsPage() {
                         onClick={() => setActiveTab('subscribers')}
                         className={`flex-1 px-8 py-6 font-headline text-[11px] tracking-[0.3em] uppercase font-black transition-all ${
                             activeTab === 'subscribers' 
-                            ? 'text-primary bg-primary/5 border-b-2 border-primary' 
+                            ? 'text-red-700 bg-red-700/5 border-b-2 border-red-700' 
                             : 'text-white/40 hover:text-white hover:bg-white/5 border-b-2 border-transparent'
                         }`}
                     >
@@ -206,7 +206,7 @@ export default function AdminCommunicationsPage() {
                         onClick={() => setActiveTab('contacts')}
                         className={`flex-1 px-8 py-6 font-headline text-[11px] tracking-[0.3em] uppercase font-black transition-all ${
                             activeTab === 'contacts' 
-                            ? 'text-primary bg-primary/5 border-b-2 border-primary' 
+                            ? 'text-red-700 bg-red-700/5 border-b-2 border-red-700' 
                             : 'text-white/40 hover:text-white hover:bg-white/5 border-b-2 border-transparent'
                         }`}
                     >
@@ -223,7 +223,7 @@ export default function AdminCommunicationsPage() {
                                     value={activeTab === 'subscribers' ? subscriberQuery : contactQuery}
                                     onChange={(e) => activeTab === 'subscribers' ? setSubscriberQuery(e.target.value) : setContactQuery(e.target.value)}
                                     placeholder={activeTab === 'subscribers' ? "Search by email address..." : "Search by name or email..."}
-                                    className="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl font-headline text-[10px] tracking-widest uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+                                    className="w-full bg-black/40 border border-white/10 px-5 py-3 rounded-xl font-headline text-[10px] tracking-widest uppercase focus:outline-none focus:border-red-700 focus:ring-1 focus:ring-red-700/20 transition-all"
                                 />
                             </div>
 
@@ -277,7 +277,7 @@ export default function AdminCommunicationsPage() {
                     <div className="min-h-[400px]">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-32 gap-4 animate-pulse">
-                                <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                <div className="w-12 h-12 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
                                 <span className="font-headline text-[10px] tracking-[0.4em] uppercase text-white/20">Syncing with Server...</span>
                             </div>
                         ) : activeTab === 'subscribers' ? (

@@ -127,8 +127,8 @@ export default function AdminTestimonialsPage() {
     <div className="flex flex-col gap-10 max-w-5xl mx-auto p-4 md:p-8 text-slate-100 animate-in fade-in duration-700">
       {/* --- HEADER --- */}
       <header className="relative">
-        <div className="absolute -left-4 top-0 w-1 h-12 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
-        <p className="font-headline text-[10px] tracking-[0.4em] text-primary uppercase font-bold">Content Management</p>
+        <div className="absolute -left-4 top-0 w-1 h-12 bg-red-700 rounded-full shadow-[0_0_15px_rgba(var(--red-700-rgb),0.5)]" />
+        <p className="font-headline text-[10px] tracking-[0.4em] text-red-700 uppercase font-bold">Content Management</p>
         <h1 className="font-brand text-5xl md:text-6xl tracking-tighter mt-2 bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent italic font-black">
           Testimonials
         </h1>
@@ -160,14 +160,14 @@ export default function AdminTestimonialsPage() {
             onSubmit={onSubmit} 
             className="sticky top-8 border border-white/5 bg-[#0d0d0f] p-8 rounded-3xl shadow-2xl space-y-6 overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] -z-10" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-700/5 blur-[50px] -z-10" />
             
             <div className="flex items-center justify-between">
               <h2 className="font-headline text-[10px] tracking-[0.2em] uppercase text-white/60 font-bold">
                 {editingId ? 'Edit Entry' : 'New Entry'}
               </h2>
               {editingId && (
-                 <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                 <span className="w-2 h-2 rounded-full bg-red-700 animate-ping" />
               )}
             </div>
 
@@ -178,7 +178,7 @@ export default function AdminTestimonialsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, quote: e.target.value }))}
                 rows={5}
                 placeholder="Write the customer experience here..."
-                className="bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all outline-none resize-none leading-relaxed"
+                className="bg-black/40 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-red-700/50 focus:ring-1 focus:ring-red-700/20 transition-all outline-none resize-none leading-relaxed"
                 required
               />
             </label>
@@ -190,7 +190,7 @@ export default function AdminTestimonialsPage() {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder="John Doe"
-                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 transition-all outline-none"
+                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-red-700/50 transition-all outline-none"
                   required
                 />
               </label>
@@ -201,7 +201,7 @@ export default function AdminTestimonialsPage() {
                   value={form.role}
                   onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
                   placeholder="CEO, TechCorp"
-                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 transition-all outline-none"
+                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-red-700/50 transition-all outline-none"
                 />
               </label>
             </div>
@@ -213,7 +213,7 @@ export default function AdminTestimonialsPage() {
                   type="number"
                   value={form.order}
                   onChange={(e) => setForm((f) => ({ ...f, order: e.target.value }))}
-                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm w-24 text-center focus:border-primary/50 transition-all outline-none font-mono"
+                  className="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm w-24 text-center focus:border-red-700/50 transition-all outline-none font-mono"
                 />
               </label>
               
@@ -225,8 +225,8 @@ export default function AdminTestimonialsPage() {
                     onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                     className="peer hidden"
                   />
-                  <div className="w-10 h-5 bg-white/10 rounded-full peer-checked:bg-primary/30 transition-all" />
-                  <div className="absolute top-1 left-1 w-3 h-3 bg-white/40 rounded-full peer-checked:left-6 peer-checked:bg-primary transition-all shadow-sm" />
+                  <div className="w-10 h-5 bg-white/10 rounded-full peer-checked:bg-red-700/30 transition-all" />
+                  <div className="absolute top-1 left-1 w-3 h-3 bg-white/40 rounded-full peer-checked:left-6 peer-checked:bg-red-700 transition-all shadow-sm" />
                 </div>
                 <span className="text-[10px] uppercase tracking-widest font-bold text-white/40 group-hover:text-white/80 transition-colors">Active</span>
               </label>
@@ -236,7 +236,7 @@ export default function AdminTestimonialsPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-white text-black hover:bg-primary hover:text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-50 active:scale-95 shadow-xl shadow-white/5"
+                className="flex-1 bg-white text-black hover:bg-red-700 hover:text-white px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-50 active:scale-95 shadow-xl shadow-white/5"
               >
                 {saving ? 'Processing...' : editingId ? 'Update Record' : 'Publish Now'}
               </button>
@@ -262,7 +262,7 @@ export default function AdminTestimonialsPage() {
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-20">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
               <p className="text-[10px] tracking-widest uppercase font-bold">Fetching Data</p>
             </div>
           ) : items.length === 0 ? (
@@ -275,10 +275,10 @@ export default function AdminTestimonialsPage() {
                 <div
                   key={item.id}
                   className={`group relative border border-white/5 bg-[#0d0d0f]/50 backdrop-blur-sm rounded-3xl p-6 transition-all hover:border-white/20 hover:bg-[#0d0d0f] ${
-                    editingId === item.id ? 'ring-2 ring-primary/40 border-transparent' : ''
+                    editingId === item.id ? 'ring-2 ring-red-700/40 border-transparent' : ''
                   }`}
                 >
-                  <div className="absolute top-6 left-6 text-primary/20 scale-150">
+                  <div className="absolute top-6 left-6 text-red-700/20 scale-150">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C15.4647 8 15.017 8.44772 15.017 9V12C15.017 12.5523 14.5693 13 14.017 13H11.017C10.4647 13 10.017 12.5523 10.017 12V9C10.017 7.89543 10.9124 7 12.017 7H19.017C20.1216 7 21.017 7.89543 21.017 9V15C21.017 17.2091 19.2261 19 17.017 19H14.017V21H14.017ZM3.017 21L3.017 18C3.017 16.8954 3.91243 16 5.017 16H8.017C8.56928 16 9.017 15.5523 9.017 15V9C9.017 8.44772 8.56928 8 8.017 8H5.017C4.46472 8 4.017 8.44772 4.017 9V12C4.017 12.5523 3.56928 13 3.017 13H0.017C-0.535282 13 -1.017 12.5523 -1.017 12V9C-1.017 7.89543 -0.121573 7 0.983002 7H8.017C9.12157 7 10.017 7.89543 10.017 9V15C10.017 17.2091 8.22614 19 6.017 19H3.017V21H3.017Z"/></svg>
                   </div>
 
@@ -290,7 +290,7 @@ export default function AdminTestimonialsPage() {
                     <div className="flex flex-wrap justify-between items-end gap-4 border-t border-white/5 pt-4">
                       <div>
                         <h4 className="font-bold text-sm tracking-tight text-white">{item.name}</h4>
-                        <p className="text-[10px] tracking-widest text-primary/60 font-bold uppercase mt-0.5">{item.role || 'Client'}</p>
+                        <p className="text-[10px] tracking-widest text-red-700/60 font-bold uppercase mt-0.5">{item.role || 'Client'}</p>
                         <div className="flex items-center gap-3 mt-3">
                           <span className="text-[9px] bg-white/5 px-2 py-0.5 rounded border border-white/10 text-white/40 font-mono">Order {item.order}</span>
                           <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-white/10'}`} />
@@ -301,7 +301,7 @@ export default function AdminTestimonialsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => startEdit(item)}
-                          className="p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-primary hover:border-primary hover:text-white transition-all group/btn"
+                          className="p-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-red-700 hover:border-red-700 hover:text-white transition-all group/btn"
                         >
                           <svg className="w-4 h-4 opacity-50 group-hover/btn:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                         </button>

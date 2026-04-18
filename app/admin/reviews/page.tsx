@@ -91,8 +91,8 @@ export default function AdminReviewsPage() {
             {/* Header Section */}
             <header className="relative py-6">
                 <div className="flex flex-col gap-2 relative z-10">
-                    <span className="flex items-center gap-2 font-headline text-[10px] md:text-xs tracking-[0.3em] text-primary font-bold uppercase">
-                        <span className="w-8 h-[1px] bg-primary/50"></span>
+                    <span className="flex items-center gap-2 font-headline text-[10px] md:text-xs tracking-[0.3em] text-red-700 font-bold uppercase">
+                        <span className="w-8 h-[1px] bg-red-700/50"></span>
                         Management Console
                     </span>
                     <h2 className="font-brand text-4xl md:text-6xl font-black tracking-tight bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
@@ -102,7 +102,7 @@ export default function AdminReviewsPage() {
                         Monitor community feedback, track user contributions, and maintain quality control across your product catalog.
                     </p>
                 </div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[120px] rounded-full -z-0" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-red-700/5 blur-[120px] rounded-full -z-0" />
             </header>
 
             {/* Notifications */}
@@ -124,11 +124,11 @@ export default function AdminReviewsPage() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Total Reviews', value: stats.totalReviews, icon: 'reviews', color: 'text-primary' },
+                    { label: 'Total Reviews', value: stats.totalReviews, icon: 'reviews', color: 'text-red-700' },
                     { label: 'Unique Users', value: stats.totalUsers, icon: 'group', color: 'text-blue-400' },
                     { label: 'Reviewed Products', value: stats.totalProducts, icon: 'inventory_2', color: 'text-emerald-400' },
                 ].map((stat, idx) => (
-                    <div key={idx} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-primary/30 transition-all duration-300">
+                    <div key={idx} className="group relative bg-[#0d0d0f] border border-white/5 p-6 rounded-2xl hover:border-red-700/30 transition-all duration-300">
                         <div className="flex justify-between items-start">
                             <p className="font-headline text-[11px] tracking-widest text-slate-500 uppercase font-bold">{stat.label}</p>
                             <span className={`material-symbols-outlined ${stat.color} opacity-80 group-hover:scale-110 transition-transform`}>{stat.icon}</span>
@@ -143,7 +143,7 @@ export default function AdminReviewsPage() {
                 <div className="p-6 md:p-8 border-b border-white/5 flex flex-col md:flex-row gap-6 md:items-center justify-between bg-white/[0.02]">
                     <div className="flex items-center flex-row gap-4">
                         <h3 className="font-brand text-2xl font-bold tracking-tight">Active Reviews</h3>
-                        <span className="flex items-center flex-col px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-widest">
+                        <span className="flex items-center flex-col px-3 py-1 rounded-full bg-red-700/10 text-red-700 text-[10px] font-bold tracking-widest">
                             {filteredReviews.length} ENTRIES
                         </span>
                     </div>
@@ -153,7 +153,7 @@ export default function AdminReviewsPage() {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search user, product, or keywords..."
-                            className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-white/20"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700/20 focus:border-red-700 transition-all placeholder:text-white/20"
                         />
                     </div>
                 </div>
@@ -161,7 +161,7 @@ export default function AdminReviewsPage() {
                 <div className="p-6 md:p-8 min-h-[400px]">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
-                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                            <div className="w-12 h-12 border-4 border-red-700 border-t-transparent rounded-full animate-spin" />
                             <p className="font-headline text-xs tracking-widest uppercase italic">Loading database...</p>
                         </div>
                     ) : filteredReviews.length === 0 ? (
@@ -177,7 +177,7 @@ export default function AdminReviewsPage() {
                                         {/* Review Meta */}
                                         <div className="flex flex-wrap gap-3 items-center">
                                             <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
-                                                <span className="material-symbols-outlined text-primary text-sm">person</span>
+                                                <span className="material-symbols-outlined text-red-700 text-sm">person</span>
                                                 <span className="text-[11px] font-bold tracking-wide uppercase">{review.user_name}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 px-3 py-1.5 rounded-lg border border-yellow-500/10">
@@ -192,7 +192,7 @@ export default function AdminReviewsPage() {
 
                                         {/* Product Info */}
                                         <div>
-                                            <h4 className="font-brand text-2xl font-bold group-hover:text-primary transition-colors duration-300">
+                                            <h4 className="font-brand text-2xl font-bold group-hover:text-red-700 transition-colors duration-300">
                                                 {review.product?.product_name || `Product ID: ${review.product_id}`}
                                             </h4>
                                             <p className="text-[10px] tracking-[0.2em] text-slate-500 uppercase font-bold mt-1">
@@ -203,7 +203,7 @@ export default function AdminReviewsPage() {
                                         {/* Review Content */}
                                         <div className="space-y-2">
                                             {review.review_title && (
-                                                <p className="text-primary font-bold text-xs uppercase tracking-wider">{review.review_title}</p>
+                                                <p className="text-red-700 font-bold text-xs uppercase tracking-wider">{review.review_title}</p>
                                             )}
                                             <p className="text-slate-300 text-sm leading-relaxed font-light bg-black/20 p-4 rounded-xl border border-white/5">
                                                 {review.review_text || 'No description provided.'}
@@ -214,7 +214,7 @@ export default function AdminReviewsPage() {
                                         {review.review_images.length > 0 && (
                                             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                                                 {review.review_images.map((src, index) => (
-                                                    <div key={index} className="relative min-w-[140px] h-24 rounded-xl overflow-hidden border border-white/10 hover:border-primary/50 transition-colors">
+                                                    <div key={index} className="relative min-w-[140px] h-24 rounded-xl overflow-hidden border border-white/10 hover:border-red-700/50 transition-colors">
                                                         <Image
                                                             src={src}
                                                             alt="Review attachment"
@@ -251,7 +251,7 @@ export default function AdminReviewsPage() {
                                                                 name: product.product_name || `Product ${product.product_id}`,
                                                             })}
                                                             target="_blank"
-                                                            className="text-[9px] font-bold uppercase tracking-tighter px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-md hover:bg-primary/20 hover:border-primary/40 transition-all"
+                                                            className="text-[9px] font-bold uppercase tracking-tighter px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-md hover:bg-red-700/20 hover:border-red-700/40 transition-all"
                                                         >
                                                             {product.product_name || 'Item'}
                                                         </Link>
