@@ -56,6 +56,38 @@ export default function ProductHeader({ product }: { product?: Product | null })
 
   const [qty, setQty] = useState<number>(1);
   const [isStickyVisible, setIsStickyVisible] = useState(false);
+  const [shareStatus, setShareStatus] = useState('');
+
+  const handleShare = async () => {
+    if (!product) return;
+    const productUrl = window.location.href;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product.name || 'Product',
+          text: `Check out this product: ${product.name || 'Awesome item'}`,
+          url: productUrl,
+        });
+        setShareStatus('Product shared successfully');
+      } else {
+        await navigator.clipboard.writeText(productUrl);
+        setShareStatus('Product link copied');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(productUrl);
+        setShareStatus('Product link copied');
+      } catch {
+        setShareStatus('Unable to share this product');
+      }
+    }
+
+    window.setTimeout(() => setShareStatus(''), 2500);
+  };
 
   // Handle scroll for sticky mobile button
   useEffect(() => {
@@ -172,11 +204,17 @@ export default function ProductHeader({ product }: { product?: Product | null })
               <span className="text-secondary font-black">{product?.collection || "Essentials"}</span>
             </nav>
 
-            <h1 className="font-headline text-4xl md:text-6xl font-bold text-primary tracking-tighter leading-[1] break-words">
-              {product?.name ?? 'Premium Product'}
-            </h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <h1 className="font-headline text-4xl md:text-6xl font-bold text-primary tracking-tighter leading-[1] break-words">
+                {product?.name ?? 'Premium Product'}
+              </h1>
+            </div>
 
-            <div className="flex items-center gap-6">
+            {shareStatus ? (
+              <p className="text-xs font-medium text-primary/80">{shareStatus}</p>
+            ) : null}
+
+            <div className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-4 flex-row">
                 <span className="text-4xl font-headline font-bold text-secondary">
                   {currencySymbol}{Number(displayPrice || 0).toFixed(2)}
@@ -187,11 +225,16 @@ export default function ProductHeader({ product }: { product?: Product | null })
                   </span>
                 )}
               </div>
-              {/* <div className="h-10 w-[1px] bg-outline-variant/30" />
-            <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Status</span>
-                <span className="text-xs font-bold text-on-surface-variant uppercase">In Stock</span>
-            </div> */}
+
+              <button
+                type="button"
+                onClick={handleShare}
+                className="inline-flex right-2 items-center gap-2 rounded-full border border-outline-variant/40 bg-surface-container-low px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+                aria-label="Share this product"
+              >
+                <span className="material-symbols-outlined">share</span>
+                <span className="hidden sm:inline">Share</span>
+              </button>
             </div>
           </div>
 
@@ -209,8 +252,8 @@ export default function ProductHeader({ product }: { product?: Product | null })
                     key={s}
                     onClick={() => setSelectedSize(s)}
                     className={`px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 border ${s === selectedSize
-                        ? 'bg-primary text-on-primary border-primary shadow-lg shadow-primary/20 scale-105'
-                        : 'bg-transparent text-on-surface-variant hover:border-primary border-outline-variant/40'
+                      ? 'bg-primary text-on-primary border-primary shadow-lg shadow-primary/20 scale-105'
+                      : 'bg-transparent text-on-surface-variant hover:border-primary border-outline-variant/40'
                       }`}
                   >
                     {s}
@@ -257,8 +300,8 @@ export default function ProductHeader({ product }: { product?: Product | null })
                 onClick={handleAddToCart}
                 disabled={!product || productId <= 0}
                 className={`flex-1 flex items-center justify-center gap-3 py-5 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 shadow-xl ${inCart
-                    ? 'bg-white border border-secondary text-secondary shadow-secondary/20'
-                    : 'bg-secondary text-on-secondary shadow-secondary/20 hover:brightness-110'
+                  ? 'bg-white border border-secondary text-secondary shadow-secondary/20'
+                  : 'bg-secondary text-on-secondary shadow-secondary/20 hover:brightness-110'
                   }`}
               >
                 <span className="material-symbols-outlined text-xl">
@@ -292,33 +335,33 @@ export default function ProductHeader({ product }: { product?: Product | null })
             </button>
           </div>
         </div>
-        </div>
-
-        {/* Sticky Mobile Buy Now Button */}
-        {isStickyVisible && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-surface/95 backdrop-blur-md border-t border-outline-variant/20 lg:hidden"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col">
-                <span className="text-[10px] text-on-surface-variant uppercase tracking-wider">Price</span>
-                <span className="font-headline font-bold text-lg text-primary">{currencySymbol}{Number(displayPrice || 0).toFixed(2)}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleBuyNow}
-                disabled={!product || productId <= 0}
-                className="flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 shadow-xl bg-secondary text-on-secondary shadow-secondary/20 hover:brightness-110 flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-lg">bolt</span>
-                Buy Now
-              </button>
-            </div>
-          </motion.div>
-        )}
       </div>
-      );
+
+      {/* Sticky Mobile Buy Now Button */}
+      {isStickyVisible && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-surface/95 backdrop-blur-md border-t border-outline-variant/20 lg:hidden"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-on-surface-variant uppercase tracking-wider">Price</span>
+              <span className="font-headline font-bold text-lg text-primary">{currencySymbol}{Number(displayPrice || 0).toFixed(2)}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={!product || productId <= 0}
+              className="flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 shadow-xl bg-secondary text-on-secondary shadow-secondary/20 hover:brightness-110 flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">bolt</span>
+              Buy Now
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
 }
