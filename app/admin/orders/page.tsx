@@ -353,11 +353,11 @@ export default function OrdersManagement() {
             </div>
             <div className='flex flex-col'>
                <div className="flex flex-col md:items-end gap-4 w-full md:w-auto">
-                  <div className="flex bg-[#0a0a0b] border border-[#0a0a0b]/10 p-2 gap-2 w-full md:w-auto overflow-x-auto">
+                  <div className="flex bg-[#0a0a0b] border border-white/10 p-2 gap-2 w-full md:w-auto overflow-x-auto">
                      <button
                         onClick={() => setActiveTab('all')}
-                        className={`px-6 py-3 font-headline text-[10px] font-black text-[#0a0a0b] border border-[#0a0a0b] tracking-widest transition-all whitespace-nowrap ${activeTab === 'all'
-                           ? 'bg-[#0a0a0b] text-white'
+                        className={`px-6 py-3 font-headline text-[10px] font-black text-white border border-white/30 tracking-widest transition-all whitespace-nowrap ${activeTab === 'all'
+                           ? 'bg-[#0a0a0b] border border-white text-white'
                            : 'opacity-40 hover:opacity-100'
                            }`}
                      >
@@ -365,8 +365,8 @@ export default function OrdersManagement() {
                      </button>
                      <button
                         onClick={() => setActiveTab('active')}
-                        className={`px-6 py-3 font-headline text-[10px] font-black text-[#0a0a0b] border border-[#0a0a0b] tracking-widest transition-all whitespace-nowrap ${activeTab === 'active'
-                           ? 'bg-[#0a0a0b] text-white'
+                        className={`px-6 py-3 font-headline text-[10px] font-black text-white border border-white/30 tracking-widest transition-all whitespace-nowrap ${activeTab === 'active'
+                           ? 'bg-[#0a0a0b] border border-white text-white'
                            : 'opacity-40 hover:opacity-100'
                            }`}
                      >
@@ -374,8 +374,8 @@ export default function OrdersManagement() {
                      </button>
                      <button
                         onClick={() => setActiveTab('resolved')}
-                        className={`px-6 py-3 font-headline text-[10px] font-black text-[#0a0a0b] border border-[#0a0a0b] tracking-widest transition-all whitespace-nowrap ${activeTab === 'resolved'
-                           ? 'bg-[#0a0a0b] text-white'
+                        className={`px-6 py-3 font-headline text-[10px] font-black text-white border border-white/30 tracking-widest transition-all whitespace-nowrap ${activeTab === 'resolved'
+                           ? 'bg-[#0a0a0b] border border-white text-white'
                            : 'opacity-40 hover:opacity-100'
                            }`}
                      >
