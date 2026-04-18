@@ -62,10 +62,10 @@ function StepBadge({ active, done, label }: StepProps) {
   return (
     <div
       className={`rounded-2xl border px-4 py-3 text-sm transition ${active
-          ? 'border-slate-900 bg-slate-900 text-white'
-          : done
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-slate-200 bg-slate-50 text-slate-500'
+        ? 'border-slate-900 bg-slate-900 text-white'
+        : done
+          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+          : 'border-slate-200 bg-slate-50 text-slate-500'
         }`}
     >
       <span className="font-semibold">{label}</span>
@@ -640,8 +640,8 @@ export default function ProductEditor({
                       </div>
                       <p
                         className={`text-xs font-semibold ${descriptionTextLength > DESCRIPTION_MAX_LENGTH
-                            ? 'text-rose-600'
-                            : 'text-slate-500'
+                          ? 'text-rose-600'
+                          : 'text-slate-500'
                           }`}
                       >
                         {descriptionTextLength}/{DESCRIPTION_MAX_LENGTH}
