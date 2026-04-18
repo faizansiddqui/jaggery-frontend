@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { TrendingUp, Package, Truck, Zap, Activity, Calendar } from 'lucide-react';
 import {
    fetchAdminCustomersOverview,
    fetchAdminOrders,
@@ -11,119 +13,55 @@ import {
 import { useSiteSettings } from '@/app/context/SiteSettingsContext';
 
 type TrendRange = 'weekly' | 'monthly' | 'yearly';
+type ChartPoint = { label: string; key: string; value: number; };
 
-type ChartPoint = {
-   label: string;
-   key: string;
-   value: number;
-};
-
+// Helper functions (kept from original for logic integrity)
 const toStatus = (value: string) => String(value || '').trim().toLowerCase();
-
-const toDate = (value?: string) => {
-   if (!value) return null;
-   const d = new Date(value);
-   return Number.isNaN(d.getTime()) ? null : d;
-};
-
-const formatKeyDay = (date: Date) => {
-   const y = date.getFullYear();
-   const m = String(date.getMonth() + 1).padStart(2, '0');
-   const d = String(date.getDate()).padStart(2, '0');
-   return `${y}-${m}-${d}`;
-};
-
-const formatKeyMonth = (date: Date) => {
-   const y = date.getFullYear();
-   const m = String(date.getMonth() + 1).padStart(2, '0');
-   return `${y}-${m}`;
-};
+const toDate = (value?: string) => { if (!value) return null; const d = new Date(value); return Number.isNaN(d.getTime()) ? null : d; };
+const formatKeyDay = (date: Date) => date.toISOString().split('T')[0];
+const formatKeyMonth = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
 const normalizeOrderAmount = (order: AdminOrder) => {
    const explicit = Number(order.amount || 0);
-   const itemsTotal = (order.items || []).reduce((sum, item) => {
-      const price = Number(item.price || 0);
-      const qty = Number(item.quantity || 0);
-      return sum + (Number.isFinite(price) ? price : 0) * (Number.isFinite(qty) ? qty : 0);
-   }, 0);
-
-   if (explicit > 0) {
-      if (itemsTotal > 0 && explicit > itemsTotal * 5) return explicit / 100;
-      if (itemsTotal <= 0 && explicit >= 100) return explicit / 100;
-      return explicit;
-   }
-
+   const itemsTotal = (order.items || []).reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+   if (explicit > 0) return (explicit > itemsTotal * 5 || (itemsTotal <= 0 && explicit >= 100)) ? explicit / 100 : explicit;
    return itemsTotal;
 };
 
 const buildChartPoints = (orders: AdminOrder[], range: TrendRange): ChartPoint[] => {
    const now = new Date();
-
-   if (range === 'weekly') {
-      const points: ChartPoint[] = [];
-      const seed = new Map<string, number>();
-
-      for (let i = 13; i >= 0; i -= 1) {
-         const d = new Date(now);
-         d.setHours(0, 0, 0, 0);
-         d.setDate(now.getDate() - i);
-         const key = formatKeyDay(d);
-         const label = new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short' }).format(d);
-         points.push({ label, key, value: 0 });
-         seed.set(key, 0);
-      }
-
-      for (const order of orders) {
-         const date = toDate(order.createdAt);
-         if (!date) continue;
-         const key = formatKeyDay(date);
-         if (!seed.has(key)) continue;
-         seed.set(key, (seed.get(key) || 0) + normalizeOrderAmount(order));
-      }
-
-      return points.map((point) => ({ ...point, value: Number(seed.get(point.key) || 0) }));
-   }
-
-   if (range === 'monthly') {
-      const points: ChartPoint[] = [];
-      const seed = new Map<string, number>();
-
-      for (let i = 11; i >= 0; i -= 1) {
-         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-         const key = formatKeyMonth(d);
-         const label = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d);
-         points.push({ label, key, value: 0 });
-         seed.set(key, 0);
-      }
-
-      for (const order of orders) {
-         const date = toDate(order.createdAt);
-         if (!date) continue;
-         const key = formatKeyMonth(date);
-         if (!seed.has(key)) continue;
-         seed.set(key, (seed.get(key) || 0) + normalizeOrderAmount(order));
-      }
-
-      return points.map((point) => ({ ...point, value: Number(seed.get(point.key) || 0) }));
-   }
-
    const points: ChartPoint[] = [];
    const seed = new Map<string, number>();
-   for (let i = 4; i >= 0; i -= 1) {
-      const year = String(now.getFullYear() - i);
-      points.push({ label: year, key: year, value: 0 });
-      seed.set(year, 0);
+
+   if (range === 'weekly') {
+      for (let i = 11; i >= 0; i--) {
+         const d = new Date(now); d.setDate(now.getDate() - i);
+         const key = formatKeyDay(d);
+         const label = d.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+         points.push({ label, key, value: 0 }); seed.set(key, 0);
+      }
+   } else if (range === 'monthly') {
+      for (let i = 5; i >= 0; i--) {
+         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+         const key = formatKeyMonth(d);
+         const label = d.toLocaleDateString('en-US', { month: 'short' });
+         points.push({ label, key, value: 0 }); seed.set(key, 0);
+      }
+   } else {
+      for (let i = 4; i >= 0; i--) {
+         const year = String(now.getFullYear() - i);
+         points.push({ label: year, key: year, value: 0 }); seed.set(year, 0);
+      }
    }
 
-   for (const order of orders) {
+   orders.forEach(order => {
       const date = toDate(order.createdAt);
-      if (!date) continue;
-      const key = String(date.getFullYear());
-      if (!seed.has(key)) continue;
-      seed.set(key, (seed.get(key) || 0) + normalizeOrderAmount(order));
-   }
+      if (!date) return;
+      let key = range === 'weekly' ? formatKeyDay(date) : range === 'monthly' ? formatKeyMonth(date) : String(date.getFullYear());
+      if (seed.has(key)) seed.set(key, (seed.get(key) || 0) + normalizeOrderAmount(order));
+   });
 
-   return points.map((point) => ({ ...point, value: Number(seed.get(point.key) || 0) }));
+   return points.map(p => ({ ...p, value: seed.get(p.key) || 0 }));
 };
 
 export default function AdminDashboard() {
@@ -139,168 +77,132 @@ export default function AdminDashboard() {
    const loadDashboard = async () => {
       try {
          setIsLoading(true);
-         setError('');
          const [orderRows, customerOverview, productRows] = await Promise.all([
-            fetchAdminOrders(),
-            fetchAdminCustomersOverview(),
-            fetchAdminProductsLite(),
+            fetchAdminOrders(), fetchAdminCustomersOverview(), fetchAdminProductsLite(),
          ]);
-
-         setOrders(orderRows);
-         setProducts(productRows);
+         setOrders(orderRows); setProducts(productRows);
          setConversionRate(Number(customerOverview.stats.conversionRate || 0));
-      } catch (loadError) {
-         setError(loadError instanceof Error ? loadError.message : 'Could not load dashboard metrics.');
-      } finally {
-         setIsLoading(false);
-      }
+      } catch (err) { setError('Telemetry synchronization failed.'); } 
+      finally { setIsLoading(false); }
    };
 
-   useEffect(() => {
-      loadDashboard();
-   }, []);
+   useEffect(() => { loadDashboard(); }, []);
 
    const stats = useMemo(() => {
-      const totalRevenue = orders.reduce((sum, order) => sum + normalizeOrderAmount(order), 0);
-      const activeShipments = orders.filter((order) => {
-         const status = toStatus(order.status || '');
-         return ['pending', 'processing', 'verified', 'in transit', 'in_transit', 'shipped'].includes(status);
-      }).length;
-
-      const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-      const recentEditorials = products.filter((product) => {
-         const ts = toDate(product.createdAt)?.getTime();
-         return typeof ts === 'number' && Number.isFinite(ts) && ts >= thirtyDaysAgo;
-      }).length;
+      const totalRevenue = orders.reduce((sum, o) => sum + normalizeOrderAmount(o), 0);
+      const active = orders.filter(o => ['pending', 'processing', 'shipped', 'in transit'].includes(toStatus(o.status))).length;
+      const recent = products.filter(p => (toDate(p.createdAt)?.getTime() || 0) >= (Date.now() - 30*24*60*60*1000)).length;
 
       return [
-         { label: 'Gross performance', value: `${currency}${totalRevenue.toFixed(2)}`, change: 'Live', color: '#b90c1b' },
-         { label: 'Active shipments', value: String(activeShipments), change: 'Live', color: '#ffffff' },
-         { label: 'New editorials', value: String(recentEditorials), change: 'Last 30 days', color: '#ffffff' },
-         { label: 'Conversion rate', value: `${conversionRate.toFixed(2)}%`, change: 'Customer base', color: '#b90c1b' },
+         { label: 'Gross Revenue', value: `${currency}${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`, sub: 'Total Volume', icon: <Zap size={16}/>, color: 'text-red-600' },
+         { label: 'Active Pipeline', value: String(active), sub: 'Orders in Flight', icon: <Truck size={16}/>, color: 'text-blue-500' },
+         { label: 'Inventory Growth', value: String(recent), sub: 'Last 30 Days', icon: <Package size={16}/>, color: 'text-amber-500' },
+         { label: 'Conversion', value: `${conversionRate.toFixed(2)}%`, sub: 'Active Sessions', icon: <Activity size={16}/>, color: 'text-emerald-500' },
       ];
    }, [orders, products, conversionRate, currency]);
 
-   const activities = useMemo(() => {
-      return orders.slice(0, 4).map((order) => {
-         const status = String(order.status || 'pending');
-         const code = order.order_code || `ORDER-${order.order_id || 'N/A'}`;
-         const timestamp = order.createdAt ? new Date(order.createdAt) : null;
-         const timeText = timestamp && !Number.isNaN(timestamp.getTime())
-            ? new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }).format(timestamp)
-            : '--:--';
-
-         return {
-            time: timeText,
-            message: `${code} status: ${status}`,
-         };
-      });
-   }, [orders]);
-
    const chartPoints = useMemo(() => buildChartPoints(orders, range), [orders, range]);
+   const maxChartValue = Math.max(...chartPoints.map(p => p.value), 1);
 
-   const maxChartValue = useMemo(() => {
-      const max = chartPoints.reduce((acc, point) => Math.max(acc, point.value), 0);
-      return max > 0 ? max : 1;
-   }, [chartPoints]);
-
-   const labelIndices = useMemo(() => {
-      if (!chartPoints.length) return [] as number[];
-      if (chartPoints.length <= 5) return chartPoints.map((_, idx) => idx);
-      return [0, Math.floor(chartPoints.length * 0.25), Math.floor(chartPoints.length * 0.5), Math.floor(chartPoints.length * 0.75), chartPoints.length - 1];
-   }, [chartPoints]);
+   if (isLoading) return (
+      <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+         <div className="w-12 h-12 border-4 border-red-600/20 border-t-red-600 rounded-full animate-spin" />
+         <p className="text-[10px] font-black tracking-[0.4em] uppercase text-slate-500 animate-pulse">Syncing Database...</p>
+      </div>
+   );
 
    return (
-      <div className="flex flex-col gap-12">
-         <header className="flex flex-col gap-2">
-            <span className="font-headline text-[10px] md:text-sm tracking-[0.4em] text-primary font-black">SYSTEM OVERVIEW</span>
-            <h2 className="font-brand text-5xl md:text-7xl lg:text-8xl leading-none tracking-tighter">Dashboard</h2>
+      <div className="space-y-12">
+         <header className="space-y-2">
+            <div className="flex items-center gap-2">
+               <span className="w-8 h-px bg-red-600" />
+               <span className="text-[10px] font-black tracking-[0.4em] text-red-600 uppercase">System Overview</span>
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic dark:text-white">Command Center</h2>
          </header>
 
-         {error && (
-            <div className="border border-primary/30 bg-primary/10 px-4 py-3 flex items-center justify-between gap-4">
-               <p className="font-headline text-[10px] tracking-widest text-primary">{error}</p>
-               <button onClick={loadDashboard} className="font-headline text-[10px] tracking-widest underline underline-offset-4">Retry</button>
-            </div>
-         )}
-
-         {isLoading && (
-            <div className="bg-surface border border-outline/10 p-8 flex items-center gap-3">
-               <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-               <span className="font-headline text-[10px] tracking-widest opacity-60">Loading dashboard metrics...</span>
-            </div>
-         )}
-
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             {stats.map((stat, idx) => (
-               <div key={idx} className="bg-surface border border-outline/10 p-8 flex flex-col justify-between group hover:border-primary transition-all">
-                  <div className="flex justify-between items-start">
-                     <span className="font-headline text-[10px] tracking-[0.2em] opacity-40">{stat.label}</span>
-                     <span className="material-symbols-outlined text-[10px]" style={{ color: stat.color }}>trending_up</span>
+               <motion.div 
+                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
+                  key={idx} className="bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-white/5 p-8 rounded-2xl shadow-sm hover:border-red-600/50 transition-all group relative overflow-hidden"
+               >
+                  <div className="flex justify-between items-start mb-6">
+                     <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">{stat.label}</span>
+                     <div className={`${stat.color} p-2 bg-slate-50 dark:bg-white/5 rounded-lg`}>{stat.icon}</div>
                   </div>
-                  <div className="mt-8">
-                     <span className="font-brand text-4xl block leading-none">{stat.value}</span>
-                     <span className="font-headline text-[9px] tracking-widest mt-2 block text-primary">{stat.change}</span>
+                  <div className="relative z-10">
+                     <span className="text-3xl font-black block tracking-tight dark:text-white">{stat.value}</span>
+                     <span className="text-[9px] font-bold tracking-widest text-slate-500 uppercase mt-1 block">{stat.sub}</span>
                   </div>
-               </div>
+                  <div className="absolute -bottom-4 -right-4 text-slate-100 dark:text-white/[0.02] group-hover:text-red-600/[0.05] transition-colors"><TrendingUp size={100}/></div>
+               </motion.div>
             ))}
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
-            <div className="lg:col-span-8 bg-surface border border-outline/10 p-10 flex flex-col justify-between min-h-[450px] relative overflow-hidden">
-               <div className="flex justify-between items-center mb-10 border-b border-outline/10 pb-6 relative z-10">
-                  <h3 className="font-brand text-3xl tracking-widest">Sales Performance</h3>
-                  <div className="flex gap-4 font-headline text-[9px] tracking-widest">
-                     {(['weekly', 'monthly', 'yearly'] as TrendRange[]).map((option) => (
-                        <button
-                           key={option}
-                           onClick={() => setRange(option)}
-                           className={range === option ? 'text-primary' : 'opacity-40 hover:opacity-80'}
-                        >
-                           {option}
-                        </button>
+         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Chart Area */}
+            <div className="lg:col-span-8 bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-sm">
+               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
+                  <div>
+                     <h3 className="text-xl font-black tracking-tighter uppercase italic dark:text-white">Revenue Stream</h3>
+                     <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Financial Performance Index</p>
+                  </div>
+                  <div className="flex gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+                     {(['weekly', 'monthly', 'yearly'] as TrendRange[]).map((opt) => (
+                        <button key={opt} onClick={() => setRange(opt)} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${range === opt ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>{opt}</button>
                      ))}
                   </div>
                </div>
 
-               <div className="relative h-64 flex items-end gap-1 px-4 mb-4 z-10">
-                  {chartPoints.map((point, i) => {
-                     const h = point.value <= 0 ? 2 : Math.max(6, Math.round((point.value / maxChartValue) * 100));
+               <div className="h-64 flex items-end gap-2 px-2 relative">
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20">
+                     {[...Array(5)].map((_, i) => <div key={i} className="border-t border-slate-300 dark:border-slate-700 w-full" />)}
+                  </div>
+                  
+                  {chartPoints.map((p, i) => {
+                     const height = Math.max(4, (p.value / maxChartValue) * 100);
                      return (
-                        <div key={point.key} className="flex-1 bg-on-surface/10 relative group border-t-2 border-primary/30">
-                           <div className="absolute bottom-0 left-0 right-0 bg-primary transition-all duration-700" style={{ height: `${h}%` }}></div>
-                           <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-white text-on-primary p-2 text-[8px] font-black z-20">
-                              VAL: {Math.round(point.value)} // PT-{i}
-                           </div>
+                        <div key={i} className="flex-1 group relative flex flex-col justify-end h-full">
+                           <motion.div 
+                              initial={{ height: 0 }} animate={{ height: `${height}%` }}
+                              className="w-full bg-gradient-to-t from-red-600 to-red-400 rounded-t-sm group-hover:from-red-500 group-hover:to-red-300 transition-all relative"
+                           >
+                              <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[8px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                 {currency}{p.value.toFixed(0)}
+                              </div>
+                           </motion.div>
+                           <div className="mt-4 text-[8px] font-bold text-slate-400 uppercase tracking-tighter text-center overflow-hidden truncate">{p.label}</div>
                         </div>
                      );
                   })}
                </div>
-
-               <div className="flex justify-between items-center opacity-40 font-headline text-[8px] tracking-[0.4em] mt-auto z-10">
-                  {labelIndices.map((index) => (
-                     <span key={chartPoints[index]?.key || index}>{chartPoints[index]?.label || '--'}</span>
-                  ))}
-               </div>
-
-               <div className="absolute inset-0 bg-surface opacity-10 flex flex-col justify-between p-4 pointer-events-none">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => <div key={i} className="h-[1px] w-full bg-on-surface"></div>)}
-               </div>
             </div>
 
-            <div className="lg:col-span-4 flex flex-col gap-8">
-               <div className="bg-surface border border-outline/10 p-10 flex flex-col gap-6 flex-1">
-                  <h3 className="font-brand text-3xl tracking-widest border-b border-[#ffffff]/10 pb-6">Recent Activity</h3>
-                  <div className="flex flex-col gap-4 font-headline text-[10px] tracking-widest opacity-60">
-                     {activities.length ? activities.map((act, i) => (
-                        <div key={i} className="flex gap-4 items-start border-b border-[#ffffff]/5 pb-4 last:border-none">
-                           <span className="opacity-40 whitespace-nowrap">{act.time}</span>
-                           <span className="border-l-2 border-[#b90c1b] pl-4">{act.message}</span>
-                        </div>
-                     )) : (
-                        <p className="opacity-40">No recent order activity</p>
-                     )}
+            {/* Activity Feed */}
+            <div className="lg:col-span-4 space-y-8">
+               <div className="bg-[#0f1115] text-white rounded-3xl p-8 border border-white/5 shadow-xl">
+                  <div className="flex items-center gap-3 mb-8">
+                     <Calendar size={18} className="text-red-600" />
+                     <h3 className="text-lg font-black tracking-tighter uppercase italic">Real-Time Feed</h3>
                   </div>
+                  <div className="space-y-6">
+                     {orders.slice(0, 5).map((order, i) => (
+                        <div key={i} className="flex gap-4 group">
+                           <div className="w-1 h-10 bg-white/10 rounded-full group-hover:bg-red-600 transition-colors" />
+                           <div>
+                              <p className="text-[10px] font-black tracking-wider uppercase text-slate-300">
+                                 {order.order_code || `ORD-${order.order_id}`}
+                              </p>
+                              <p className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">
+                                 STATUS: <span className="text-white">{order.status || 'PENDING'}</span>
+                              </p>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+                  <button className="w-full mt-8 py-3 rounded-xl border border-white/10 text-[9px] font-black uppercase tracking-[0.3em] hover:bg-white/5 transition-all">View All Logs</button>
                </div>
             </div>
          </div>

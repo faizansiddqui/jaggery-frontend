@@ -1,0 +1,917 @@
+'use client';
+
+import Image from 'next/image';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  type ClipboardEventHandler,
+  type FormEventHandler,
+  type MouseEventHandler,
+} from 'react';
+import { useRouter } from 'next/navigation';
+import { useSiteSettings } from '@/app/context/SiteSettingsContext';
+import {
+  createAdminCategory,
+  createAdminProduct,
+  updateAdminProduct,
+} from '@/app/lib/apiClient';
+
+import {
+  CategoryNode,
+  ProductItem,
+  IngredientRow,
+  NutritionRow,
+  WeightUnit,
+  VariantRow,
+  WEIGHT_UNIT_OPTIONS,
+  DESCRIPTION_MAX_LENGTH,
+  INGREDIENTS_COUNT,
+  NUTRITIONS_COUNT,
+  createEmptyVariant,
+  createEmptyIngredient,
+  createEmptyNutrition,
+  normalizeSkuInput,
+  parseCategoryId,
+  toEditorHtml,
+  stripHtmlToPlainText,
+  insertPlainTextAtCaret,
+} from '../utils/admin-products.utils';
+
+type Props = {
+  open: boolean;
+  product: ProductItem | null;
+  categories: CategoryNode[];
+  onClose: () => void;
+  onSaved: () => void;
+  onError: (message: string) => void;
+};
+
+type StepProps = {
+  active: boolean;
+  done: boolean;
+  label: string;
+};
+
+type ToolbarAction = {
+  label: string;
+  onClick: () => void;
+};
+
+function StepBadge({ active, done, label }: StepProps) {
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 text-sm transition ${
+        active
+          ? 'border-slate-900 bg-slate-900 text-white'
+          : done
+          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+          : 'border-slate-200 bg-slate-50 text-slate-500'
+      }`}
+    >
+      <span className="font-semibold">{label}</span>
+    </div>
+  );
+}
+
+export default function ProductEditor({
+  open,
+  product,
+  categories,
+  onClose,
+  onSaved,
+  onError,
+}: Props) {
+  const router = useRouter();
+  const { settings } = useSiteSettings();
+  const currency = settings.currencySymbol || '$';
+
+  const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [highlights, setHighlights] = useState('');
+  const [variants, setVariants] = useState<VariantRow[]>([createEmptyVariant()]);
+  const [sku, setSku] = useState('');
+  const [ingredients, setIngredients] = useState<IngredientRow[]>(
+    Array.from({ length: INGREDIENTS_COUNT }, () => createEmptyIngredient())
+  );
+  const [nutritions, setNutritions] = useState<NutritionRow[]>(
+    Array.from({ length: NUTRITIONS_COUNT }, () => createEmptyNutrition())
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [descriptionTextLength, setDescriptionTextLength] = useState(0);
+
+  const editorRef = useRef<HTMLDivElement | null>(null);
+  const lastValidDescriptionHtmlRef = useRef('');
+  const savedSelectionRef = useRef<Range | null>(null);
+
+  const editingProductId = product?.product_id ?? null;
+  const totalStock = variants.reduce((acc, v) => acc + Number(v.stock || 0), 0);
+
+  const resetEditor = () => {
+    setStep(1);
+    setNewCategoryName('');
+    setName('');
+    setDescription('');
+    setHighlights('');
+    setVariants([createEmptyVariant()]);
+    setSku('');
+    setIngredients(Array.from({ length: INGREDIENTS_COUNT }, () => createEmptyIngredient()));
+    setNutritions(Array.from({ length: NUTRITIONS_COUNT }, () => createEmptyNutrition()));
+    setSelectedCategoryId('');
+    setDescriptionTextLength(0);
+    lastValidDescriptionHtmlRef.current = '';
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    if (product) {
+      setStep(1);
+      setName(product.name || product.title || '');
+      setDescription(toEditorHtml(product.description || ''));
+      setSku(product.sku || '');
+      setHighlights(Array.isArray(product.key_highlights) ? product.key_highlights.join('\n') : '');
+      setSelectedCategoryId(parseCategoryId(product.catagory_id));
+
+      const ingredientRows =
+        Array.isArray(product.ingredients) && product.ingredients.length
+          ? product.ingredients.map((s: Record<string, unknown>) => ({
+              key: String(s.key || ''),
+              value: String(s.value || ''),
+            }))
+          : Array.from({ length: INGREDIENTS_COUNT }, () => createEmptyIngredient());
+      setIngredients(ingredientRows);
+
+      const nutritionRows =
+        Array.isArray(product.nutritions) && product.nutritions.length
+          ? product.nutritions.map((s: Record<string, unknown>) => ({
+              key: String(s.key || ''),
+              value: String(s.value || ''),
+            }))
+          : Array.from({ length: NUTRITIONS_COUNT }, () => createEmptyNutrition());
+      setNutritions(nutritionRows);
+
+      const mappedVariants: VariantRow[] =
+        Array.isArray(product.variants) && product.variants.length
+          ? product.variants.map((v: Record<string, unknown>) => {
+              const label = String(v.label || '');
+              let weight = '';
+              let weightUnit: WeightUnit = 'GM';
+
+              if (label) {
+                const match = label.match(/^(\d+)([a-zA-Z]+)$/);
+                if (match) {
+                  weight = match[1];
+                  weightUnit = match[2].toUpperCase() as WeightUnit;
+                } else {
+                  weight = label;
+                }
+              }
+
+              return {
+                weight,
+                weightUnit,
+                price: String(v.price || ''),
+                discountedPrice: String(v.originalPrice || v.selling_price || ''),
+                stock: Number(v.stock || 0),
+                image: null,
+                existingImage: String(v.image || ''),
+              };
+            })
+          : [createEmptyVariant()];
+      setVariants(mappedVariants);
+
+      const textLength = stripHtmlToPlainText(toEditorHtml(product.description || '')).length;
+      setDescriptionTextLength(textLength);
+      lastValidDescriptionHtmlRef.current = toEditorHtml(product.description || '');
+    } else {
+      resetEditor();
+    }
+  }, [open, product]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const adminScrollRoot = document.getElementById('admin-scroll-root');
+    const previousAdminOverflow = adminScrollRoot?.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    if (adminScrollRoot) adminScrollRoot.style.overflow = 'hidden';
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      if (adminScrollRoot) adminScrollRoot.style.overflow = previousAdminOverflow || '';
+    };
+  }, [open]);
+
+  const syncDescriptionFromEditor = () => {
+    const html = editorRef.current?.innerHTML || '';
+    const textLength = stripHtmlToPlainText(html).length;
+    setDescription(html);
+    setDescriptionTextLength(textLength);
+    lastValidDescriptionHtmlRef.current = html;
+  };
+
+  const saveEditorSelection = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    if (!editor.contains(range.commonAncestorContainer)) return;
+    savedSelectionRef.current = range.cloneRange();
+  };
+
+  const restoreEditorSelection = () => {
+    const selection = window.getSelection();
+    const range = savedSelectionRef.current;
+    const editor = editorRef.current;
+    if (!selection || !range || !editor) return;
+    if (!editor.contains(range.commonAncestorContainer)) return;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+
+  const handleDescriptionInput: FormEventHandler<HTMLDivElement> = () => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    const html = editor.innerHTML;
+    const textLength = stripHtmlToPlainText(html).length;
+
+    if (textLength > DESCRIPTION_MAX_LENGTH) {
+      editor.innerHTML = lastValidDescriptionHtmlRef.current;
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      return;
+    }
+
+    setDescription(html);
+    setDescriptionTextLength(textLength);
+    lastValidDescriptionHtmlRef.current = html;
+  };
+
+  const handleDescriptionPaste: ClipboardEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    const plainText = event.clipboardData.getData('text/plain') || '';
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    editor.focus();
+    restoreEditorSelection();
+    insertPlainTextAtCaret(plainText);
+    saveEditorSelection();
+    syncDescriptionFromEditor();
+  };
+
+  const runDescriptionCommand = (command: string, value?: string) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+    restoreEditorSelection();
+    if (command === 'foreColor' || command === 'hiliteColor') {
+      document.execCommand('styleWithCSS', false, 'true');
+    }
+    document.execCommand(command, false, value);
+    saveEditorSelection();
+    syncDescriptionFromEditor();
+  };
+
+  const applyDescriptionHeading = (value: 'P' | 'H1' | 'H2' | 'H3') => {
+    const map: Record<'P' | 'H1' | 'H2' | 'H3', string> = {
+      P: '<p>',
+      H1: '<h1>',
+      H2: '<h2>',
+      H3: '<h3>',
+    };
+    runDescriptionCommand('formatBlock', map[value]);
+  };
+
+  const keepEditorSelectionOnToolbarMouseDown: MouseEventHandler<HTMLElement> = (event) => {
+    event.preventDefault();
+  };
+
+  const validateStep = (currentStep: number) => {
+    if (currentStep === 1) {
+      if (!selectedCategoryId) return 'Select a category.';
+      return '';
+    }
+    if (currentStep === 2) {
+      if (!name.trim()) return 'Product name is required.';
+      if (!descriptionTextLength || descriptionTextLength < 10) return 'Description is too short.';
+      return '';
+    }
+    if (currentStep === 3) {
+      if (!variants.length) return 'Add at least one variant.';
+      if (variants.some((v) => !String(v.weight || '').trim() || !String(v.price || '').trim())) {
+        return 'Each variant needs weight and price.';
+      }
+      return '';
+    }
+    return '';
+  };
+
+  const handleNext = () => {
+    const validationError = validateStep(step);
+    if (validationError) {
+      onError(validationError);
+      return;
+    }
+    onError('');
+    setStep((prev) => Math.min(prev + 1, 3));
+  };
+
+  const addChildCategory = async () => {
+    const nameValue = newCategoryName.trim();
+    if (!nameValue) return;
+    try {
+      await createAdminCategory(nameValue, selectedCategoryId || undefined);
+      setNewCategoryName('');
+      onSaved();
+    } catch {
+      onError('Category create failed. Name may already exist at this level.');
+    }
+  };
+
+  const saveProduct = async () => {
+    const validationError = validateStep(3);
+    if (validationError) {
+      onError(validationError);
+      return;
+    }
+
+    setIsSubmitting(true);
+    onError('');
+
+    try {
+      const form = new FormData();
+      form.append('name', name.trim());
+      form.append('title', name.trim());
+      form.append('description', description);
+      form.append('categoryId', selectedCategoryId);
+      form.append('status', 'published');
+      form.append('draft_stage', 'complete');
+      form.append('key_highlights', highlights);
+      form.append('sku', sku);
+      form.append('ingredients', JSON.stringify(ingredients.filter((i) => i.key.trim() && i.value.trim())));
+      form.append('nutritions', JSON.stringify(nutritions.filter((n) => n.key.trim() && n.value.trim())));
+
+      const backendVariants = variants.map((v) => ({
+        label: v.weight.trim() + v.weightUnit,
+        stock: Number(v.stock || 0),
+        price: Number(v.price || 0),
+        originalPrice: Number(v.discountedPrice || 0) || Number(v.price || 0),
+        selling_price: Number(v.discountedPrice || 0) || Number(v.price || 0),
+        image: v.existingImage,
+      }));
+      form.append('variants', JSON.stringify(backendVariants));
+
+      variants.forEach((v) => {
+        if (v.image) form.append('variantImages', v.image);
+      });
+
+      if (editingProductId) {
+        await updateAdminProduct(editingProductId, form);
+      } else {
+        await createAdminProduct(form);
+      }
+
+      onSaved();
+      onClose();
+    } catch (e) {
+      onError(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!open) return null;
+
+  const toolbarActions: ToolbarAction[] = [
+    { label: 'P', onClick: () => applyDescriptionHeading('P') },
+    { label: 'H1', onClick: () => applyDescriptionHeading('H1') },
+    { label: 'H2', onClick: () => applyDescriptionHeading('H2') },
+    { label: 'H3', onClick: () => applyDescriptionHeading('H3') },
+    { label: 'Bold', onClick: () => runDescriptionCommand('bold') },
+    { label: 'Italic', onClick: () => runDescriptionCommand('italic') },
+    { label: 'Underline', onClick: () => runDescriptionCommand('underline') },
+    { label: 'UL', onClick: () => runDescriptionCommand('insertUnorderedList') },
+    { label: 'OL', onClick: () => runDescriptionCommand('insertOrderedList') },
+    { label: 'Clear', onClick: () => runDescriptionCommand('removeFormat') },
+  ];
+
+  return (
+    <section className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-2 backdrop-blur-md sm:p-4 md:p-6">
+      <div className="mx-auto min-h-full max-w-7xl">
+        <div className="flex min-h-[calc(100vh-1rem)] flex-col overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-2xl shadow-black/25 sm:min-h-[calc(100vh-2rem)]">
+          <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 md:px-7">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-sky-600">
+                  Step {step}/3
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl md:text-5xl">
+                  {editingProductId ? 'Edit Product' : 'Create Product'}
+                </h2>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <StepBadge active={step === 1} done={step > 1} label="Category" />
+              <StepBadge active={step === 2} done={step > 2} label="Details" />
+              <StepBadge active={step === 3} done={false} label="Variants" />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-7">
+            {step === 1 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    Select Category
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Pick the product’s final category and add a new one if needed.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                    Category
+                  </label>
+                  <select
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Choose the leaf category for this product.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                    Add New Category
+                  </label>
+                  <div className="flex flex-col gap-3 md:flex-row">
+                    <input
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Add new category"
+                      className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-400"
+                    />
+                    <button
+                      onClick={addChildCategory}
+                      className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Create Category
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    Core Info + Specs
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Add the content customers see first.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                      Product Name
+                    </label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                      SKU Code
+                    </label>
+                    <input
+                      value={sku}
+                      onChange={(e) => setSku(normalizeSkuInput(e.target.value))}
+                      maxLength={6}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm tracking-widest outline-none transition focus:border-slate-400 focus:bg-white"
+                    />
+                    <p className="mt-2 text-xs text-slate-500">Format: AB-123</p>
+                  </div>
+
+                  <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="mb-3 flex items-end justify-between gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                          Description
+                        </label>
+                        <p className="mt-1 text-sm text-slate-500">
+                          Rich text with a plain-text character limit.
+                        </p>
+                      </div>
+                      <p
+                        className={`text-xs font-semibold ${
+                          descriptionTextLength > DESCRIPTION_MAX_LENGTH
+                            ? 'text-rose-600'
+                            : 'text-slate-500'
+                        }`}
+                      >
+                        {descriptionTextLength}/{DESCRIPTION_MAX_LENGTH}
+                      </p>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-200">
+                      <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-2">
+                        {toolbarActions.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onMouseDown={keepEditorSelectionOnToolbarMouseDown}
+                            onClick={item.onClick}
+                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+
+                        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+                          Color
+                          <input
+                            type="color"
+                            defaultValue="#111827"
+                            onMouseDown={keepEditorSelectionOnToolbarMouseDown}
+                            onChange={(e) => runDescriptionCommand('foreColor', e.target.value)}
+                            className="h-5 w-8 cursor-pointer border-0 bg-transparent p-0"
+                          />
+                        </label>
+                      </div>
+
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onInput={handleDescriptionInput}
+                        onPaste={handleDescriptionPaste}
+                        onBlur={syncDescriptionFromEditor}
+                        onMouseUp={saveEditorSelection}
+                        onKeyUp={saveEditorSelection}
+                        onFocus={saveEditorSelection}
+                        className="min-h-44 max-h-80 overflow-y-auto px-4 py-3 text-sm leading-6 text-slate-800 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="text-xl font-semibold tracking-tight text-slate-900">
+                        Ingredients
+                      </h4>
+                      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                        {INGREDIENTS_COUNT} points
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {ingredients.map((ingredient, index) => (
+                        <div key={index} className="grid grid-cols-12 gap-3">
+                          <input
+                            value={ingredient.key}
+                            onChange={(e) => {
+                              const next = [...ingredients];
+                              next[index] = { ...next[index], key: e.target.value };
+                              setIngredients(next);
+                            }}
+                            placeholder="Ingredient name"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
+                          />
+                          <input
+                            value={ingredient.value}
+                            onChange={(e) => {
+                              const next = [...ingredients];
+                              next[index] = { ...next[index], value: e.target.value };
+                              setIngredients(next);
+                            }}
+                            placeholder="Details"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="text-xl font-semibold tracking-tight text-slate-900">
+                        Nutrition Facts
+                      </h4>
+                      <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                        {NUTRITIONS_COUNT} points
+                      </span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {nutritions.map((nutrition, index) => (
+                        <div key={index} className="grid grid-cols-12 gap-3">
+                          <input
+                            value={nutrition.key}
+                            onChange={(e) => {
+                              const next = [...nutritions];
+                              next[index] = { ...next[index], key: e.target.value };
+                              setNutritions(next);
+                            }}
+                            placeholder="Nutrient"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
+                          />
+                          <input
+                            value={nutrition.value}
+                            onChange={(e) => {
+                              const next = [...nutritions];
+                              next[index] = { ...next[index], value: e.target.value };
+                              setNutritions(next);
+                            }}
+                            placeholder="Value"
+                            className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+                    Weight Variants + Pricing + Stock
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Add one or more variants with price, discount, stock, and image.
+                  </p>
+                </div>
+
+                <div className="space-y-5">
+                  {variants.map((variant, variantIndex) => (
+                    <div
+                      key={variantIndex}
+                      className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                    >
+                      <div className="mb-5 flex items-center justify-between">
+                        <h4 className="text-xl font-semibold tracking-tight text-slate-900">
+                          Variant #{variantIndex + 1}
+                        </h4>
+                        <button
+                          onClick={() => {
+                            const confirmed = window.confirm('Remove this weight variant?');
+                            if (!confirmed) return;
+                            setVariants((prev) =>
+                              prev.length === 1 ? prev : prev.filter((_, i) => i !== variantIndex)
+                            );
+                          }}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Weight Value
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.weight}
+                            onChange={(e) => {
+                              const next = [...variants];
+                              next[variantIndex] = { ...next[variantIndex], weight: e.target.value };
+                              setVariants(next);
+                            }}
+                            placeholder="e.g., 250, 500, 1"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Weight Unit
+                          </label>
+                          <select
+                            value={variant.weightUnit}
+                            onChange={(e) => {
+                              const next = [...variants];
+                              next[variantIndex] = {
+                                ...next[variantIndex],
+                                weightUnit: e.target.value as WeightUnit,
+                              };
+                              setVariants(next);
+                            }}
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          >
+                            {WEIGHT_UNIT_OPTIONS.map((unit) => (
+                              <option key={unit} value={unit}>
+                                {unit}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Price ({currency})
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.price}
+                            onChange={(e) => {
+                              const next = [...variants];
+                              next[variantIndex] = { ...next[variantIndex], price: e.target.value };
+                              setVariants(next);
+                            }}
+                            placeholder="Original price"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Discounted Price ({currency})
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.discountedPrice}
+                            onChange={(e) => {
+                              const next = [...variants];
+                              next[variantIndex] = {
+                                ...next[variantIndex],
+                                discountedPrice: e.target.value,
+                              };
+                              setVariants(next);
+                            }}
+                            placeholder="Selling price"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                          Stock Quantity
+                        </label>
+                        <input
+                          type="number"
+                          value={variant.stock}
+                          onChange={(e) => {
+                            const next = [...variants];
+                            next[variantIndex] = {
+                              ...next[variantIndex],
+                              stock: Number(e.target.value || 0),
+                            };
+                            setVariants(next);
+                          }}
+                          placeholder="Available stock"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                        />
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                          Variant Image
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            const next = [...variants];
+                            next[variantIndex] = { ...next[variantIndex], image: file };
+                            setVariants(next);
+                          }}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none"
+                        />
+
+                        {(variant.existingImage || variant.image) && (
+                          <div className="pt-2">
+                            {variant.image ? (
+                              <img
+                                src={URL.createObjectURL(variant.image)}
+                                alt="New variant"
+                                className="h-48 w-48 rounded-2xl object-cover ring-1 ring-slate-200"
+                              />
+                            ) : (
+                              <Image
+                                src={variant.existingImage}
+                                alt="Existing variant"
+                                width={192}
+                                height={192}
+                                unoptimized
+                                className="h-48 w-48 rounded-2xl object-cover ring-1 ring-slate-200"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {variant.weight && (
+                        <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                            Full Weight Label
+                          </p>
+                          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                            {variant.weight}
+                            {variant.weightUnit}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => setVariants((prev) => [...prev, createEmptyVariant()])}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Add Weight Variant
+                  </button>
+
+                  <div className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
+                    Total Stock: {totalStock}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7">
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+                disabled={step === 1}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+              >
+                Back
+              </button>
+              {step < 3 && (
+                <button
+                  onClick={handleNext}
+                  className="rounded-2xl border border-slate-900 bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+
+            {step === 3 && (
+              <button
+                onClick={saveProduct}
+                disabled={isSubmitting}
+                className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/15 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? 'Publishing...' : editingProductId ? 'Update Product' : 'Publish Product'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
