@@ -468,7 +468,7 @@ export default function CheckoutPage() {
               <h2 className="font-headline text-2xl text-primary font-bold">Order Summary</h2>
 
               {/* Products List */}
-              <div className="mt-6 space-y-4 max-h-[300px] overflow-y-auto pr-2">
+              <div className="mt-6 space-y-4 max-h-[250px] overflow-y-auto hide-scrollbar overscroll-contain pr-1" data-lenis-prevent="true">
                 {checkoutItems.map((item) => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-4 p-3 bg-white rounded-2xl border border-outline-variant/10">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-variant/20 shrink-0">
