@@ -5,9 +5,72 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSiteSettings } from "@/app/context/SiteSettingsContext";
 import { createProductHref, type Product } from "@/app/data/products";
-import ProductGridSkeleton from "@/app/components/ProductGridSkeleton";
 import { fetchFeaturedProducts } from "@/app/lib/productsClient";
 import { peekCached } from "@/app/lib/clientCache";
+
+/** Skeleton card that mirrors real ProductCard layout */
+function FeaturedCardSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={`relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 overflow-hidden ${className}`}>
+      {/* Shimmer sweep */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full animate-[featuredShimmer_1.7s_ease-in-out_infinite] pointer-events-none z-10" />
+      {/* Image placeholder — matches aspect-[10/11] */}
+      <div className="aspect-[10/11] rounded-2xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100" />
+      {/* Content */}
+      <div className="px-3 pt-5 pb-4 flex flex-col flex-grow gap-3">
+        <div className="flex justify-between items-start gap-4">
+          <div className="h-6 w-1/2 bg-slate-100 rounded-lg" />
+          <div className="h-6 w-16 bg-slate-100 rounded-lg" />
+        </div>
+        <div className="h-4 w-full bg-slate-100 rounded-lg" />
+        <div className="h-4 w-4/5 bg-slate-100 rounded-lg" />
+        <div className="mt-auto h-12 w-full bg-slate-100 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+/** Full responsive skeleton for FeaturedProducts */
+function FeaturedProductsSkeleton() {
+  return (
+    <>
+      {/* Mobile: horizontal scroll strip */}
+      <div className="md:hidden -mx-4 px-4">
+        {/* Header row placeholder */}
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="h-4 w-36 bg-slate-100 rounded-lg" />
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-slate-100" />
+            <div className="w-11 h-11 rounded-full bg-slate-100" />
+          </div>
+        </div>
+        {/* Scrollable cards */}
+        <div className="flex gap-4 overflow-hidden">
+          {[0, 1].map((i) => (
+            <div key={i} className="min-w-[85vw] shrink-0">
+              <FeaturedCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: 3-col grid */}
+      <div className="hidden md:block">
+        <div className="flex items-center justify-end gap-3 mb-6">
+          <div className="w-12 h-12 rounded-full bg-slate-100" />
+          <div className="w-12 h-12 rounded-full bg-slate-100" />
+        </div>
+        <div className="flex gap-8 lg:gap-10 overflow-hidden">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="min-w-[calc(33.333%-27px)] shrink-0">
+              <FeaturedCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
 
 export default function FeaturedProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -129,7 +192,7 @@ export default function FeaturedProductsSection() {
         </div>
 
         {loading ? (
-          <ProductGridSkeleton count={3} />
+          <FeaturedProductsSkeleton />
         ) : error ? (
           <div className="text-center py-20 text-red-500 font-medium">{error}</div>
         ) : (

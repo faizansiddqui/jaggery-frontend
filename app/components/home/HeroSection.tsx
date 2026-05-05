@@ -49,7 +49,45 @@ export default function HeroSection() {
     });
   };
 
-  if (banners.length === 0) return <div className="h-[60vh] md:h-[80vh] mt-16 md:mt-20 bg-stone-100 animate-pulse" />;
+  if (banners.length === 0) return (
+    <div className="relative h-[30vh] sm:h-[70vh] md:h-[80vh] mt-16 md:mt-20 w-full overflow-hidden bg-stone-200">
+      {/* Shimmer sweep */}
+      <div className="absolute inset-0 bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 bg-[length:200%_100%] animate-[heroShimmer_1.8s_ease-in-out_infinite]" />
+
+      {/* Left-side content skeleton */}
+      <div className="absolute inset-0 flex items-center justify-start pb-10 md:pb-0">
+        <div className="container mx-auto px-6 sm:px-8 md:px-12">
+          <div className="max-w-2xl space-y-3 sm:space-y-4 md:space-y-6">
+            {/* Subtitle bar */}
+            {/* <div className="h-3 sm:h-4 w-28 sm:w-40 rounded-full bg-stone-300/80" /> */}
+            {/* Title bars */}
+            <div className="space-y-2 sm:space-y-3">
+              <div className="h-4 sm:h-10 md:h-14 w-[85%] rounded-xl bg-stone-300/80" />
+              <div className="h-6 sm:h-12 md:h-14 w-[60%] rounded-xl bg-stone-300/60" />
+            </div>
+            {/* CTA button placeholder */}
+            <div className="pt-2 sm:pt-4">
+              <div className="h-9 sm:h-12 md:h-14 w-36 sm:w-44 rounded-full bg-stone-300/70" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom dots navigation placeholder */}
+      <div className="absolute bottom-3 md:bottom-5 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 sm:gap-6 rounded-full bg-stone-300/50 backdrop-blur-sm px-3 py-1.5 sm:px-6 sm:py-3">
+        <div className="w-4 h-4 rounded-full bg-stone-300/70" />
+        <div className="flex gap-2 sm:gap-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full bg-stone-400/50 ${i === 0 ? "w-6 sm:w-8" : "w-1.5 sm:w-2"}`}
+            />
+          ))}
+        </div>
+        <div className="w-4 h-4 rounded-full bg-stone-300/70" />
+      </div>
+    </div>
+  );
 
   return (
     // Note the mt-16 md:mt-20 exactly offsets the Navbar height to prevent overlap!

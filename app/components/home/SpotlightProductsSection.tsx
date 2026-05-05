@@ -80,8 +80,27 @@ export default function SpotlightProductsSection() {
             {Array.from({ length: 5 }).map((_, i) => (
               <div
                 key={i}
-                className={`animate-pulse bg-white rounded-[1.5rem] p-2 lg:p-4 h-[260px] lg:h-[320px] ${i === 4 ? "hidden lg:block" : ""}`}
-              />
+                className={`relative flex flex-col bg-white border border-slate-100 rounded-[1.5rem] lg:rounded-[2rem] p-2 lg:p-3 overflow-hidden ${i === 4 ? "hidden lg:flex" : ""}`}
+              >
+                {/* Shimmer sweep */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent -translate-x-full animate-[spotlightShimmer_1.6s_ease-in-out_infinite] pointer-events-none z-10" />
+
+                {/* Square image placeholder */}
+                <div className="aspect-square rounded-xl lg:rounded-[1.5rem] bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100" />
+
+                {/* Content area */}
+                <div className="flex flex-col flex-grow pt-2 lg:pt-4 px-1 pb-1 gap-2">
+                  <div className="h-3.5 lg:h-5 w-4/5 bg-slate-100 rounded-lg" />
+                  <div className="h-3 lg:h-4 w-3/5 bg-slate-100 rounded-lg" />
+                  <div className="mt-auto flex flex-col gap-1.5 lg:gap-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 lg:h-5 w-16 lg:w-20 bg-slate-100 rounded-lg" />
+                      <div className="h-3 lg:h-4 w-10 bg-slate-100 rounded-lg" />
+                    </div>
+                    <div className="h-9 lg:h-11 w-full bg-slate-100 rounded-xl lg:rounded-2xl" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : error ? (
