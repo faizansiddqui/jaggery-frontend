@@ -79,14 +79,37 @@ export function ProductPageSkeleton() {
   return (
     <div className="pt-24 pb-12 px-2 sm:px-4 lg:px-12 max-w-screen-2xl mx-auto space-y-24">
       {/* Header Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-start mt-1 lg:mt-8 w-full outline-none">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start mt-2 lg:mt-6 w-full max-w-7xl mx-auto px-4 md:px-6 outline-none">
         {/* Gallery */}
-        <div className="lg:col-span-7 relative">
-           <Skeleton className="aspect-[4/5] w-full rounded-2xl" />
+        <div className="lg:col-span-7 order-1 w-full">
+          {/* Mobile hero carousel */}
+          <div className="lg:hidden">
+            <Skeleton className="aspect-square w-full rounded-[2rem]" />
+            <div className="mt-6 w-full">
+              <Skeleton className="h-1 w-full rounded-full" />
+            </div>
+          </div>
+
+          {/* Desktop hero */}
+          <div className="hidden lg:block">
+            <Skeleton className="aspect-[4/3] w-full rounded-[2rem]" />
+            <div className="mt-6 grid grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="aspect-square w-full rounded-2xl" />
+              ))}
+            </div>
+          </div>
+
+          {/* Perks */}
+          <div className="mt-5 grid grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-2xl" />
+            ))}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="lg:col-span-5 space-y-8 px-3 sm:px-2 lg:px-4 w-full">
+        <div className="lg:col-span-5 order-2 w-full lg:sticky lg:top-28 px-2 lg:px-0 space-y-8">
           <div className="space-y-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-16 w-full" />
@@ -105,12 +128,6 @@ export function ProductPageSkeleton() {
                   <Skeleton key={i} className="h-12 w-20 rounded-full" />
                 ))}
               </div>
-            </div>
-            {/* Badges */}
-            <div className="grid grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-24 w-full rounded-xl" />
-              ))}
             </div>
           </div>
 
