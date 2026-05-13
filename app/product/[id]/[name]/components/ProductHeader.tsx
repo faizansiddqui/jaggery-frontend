@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion"; // Added AnimatePresence
@@ -42,7 +42,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
   const descriptionHtml = product?.descriptionHtml?.trim() || '';
   const descriptionText = product?.description?.trim() || 'Savor the authentic taste of tradition. Handcrafted with care using only the finest natural ingredients.';
 
-  // Enhanced gallery logic to ensure we always have 4 distinct images if possible
+  // Gallery logic: show all distinct images we have (variant + product).
   const galleryImages = useMemo(() => {
     const imagesSource = [
       selectedVariant?.image,
@@ -58,10 +58,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
       if (!uniq.includes(url)) uniq.push(url);
     }
 
-    // If we have fewer than 4 unique images, we can optionally pad or just show what we have.
-    // The requirement implies *showing* 4, but good practice is not to duplicate if not needed.
-    // I will truncate to 4, as per "4 images show hongi".
-    return uniq.slice(0, 4);
+    return uniq;
   }, [product?.image, product?.images, selectedVariant]);
 
   // Calculate available stock for selected variant/size
@@ -88,6 +85,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
 
   // Set the first image from our robust gallery as active initially
   const [activeImage, setActiveImage] = useState<string>(galleryImages[0] || initialImage);
+  const mobileCarouselRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // If the variant image changes, update the main view
@@ -95,6 +93,22 @@ export default function ProductHeader({ product }: { product?: Product | null })
       setActiveImage(selectedVariant.image);
     }
   }, [selectedVariant]);
+
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    if (activeImage && galleryImages.includes(activeImage)) return;
+    setActiveImage(galleryImages[0]);
+  }, [galleryImages, activeImage]);
+
+  useEffect(() => {
+    const el = mobileCarouselRef.current;
+    if (!el) return;
+    const idx = activeImage ? galleryImages.indexOf(activeImage) : -1;
+    if (idx < 0) return;
+    const width = el.clientWidth || 0;
+    if (!width) return;
+    el.scrollTo({ left: idx * width, behavior: "smooth" });
+  }, [activeImage, galleryImages]);
 
   const handleShare = async () => {
     if (!product) return;
@@ -200,9 +214,51 @@ export default function ProductHeader({ product }: { product?: Product | null })
 
       {/* --- Main Section: Horizontal Scrollable Images (Desktop & Mobile) --- */}
       <div className="lg:col-span-7 order-1 w-full">
-        <div className="relative group overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl shadow-primary/5 aspect-square lg:aspect-[4/3]">
+        {/* Mobile: horizontal scrollable carousel */}
+        <div className="lg:hidden relative overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl shadow-primary/5">
+          <div
+            ref={mobileCarouselRef}
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              const width = el.clientWidth || 0;
+              if (!width) return;
+              const idx = Math.round(el.scrollLeft / width);
+              const next = galleryImages[idx];
+              if (next && next !== activeImage) setActiveImage(next);
+            }}
+            className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth hide-scrollbar"
+          >
+            {(galleryImages.length ? galleryImages : [initialImage]).filter(Boolean).map((src, idx) => (
+              <div key={`${src}-${idx}`} className="relative snap-center flex-none w-full aspect-square">
+                <Image
+                  alt={product?.name ?? "Product Image"}
+                  src={src}
+                  fill
+                  unoptimized
+                  priority={idx === 0}
+                  sizes="100vw"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
 
-          {/* AnimatePresence enables cross-fade on activeImage change */}
+          {/* Floating Badge */}
+          <motion.div
+            animate={{ rotate: [0, 10, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+            className="absolute top-4 right-4 w-20 h-20 rounded-full bg-secondary/90 backdrop-blur-md text-on-secondary flex flex-col items-center justify-center text-center p-3 shadow-xl z-10 border border-white/20 pointer-events-none"
+          >
+            <span className="font-label text-[8px] uppercase tracking-widest opacity-80">Pure</span>
+            <span className="font-headline font-black text-lg leading-none my-0.5">100%</span>
+            <span className="font-headline italic text-[10px]">Organic</span>
+          </motion.div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-[1]" />
+        </div>
+
+        {/* Desktop: cross-fade hero image */}
+        <div className="hidden lg:block relative group overflow-hidden rounded-[2rem] bg-surface-container-low shadow-2xl shadow-primary/5 aspect-[4/3]">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeImage}
@@ -214,7 +270,7 @@ export default function ProductHeader({ product }: { product?: Product | null })
             >
               {activeImage ? (
                 <Image
-                  alt={product?.name ?? 'Product Image'}
+                  alt={product?.name ?? "Product Image"}
                   src={activeImage}
                   fill
                   unoptimized
@@ -228,18 +284,16 @@ export default function ProductHeader({ product }: { product?: Product | null })
             </motion.div>
           </AnimatePresence>
 
-          {/* Floating Badge (Kept from original, ensures it stays on top) */}
           <motion.div
             animate={{ rotate: [0, 10, 0] }}
             transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-            className="absolute top-4 right-4 w-20 h-20 lg:w-28 lg:h-28 rounded-full bg-secondary/90 backdrop-blur-md text-on-secondary flex flex-col items-center justify-center text-center p-3 shadow-xl z-10 border border-white/20 pointer-events-none"
+            className="absolute top-4 right-4 w-28 h-28 rounded-full bg-secondary/90 backdrop-blur-md text-on-secondary flex flex-col items-center justify-center text-center p-3 shadow-xl z-10 border border-white/20 pointer-events-none"
           >
-            <span className="font-label text-[8px] lg:text-[10px] uppercase tracking-widest opacity-80">Pure</span>
-            <span className="font-headline font-black text-lg lg:text-2xl leading-none my-0.5">100%</span>
-            <span className="font-headline italic text-[10px] lg:text-xs">Organic</span>
+            <span className="font-label text-[10px] uppercase tracking-widest opacity-80">Pure</span>
+            <span className="font-headline font-black text-2xl leading-none my-0.5">100%</span>
+            <span className="font-headline italic text-xs">Organic</span>
           </motion.div>
 
-          {/* Gradient overlay for text contrast if needed (kept from original) */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-[1]" />
         </div>
 
@@ -288,8 +342,8 @@ export default function ProductHeader({ product }: { product?: Product | null })
                 the display.) */}
             <div className="lg:hidden w-full overflow-x-auto pb-3 -mb-3 hide-scrollbar">
               {/* Scroll Progress Bar (Required for Mobile) */}
-              <div className="mt-4 px-1 w-full flex justify-start">
-                <div className="w-1/3 h-1 bg-outline-variant/30 rounded-full overflow-hidden">
+              <div className="px-1 w-full flex justify-start">
+                <div className="w-full h-1 bg-outline-variant/30 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-primary rounded-full"
                     style={{

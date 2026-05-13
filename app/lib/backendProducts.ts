@@ -118,7 +118,14 @@ function buildStockMaps(raw: GenericRecord) {
     const stockBySize: Record<string, number> = {};
     const stockByVariant: Record<string, number> = {};
     const variantPrices: Record<string, number> = {};
-    const variantData: Array<{ label: string; stock: number; price: number; originalPrice?: number; image?: string }> = [];
+    const variantData: Array<{
+        label: string;
+        stock: number;
+        price: number;
+        originalPrice?: number;
+        image?: string;
+        images?: string[];
+    }> = [];
 
     variants.forEach((variant) => {
         const row = asRecord(variant);
@@ -127,10 +134,12 @@ function buildStockMaps(raw: GenericRecord) {
         const price = Number(row.price || row.selling_price || 0);
         const originalPrice = Number(row.originalPrice || row.original_price || 0) || undefined;
         const imagesArray = (row as unknown as { images?: unknown }).images;
-        const imageFromImagesArray =
-            Array.isArray(imagesArray) && typeof imagesArray[0] === 'string'
-                ? String(imagesArray[0] || '').trim()
-                : undefined;
+        const normalizedImages = Array.isArray(imagesArray)
+            ? imagesArray
+                .map((img) => (typeof img === 'string' ? img.trim() : ''))
+                .filter(Boolean)
+            : [];
+        const imageFromImagesArray = normalizedImages[0] || undefined;
 
         const image = imageFromImagesArray && imageFromImagesArray.length > 0
             ? imageFromImagesArray
@@ -147,7 +156,14 @@ function buildStockMaps(raw: GenericRecord) {
         stockByVariant[label] = stock;
         stockBySize[label] = stock;
         variantPrices[label] = price;
-        variantData.push({ label, stock, price, originalPrice, image });
+        variantData.push({
+            label,
+            stock,
+            price,
+            originalPrice,
+            image,
+            images: normalizedImages.length ? normalizedImages : undefined,
+        });
     });
 
     return { stockBySize, stockByVariant, variantPrices, variantData };
@@ -168,7 +184,9 @@ export function normalizeBackendProduct(input: unknown): Product {
     const publicId = typeof raw.product_code === 'string' ? raw.product_code : undefined;
     const name = String(raw.name || raw.title || `Product ${id || ''}` || 'Product').trim();
     const category = mapCategoryName(raw);
-    const imageList = Array.isArray(raw.product_image) ? raw.product_image.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+    const imageList = Array.isArray(raw.product_image)
+        ? raw.product_image.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+        : [];
 
     // Build variant maps first so we can derive fallbacks from variant data
     const { stockBySize, stockByVariant, variantPrices, variantData } = buildStockMaps(raw);
@@ -226,6 +244,29 @@ export function normalizeBackendProduct(input: unknown): Product {
         ? variantData.map(v => v.label) // Use variant labels like "500g", "1kg" as sizes
         : (Array.isArray(raw.sizes) && raw.sizes.length > 0 ? raw.sizes.map(String) : ['Default']);
 
+    const imagesCombined = (() => {
+        const candidate = [
+            ...imageList,
+            ...(typeof raw.image === 'string' && raw.image.trim() ? [raw.image.trim()] : []),
+            ...(hasVariantData
+                ? variantData.flatMap((variant) => {
+                    const list = Array.isArray(variant.images) && variant.images.length
+                        ? variant.images
+                        : (variant.image ? [variant.image] : []);
+                    return list.filter(Boolean);
+                })
+                : []),
+        ];
+
+        const uniq: string[] = [];
+        for (const url of candidate) {
+            const u = String(url || '').trim();
+            if (!u) continue;
+            if (!uniq.includes(u)) uniq.push(u);
+        }
+        return uniq;
+    })();
+
     // Build a product that supports multiple weight variants
     const product: Product = {
         id,
@@ -245,9 +286,7 @@ export function normalizeBackendProduct(input: unknown): Product {
         colors: undefined, // No color variants for weight-based products
         sizes,
         image,
-        images: (imageList.length > 0 ? imageList : (hasVariantData ? variantData.map(v => v.image).filter((v): v is string => Boolean(v)) : [])).length > 0
-            ? (imageList.length > 0 ? imageList : variantData.map(v => v.image).filter((v): v is string => Boolean(v)))
-            : [],
+        images: imagesCombined,
         description: normalizedDescription,
         descriptionHtml: rawDescription || undefined,
         details: mapDetails(raw),
