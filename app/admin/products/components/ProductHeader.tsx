@@ -85,7 +85,7 @@ export default function ProductHeader({
             className="flex items-center justify-center gap-3 rounded-xl bg-red-600 px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-red-600/20 transition-all hover:-translate-y-1 hover:bg-red-500 active:scale-95"
           >
             <Plus size={16} strokeWidth={3} />
-            Initialize Product
+            Add Product
           </button>
         </div>
       </div>
