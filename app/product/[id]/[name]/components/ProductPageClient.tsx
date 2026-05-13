@@ -8,6 +8,7 @@ import ReviewsAndSimilar from './ReviewsAndSimilar';
 import PromiseBanner from './PromiseBanner';
 import { fetchBackendProductById, fetchBackendProducts } from '@/app/lib/backendProducts';
 import { formatProductNameForPath, type Product } from '@/app/data/products';
+import ProductNotFound from './ProductNotFound';
 
 import { ProductPageSkeleton } from '@/app/components/Skeletons';
 
@@ -54,6 +55,7 @@ export default function ProductPageClient({ id, name }: { id: string; name?: str
   }, [requestedId, requestedSlug]);
 
   if (isLoading) return <ProductPageSkeleton />;
+  if (!product) return <ProductNotFound />;
 
 
   return (

@@ -148,7 +148,7 @@ export default function CartPage() {
                 className="group relative bg-white border border-outline-variant/30 rounded-[0.5rem] p-3 sm:p-6 flex flex-row sm:flex-row gap-3 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500"
               >
                 {/* Product Image */}
-                <div className="w-[30vw] h-[20vh] lg:w-[15vw] lg:h-[30vh] rounded-[0.5rem] overflow-hidden bg-surface-variant/10 shrink-0 relative">
+                <div className="w-[30vw] h-[16vh] lg:w-[15vw] lg:h-[30vh] rounded-[0.5rem] overflow-hidden bg-surface-variant/10 shrink-0 relative">
                   <Image 
                     src={item.image} 
                     alt={item.name} 
