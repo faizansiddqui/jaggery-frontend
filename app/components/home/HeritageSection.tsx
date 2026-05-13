@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
 
 export default function HeritageSection() {
   return (
@@ -42,11 +41,11 @@ export default function HeritageSection() {
 
             <div className="mt-10 pt-8 border-t border-slate-100 flex items-center gap-6">
                <div className="flex -space-x-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
-                       <div className="w-full h-full bg-amber-100 flex items-center justify-center text-[10px] font-bold text-amber-800">AM</div>
-                    </div>
-                  ))}
+                 {[1, 2, 3].map((i) => (
+                   <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
+                      <div className="w-full h-full bg-amber-100 flex items-center justify-center text-[10px] font-bold text-amber-800">AM</div>
+                   </div>
+                 ))}
                </div>
                <p className="text-sm text-slate-500 italic">
                  Trusted by families for over three generations.
@@ -54,20 +53,29 @@ export default function HeritageSection() {
             </div>
           </div>
 
-          {/* Image Visuals */}
+          {/* Video Visuals */}
           <div className="order-1 lg:order-2 lg:col-span-7 relative">
             <div className="relative z-10 group">
-              {/* Main Image Container */}
-              <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-[1.02]">
-                <Image
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCedXPKpcwhGo5HgL4Sx1N4aEMTq1NXMvo5ArjYL_CLDa6oDNUZK5GgUJTk5r3daQ1ZCaQ941Tb1J_oIXFvuCcknZt9g6mvXdPoDHT5pv6Jxgz1hsuXvCUv0J3G61ttOqryb-houioPndSShh7wWHMYT7_WY3J3M6YTeQq7jM2tcct_vgv24PKrg_Lx91cm8yjnx6Q_sy4AaUKMuCuzi4CIamV6be_9k6aPHhnEywWwdfxatClqVl8BkV8R057ZoePgKtR0z76OOqM" // Replace with actual image
-                  alt="Traditional sugarcane fields"
-                  fill
-                  unoptimized
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+              
+              {/* Main Video Container */}
+              <div className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] w-full rounded-2xl overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]">
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  // poster="https://lh3.googleusercontent.com/aida-public/AB6AXuCedXPKpcwhGo5HgL4Sx1N4aEMTq1NXMvo5ArjYL_CLDa6oDNUZK5GgUJTk5r3daQ1ZCaQ941Tb1J_oIXFvuCcknZt9g6mvXdPoDHT5pv6Jxgz1hsuXvCUv0J3G61ttOqryb-houioPndSShh7wWHMYT7_WY3J3M6YTeQq7jM2tcct_vgv24PKrg_Lx91cm8yjnx6Q_sy4AaUKMuCuzi4CIamV6be_9k6aPHhnEywWwdfxatClqVl8BkV8R057ZoePgKtR0z76OOqM" // Optional: Loading state image
+                >
+                  <source 
+                    src="jaggery.mp4" // Replace with your actual video link
+                    type="video/mp4" 
+                  />
+                  Your browser does not support the video tag.
+                </video>
+
+                {/* Overlay Gradient for Elegance */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-60 pointer-events-none" />
               </div>
 
               {/* Floating Quote Card */}

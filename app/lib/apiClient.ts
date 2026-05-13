@@ -509,6 +509,40 @@ function asRecord(value: unknown): AnyRecord {
     return value && typeof value === 'object' ? (value as AnyRecord) : {};
 }
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+    nbsp: ' ',
+    amp: '&',
+    lt: '<',
+    gt: '>',
+    quot: '"',
+    apos: "'",
+    '#39': "'",
+};
+
+function decodeHtmlEntities(value: unknown) {
+    const input = String(value || '');
+    if (!input.includes('&')) return input;
+
+    return input.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, entity: string) => {
+        const key = String(entity).toLowerCase();
+        if (key in HTML_ENTITY_MAP) {
+            return HTML_ENTITY_MAP[key];
+        }
+
+        if (key.startsWith('#x')) {
+            const codePoint = Number.parseInt(key.slice(2), 16);
+            return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        }
+
+        if (key.startsWith('#')) {
+            const codePoint = Number.parseInt(key.slice(1), 10);
+            return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        }
+
+        return match;
+    });
+}
+
 function mapAddress(row: AnyRecord): UserAddress {
     const id = Number(row.address_id || row.id || 0);
     return {
@@ -1312,29 +1346,29 @@ const mapSiteSettings = (value: unknown): SiteSettings => {
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
     return {
-        siteName: String(row.siteName || 'STREETRIOT'),
-        navbarTitle: String(row.navbarTitle || row.siteName || 'STREETRIOT'),
-        footerTitle: String(row.footerTitle || row.siteName || 'STREETRIOT'),
-        footerDescription: String(
+        siteName: decodeHtmlEntities(row.siteName || 'STREETRIOT'),
+        navbarTitle: decodeHtmlEntities(row.navbarTitle || row.siteName || 'STREETRIOT'),
+        footerTitle: decodeHtmlEntities(row.footerTitle || row.siteName || 'STREETRIOT'),
+        footerDescription: decodeHtmlEntities(
             row.footerDescription ||
             'Forging the future of urban streetwear. Precision engineered, culturally driven, and globally distributed.'
         ),
-        companyAddress: String(row.companyAddress || ''),
-        companyEmail: String(row.companyEmail || ''),
-        companyPhone: String(row.companyPhone || ''),
-        emailFooterDescription: String(
+        companyAddress: decodeHtmlEntities(row.companyAddress || ''),
+        companyEmail: decodeHtmlEntities(row.companyEmail || ''),
+        companyPhone: decodeHtmlEntities(row.companyPhone || ''),
+        emailFooterDescription: decodeHtmlEntities(
             row.emailFooterDescription ||
             'This is an automated message from StreetRiot commerce engine.'
         ),
-        logoUrl: String(row.logoUrl || ''),
+        logoUrl: decodeHtmlEntities(row.logoUrl || ''),
         logoPublicId: row.logoPublicId ? String(row.logoPublicId) : undefined,
-        currencySymbol: String(row.currencySymbol || '$'),
-        instagramUrl: String(row.instagramUrl || ''),
-        instagramHandle,
+        currencySymbol: decodeHtmlEntities(row.currencySymbol || '$'),
+        instagramUrl: decodeHtmlEntities(row.instagramUrl || ''),
+        instagramHandle: decodeHtmlEntities(instagramHandle),
         instagramGallery,
-        twitterUrl: String(row.twitterUrl || ''),
-        youtubeUrl: String(row.youtubeUrl || row.twitterUrl || ''),
-        facebookUrl: String(row.facebookUrl || ''),
+        twitterUrl: decodeHtmlEntities(row.twitterUrl || ''),
+        youtubeUrl: decodeHtmlEntities(row.youtubeUrl || row.twitterUrl || ''),
+        facebookUrl: decodeHtmlEntities(row.facebookUrl || ''),
         updatedBy: row.updatedBy ? String(row.updatedBy) : undefined,
         updatedAt: row.updatedAt ? String(row.updatedAt) : null,
     };

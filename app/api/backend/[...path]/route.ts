@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 async function proxyRequest(
   request: NextRequest,
   method: string,
@@ -29,39 +32,23 @@ async function proxyRequest(
   
   const url = `${BACKEND_URL}${backendPath}${searchParams ? `?${searchParams}` : ''}`;
 
-  const headers: HeadersInit = {};
-  
-  // Forward authorization headers
-  const authHeader = request.headers.get('authorization');
-  if (authHeader) {
-    headers['Authorization'] = authHeader;
-  }
-  
-  const adminToken = request.headers.get('x-admin-token');
-  if (adminToken) {
-    headers['x-admin-token'] = adminToken;
-  }
-
-  const contentType = request.headers.get('content-type') || '';
-  
   try {
-    let body: BodyInit | undefined;
-    
-    if (contentType.includes('multipart/form-data')) {
-      const formData = await request.formData();
-      body = formData;
-    } else if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(method)) {
-      body = await request.text();
-      if (body) {
-        headers['Content-Type'] = 'application/json';
-      }
-    }
+    const headers = new Headers(request.headers);
+
+    // Strip hop-by-hop headers (fetch will manage these).
+    headers.delete('host');
+    headers.delete('connection');
+    headers.delete('content-length');
+
+    const hasBody = !['GET', 'HEAD'].includes(method);
 
     const response = await fetch(url, {
       method,
       headers,
-      body,
-    });
+      body: hasBody ? request.body : undefined,
+      // Required when streaming a request body in Node.js fetch (undici).
+      ...(hasBody ? { duplex: 'half' as const } : {}),
+    } as RequestInit);
 
     const responseContentType = response.headers.get('content-type') || '';
     

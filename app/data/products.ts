@@ -6,6 +6,7 @@ export interface WeightVariant {
   price: number;
   originalPrice?: number;
   image?: string;
+  images?: string[];
 }
 
 // Main Product type with weight variant support

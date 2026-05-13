@@ -30,6 +30,11 @@ if (process.env.NODE_ENV === "production" && !resolvedProxy) {
 const backendProxyTarget = normalizeTarget(resolvedProxy || "http://localhost:8080");
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Allow larger multipart uploads through the App Router proxy route (`/api/backend/*`).
+    // Default is ~10MB which can be exceeded when uploading multiple images.
+    proxyClientMaxBodySize: "50mb",
+  },
   images: {
     // Adding Cloudinary here fixes the "Invalid src prop" error
     remotePatterns: [

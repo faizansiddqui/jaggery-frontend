@@ -48,8 +48,8 @@ export type VariantRow = {
   price: string;
   discountedPrice: string;
   stock: number;
-  image: File | null;
-  existingImage: string;
+  images: File[];
+  existingImages: string[];
 };
 
 export const WEIGHT_UNIT_OPTIONS: WeightUnit[] = ['GM', 'KG'];
@@ -63,8 +63,8 @@ export const createEmptyVariant = (): VariantRow => ({
   price: '',
   discountedPrice: '',
   stock: 0,
-  image: null,
-  existingImage: '',
+  images: [],
+  existingImages: [],
 });
 
 export const createEmptyIngredient = (): IngredientRow => ({ key: '', value: '' });

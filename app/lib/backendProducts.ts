@@ -8,6 +8,40 @@ function asRecord(value: unknown): GenericRecord {
     return value && typeof value === 'object' ? (value as GenericRecord) : {};
 }
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+    nbsp: ' ',
+    amp: '&',
+    lt: '<',
+    gt: '>',
+    quot: '"',
+    apos: "'",
+    '#39': "'",
+};
+
+function decodeHtmlEntities(value: unknown) {
+    const input = String(value || '');
+    if (!input.includes('&')) return input;
+
+    return input.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (match, entity: string) => {
+        const key = String(entity).toLowerCase();
+        if (key in HTML_ENTITY_MAP) {
+            return HTML_ENTITY_MAP[key];
+        }
+
+        if (key.startsWith('#x')) {
+            const codePoint = Number.parseInt(key.slice(2), 16);
+            return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        }
+
+        if (key.startsWith('#')) {
+            const codePoint = Number.parseInt(key.slice(1), 10);
+            return Number.isFinite(codePoint) ? String.fromCodePoint(codePoint) : match;
+        }
+
+        return match;
+    });
+}
+
 function mapCategoryName(raw: GenericRecord) {
     const categoryObject = asRecord(raw.catagory_id);
     const legacyCategory = asRecord(raw.Catagory);
@@ -92,13 +126,21 @@ function buildStockMaps(raw: GenericRecord) {
         const stock = Math.max(0, Number(row.stock || 0));
         const price = Number(row.price || row.selling_price || 0);
         const originalPrice = Number(row.originalPrice || row.original_price || 0) || undefined;
-        const image = typeof row.image === 'string' && row.image.trim().length > 0
-            ? row.image
-            : typeof row.variant_image === 'string' && row.variant_image.trim().length > 0
-                ? row.variant_image
-                : typeof row.existingImage === 'string' && row.existingImage.trim().length > 0
-                    ? row.existingImage
-                    : undefined;
+        const imagesArray = (row as unknown as { images?: unknown }).images;
+        const imageFromImagesArray =
+            Array.isArray(imagesArray) && typeof imagesArray[0] === 'string'
+                ? String(imagesArray[0] || '').trim()
+                : undefined;
+
+        const image = imageFromImagesArray && imageFromImagesArray.length > 0
+            ? imageFromImagesArray
+            : typeof row.image === 'string' && row.image.trim().length > 0
+                ? row.image
+                : typeof row.variant_image === 'string' && row.variant_image.trim().length > 0
+                    ? row.variant_image
+                    : typeof row.existingImage === 'string' && row.existingImage.trim().length > 0
+                        ? row.existingImage
+                        : undefined;
 
         if (!label) return;
 
@@ -178,8 +220,8 @@ export function normalizeBackendProduct(input: unknown): Product {
 
     const quantityFromRaw = Math.max(0, Number(raw.quantity ?? 0));
     const quantity = quantityFromRaw > 0 ? quantityFromRaw : (hasVariantData ? variantData.reduce((s, v) => s + (v.stock || 0), 0) : 0);
-    const rawDescription = String(raw.description || '').trim();
-    const normalizedDescription = stripHtml(raw.description) || 'No description available.';
+    const rawDescription = decodeHtmlEntities(raw.description).trim();
+    const normalizedDescription = stripHtml(rawDescription) || 'No description available.';
     const sizes = hasVariantData
         ? variantData.map(v => v.label) // Use variant labels like "500g", "1kg" as sizes
         : (Array.isArray(raw.sizes) && raw.sizes.length > 0 ? raw.sizes.map(String) : ['Default']);

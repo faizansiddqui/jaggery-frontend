@@ -202,8 +202,10 @@ export default function ProductEditor({
               price: String(v.price || ''),
               discountedPrice: String(v.originalPrice || v.selling_price || ''),
               stock: Number(v.stock || 0),
-              image: null,
-              existingImage: String(v.image || ''),
+              images: [],
+              existingImages: Array.isArray(v.images) && v.images.length
+                ? (v.images as unknown[]).map((img) => String(img || '')).filter(Boolean)
+                : (v.image ? [String(v.image || '')] : []),
             };
           })
           : [createEmptyVariant()];
@@ -238,6 +240,14 @@ export default function ProductEditor({
   }, [step, description, hasHydratedDescription]);
 
   useEffect(() => {
+    if (step === 2) return;
+    if (!hasHydratedDescription) return;
+    // Step 2 UI (contentEditable) unmounts when navigating away.
+    // Reset hydration flag so coming back rehydrates from `description` state.
+    setHasHydratedDescription(false);
+  }, [step, hasHydratedDescription]);
+
+  useEffect(() => {
     if (!open) return;
 
     const previousHtmlOverflow = document.documentElement.style.overflow;
@@ -262,6 +272,11 @@ export default function ProductEditor({
     setDescription(html);
     setDescriptionTextLength(textLength);
     lastValidDescriptionHtmlRef.current = html;
+  };
+
+  const commitDescriptionIfEditing = () => {
+    if (step !== 2) return;
+    syncDescriptionFromEditor();
   };
 
   const saveEditorSelection = () => {
@@ -367,6 +382,7 @@ export default function ProductEditor({
   };
 
   const handleNext = () => {
+    commitDescriptionIfEditing();
     const validationError = validateStep(step);
     if (validationError) {
       onError(validationError);
@@ -374,6 +390,12 @@ export default function ProductEditor({
     }
     onError('');
     setStep((prev) => Math.min(prev + 1, 3));
+  };
+
+  const handleBack = () => {
+    commitDescriptionIfEditing();
+    onError('');
+    setStep((prev) => Math.max(prev - 1, 1));
   };
 
   const addChildCategory = async () => {
@@ -389,7 +411,7 @@ export default function ProductEditor({
   };
 
   const saveProduct = async () => {
-    const validationError = validateStep(3);
+    const validationError = validateStep(2) || validateStep(3);
     if (validationError) {
       onError(validationError);
       return;
@@ -417,12 +439,16 @@ export default function ProductEditor({
         price: Number(v.price || 0),
         originalPrice: Number(v.discountedPrice || 0) || Number(v.price || 0),
         selling_price: Number(v.discountedPrice || 0) || Number(v.price || 0),
-        image: v.existingImage,
+        image: v.existingImages?.[0] || '',
+        existingImages: v.existingImages || [],
       }));
       form.append('variants', JSON.stringify(backendVariants));
 
-      variants.forEach((v) => {
-        if (v.image) form.append('variantImages', v.image);
+      variants.forEach((v, variantIdx) => {
+        v.images.forEach((file) => {
+          form.append('variantImages', file);
+          form.append('variantImageIndexes', String(variantIdx));
+        });
       });
 
       if (editingProductId) {
@@ -712,6 +738,7 @@ export default function ProductEditor({
                               setIngredients(next);
                             }}
                             placeholder="Ingredient name"
+                            required
                             className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
                           />
                           <input
@@ -722,6 +749,7 @@ export default function ProductEditor({
                               setIngredients(next);
                             }}
                             placeholder="Details"
+                            required
                             className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
                           />
                         </div>
@@ -750,6 +778,7 @@ export default function ProductEditor({
                               setNutritions(next);
                             }}
                             placeholder="Nutrient"
+                            required
                             className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-5"
                           />
                           <input
@@ -760,6 +789,7 @@ export default function ProductEditor({
                               setNutritions(next);
                             }}
                             placeholder="Value"
+                            required
                             className="col-span-12 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-slate-400 focus:bg-white sm:col-span-7"
                           />
                         </div>
@@ -909,43 +939,76 @@ export default function ProductEditor({
 
                       <div className="mt-4 space-y-2">
                         <label className="block text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-                          Variant Image
+                          Variant Images (max 4)
                         </label>
                         <input
                           type="file"
                           accept="image/*"
+                          multiple
                           onChange={(e) => {
-                            const file = e.target.files?.[0] || null;
+                            const files = Array.from(e.target.files || []);
                             const next = [...variants];
-                            next[variantIndex] = { ...next[variantIndex], image: file };
+                            if (files.length > 4) {
+                              onError('Maximum 4 images allowed per variant.');
+                              next[variantIndex] = { ...next[variantIndex], images: files.slice(0, 4) };
+                              setVariants(next);
+                              return;
+                            }
+                            onError('');
+                            next[variantIndex] = { ...next[variantIndex], images: files };
                             setVariants(next);
                           }}
                           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none"
                         />
 
-                        {(variant.existingImage || variant.image) && (
-                          <div className="pt-2">
-                            {variant.image ? (
+                        {variant.existingImages.length > 0 && variant.images.length === 0 ? (
+                          <div className="flex gap-3 overflow-x-auto pt-2 pb-1">
+                            {variant.existingImages.slice(0, 4).map((src) => (
                               <Image
-                                src={URL.createObjectURL(variant.image)}
-                                alt="New variant"
-                                width={192}
-                                height={192}
-                                unoptimized
-                                className="h-48 w-48 rounded-2xl object-cover ring-1 ring-slate-200"
-                              />
-                            ) : (
-                              <Image
-                                src={variant.existingImage}
+                                key={src}
+                                src={src}
                                 alt="Existing variant"
-                                width={192}
-                                height={192}
+                                width={96}
+                                height={96}
                                 unoptimized
-                                className="h-48 w-48 rounded-2xl object-cover ring-1 ring-slate-200"
+                                className="h-20 w-20 flex-none rounded-2xl object-cover ring-1 ring-slate-200"
                               />
-                            )}
+                            ))}
                           </div>
-                        )}
+                        ) : null}
+
+                        {variant.images.length > 0 ? (
+                          <div className="flex gap-3 overflow-x-auto pt-2 pb-1">
+                            {variant.images.slice(0, 4).map((file, idx) => (
+                              <Image
+                                key={`${file.name}-${idx}`}
+                                src={URL.createObjectURL(file)}
+                                alt="New variant"
+                                width={96}
+                                height={96}
+                                unoptimized
+                                className="h-20 w-20 flex-none rounded-2xl object-cover ring-1 ring-slate-200"
+                              />
+                            ))}
+                          </div>
+                        ) : null}
+
+                        <div className="flex flex-wrap items-center gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = [...variants];
+                              next[variantIndex] = { ...next[variantIndex], images: [] };
+                              setVariants(next);
+                            }}
+                            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            Clear Selection
+                          </button>
+                          <span className="text-xs text-slate-500">
+                            Selected: {variant.images.length || variant.existingImages.length}/4
+                          </span>
+                        </div>
                       </div>
 
                       {variant.weight && (
@@ -982,7 +1045,7 @@ export default function ProductEditor({
           <div className="sticky bottom-0 z-10 flex flex-col gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-7">
             <div className="flex gap-3">
               <button
-                onClick={() => setStep((prev) => Math.max(prev - 1, 1))}
+                onClick={handleBack}
                 disabled={step === 1}
                 className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
               >
