@@ -11,7 +11,7 @@ import { peekCached } from "@/app/lib/clientCache";
 /** Skeleton card that mirrors real ProductCard layout */
 function FeaturedCardSkeleton({ className = "" }: { className?: string }) {
   return (
-    <div className={`relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 overflow-hidden ${className}`}>
+    <div className={`relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 overflow-hidden w-full ${className}`}>
       {/* Shimmer sweep */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent -translate-x-full animate-[featuredShimmer_1.7s_ease-in-out_infinite] pointer-events-none z-10" />
       {/* Image placeholder — matches aspect-[10/11] */}
@@ -60,11 +60,9 @@ function FeaturedProductsSkeleton() {
           <div className="w-12 h-12 rounded-full bg-slate-100" />
           <div className="w-12 h-12 rounded-full bg-slate-100" />
         </div>
-        <div className="flex gap-8 lg:gap-10 overflow-hidden">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="min-w-[calc(33.333%-27px)] shrink-0">
-              <FeaturedCardSkeleton />
-            </div>
+            <FeaturedCardSkeleton key={i} />
           ))}
         </div>
       </div>
@@ -84,6 +82,9 @@ export default function FeaturedProductsSection() {
   const intervalRef = useRef<number | null>(null);
   const [mobileReady, setMobileReady] = useState(false);
   const mobileProducts = useMemo(() => products.slice(0, 4), [products]);
+
+  // Check if we should render as a clean grid or slider rail
+  const isGridMode = products.length <= 3;
 
   useEffect(() => {
     window.setTimeout(() => {
@@ -207,35 +208,39 @@ export default function FeaturedProductsSection() {
                   View All Collection
                 </Link>
 
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => scrollMobileTrack("prev")}
-                    className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                    aria-label="Scroll featured products left"
-                  >
-                    <span className="material-symbols-outlined">west</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollMobileTrack("next")}
-                    className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                    aria-label="Scroll featured products right"
-                  >
-                    <span className="material-symbols-outlined">east</span>
-                  </button>
-                </div>
+                {mobileProducts.length > 1 && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => scrollMobileTrack("prev")}
+                      className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                      aria-label="Scroll featured products left"
+                    >
+                      <span className="material-symbols-outlined">west</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollMobileTrack("next")}
+                      className="w-11 h-11 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                      aria-label="Scroll featured products right"
+                    >
+                      <span className="material-symbols-outlined">east</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div
                 ref={mobileTrackRef}
-                className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory"
+                className={`hide-scrollbar flex gap-4 ${
+                  products.length === 1 ? "justify-center" : "overflow-x-auto snap-x snap-mandatory"
+                }`}
               >
                 {mobileProducts.map((product) => (
                   <div
                     key={product.id}
                     data-feature-card
-                    className="snap-center min-w-[85vw]"
+                    className={`snap-center ${products.length === 1 ? "w-full max-w-[350px]" : "min-w-[85vw]"}`}
                   >
                     <ProductCard product={product} currency={currencySymbol} />
                   </div>
@@ -243,41 +248,56 @@ export default function FeaturedProductsSection() {
               </div>
             </div>
 
-            {/* Desktop/Tablet Horizontal Rail */}
+            {/* Desktop/Tablet Layout */}
             <div className="hidden md:block">
-              <div className="flex items-center justify-end gap-3 mb-6">
-                <button
-                  type="button"
-                  onClick={() => scrollDesktopTrack("prev")}
-                  className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                  aria-label="Scroll featured products left"
-                >
-                  <span className="material-symbols-outlined">west</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollDesktopTrack("next")}
-                  className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
-                  aria-label="Scroll featured products right"
-                >
-                  <span className="material-symbols-outlined">east</span>
-                </button>
-              </div>
-
-              <div
-                ref={desktopTrackRef}
-                className="hide-scrollbar flex gap-8 lg:gap-10 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
-              >
-                {products.map((product) => (
-                  <div
-                    key={product.id}
-                    data-feature-desktop-card
-                    className="snap-start min-w-[340px] md:min-w-[calc(50%-16px)] lg:min-w-[calc(33.333%-27px)]"
+              {/* Hide navigation buttons if products are less than or equal to 3 */}
+              {!isGridMode && (
+                <div className="flex items-center justify-end gap-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => scrollDesktopTrack("prev")}
+                    className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                    aria-label="Scroll featured products left"
                   >
-                    <ProductCard product={product} currency={currencySymbol} />
-                  </div>
-                ))}
-              </div>
+                    <span className="material-symbols-outlined">west</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => scrollDesktopTrack("next")}
+                    className="w-12 h-12 rounded-full border border-slate-200 bg-white text-slate-900 flex items-center justify-center hover:border-primary hover:text-primary transition-all"
+                    aria-label="Scroll featured products right"
+                  >
+                    <span className="material-symbols-outlined">east</span>
+                  </button>
+                </div>
+              )}
+
+              {isGridMode ? (
+                /* Pure Grid Layout for 1-3 products so they don't stretch */
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+                  {products.map((product) => (
+                    <div key={product.id} className="w-full max-w-[400px]">
+                      <ProductCard product={product} currency={currencySymbol} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Slider Rail for 4+ products */
+                <div
+                  ref={desktopTrackRef}
+                  className="hide-scrollbar flex gap-8 lg:gap-10 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2"
+                >
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      data-feature-desktop-card
+                      className="snap-start min-w-[340px] md:min-w-[calc(50%-16px)] lg:min-w-[calc(33.333%-27px)]"
+                    >
+                      <ProductCard product={product} currency={currencySymbol} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -291,9 +311,7 @@ export default function FeaturedProductsSection() {
   );
 }
 
-/**
- * Slick, Reusable Product Card Component
- */
+/** Reusable Product Card Component */
 function ProductCard({ product, currency }: { product: Product; currency: string }) {
   const primary = product.variants?.[0];
   const price = Number(product.price ?? primary?.price ?? 0);
@@ -301,9 +319,9 @@ function ProductCard({ product, currency }: { product: Product; currency: string
   const isSale = oldPrice && oldPrice > price;
 
   return (
-    <div className="group relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500">
+    <div className="group relative flex flex-col h-full bg-white rounded-3xl p-3 border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500 w-full">
       {/* Image Container */}
-      <Link href={createProductHref(product)} className="relative aspect-[10/11] overflow-hidden rounded-2xl bg-slate-50">
+      <Link href={createProductHref(product)} className="relative aspect-[10/11] overflow-hidden rounded-2xl bg-slate-50 block">
         {isSale && (
           <div className="absolute top-4 left-4 z-10 bg-black text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
             Sale
@@ -315,12 +333,12 @@ function ProductCard({ product, currency }: { product: Product; currency: string
             src={product.image}
             alt={product.name}
             fill
-            className="object-cover transition-transform aspect-square duration-1000 group-hover:scale-110"
-            sizes="(max-width: 768px) 85vw, 33vw"
+            className="object-cover transition-transform duration-1000 group-hover:scale-110"
+            sizes="(max-width: 368px) 85vw, 33vw"
           />
         )}
 
-        {/* Quick Add Overlay (Desktop Only) */}
+        {/* Quick Add Overlay */}
         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
           <button className="w-full bg-white/90 backdrop-blur-md py-3 rounded-xl text-sm font-bold text-slate-900 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-xl">
             Quick View
