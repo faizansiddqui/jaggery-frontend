@@ -439,8 +439,8 @@ export default function ProductEditor({
         price: Number(v.price || 0),
         originalPrice: Number(v.discountedPrice || 0) || Number(v.price || 0),
         selling_price: Number(v.discountedPrice || 0) || Number(v.price || 0),
-        image: v.existingImages?.[0] || '',
-        existingImages: v.existingImages || [],
+        image: v.images.length > 0 ? '' : (v.existingImages?.[0] || ''),
+        existingImages: v.images.length > 0 ? [] : (v.existingImages || []),
       }));
       form.append('variants', JSON.stringify(backendVariants));
 
@@ -950,12 +950,20 @@ export default function ProductEditor({
                             const next = [...variants];
                             if (files.length > 4) {
                               onError('Maximum 4 images allowed per variant.');
-                              next[variantIndex] = { ...next[variantIndex], images: files.slice(0, 4) };
+                              next[variantIndex] = {
+                                ...next[variantIndex],
+                                images: files.slice(0, 4),
+                                existingImages: [],
+                              };
                               setVariants(next);
                               return;
                             }
                             onError('');
-                            next[variantIndex] = { ...next[variantIndex], images: files };
+                            next[variantIndex] = {
+                              ...next[variantIndex],
+                              images: files,
+                              existingImages: files.length > 0 ? [] : next[variantIndex].existingImages,
+                            };
                             setVariants(next);
                           }}
                           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none"
@@ -998,7 +1006,7 @@ export default function ProductEditor({
                             type="button"
                             onClick={() => {
                               const next = [...variants];
-                              next[variantIndex] = { ...next[variantIndex], images: [] };
+                              next[variantIndex] = { ...next[variantIndex], images: [], existingImages: [] };
                               setVariants(next);
                             }}
                             className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
